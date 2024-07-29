@@ -1,5 +1,6 @@
 from enum import Enum
 import Managers as M
+import Database as db
 
 class Request(Enum):
     LOGIN = 101
@@ -37,7 +38,8 @@ class IRequestHandler():
 class LoginRequestHandler(IRequestHandler):
     def __init__(self, currUser) -> None:
         self.__user = currUser
-        self.__loginManager = M.LoginManager()
+        #self.__loginManager = M.LoginManager()
+        self.__db = db.Database()
 
     def isRequestRelevant(self, requestInfo) -> bool:
         return requestInfo.requestId ==Request.LOGIN or requestInfo.requestId == Request.SIGNUP
@@ -65,20 +67,33 @@ class LoginRequestHandler(IRequestHandler):
 class PasswordRequestHandler(IRequestHandler):
     def __init__(self, currUser) -> None:
         self.__user = currUser
-        self.__passwordManager = M.PasswordManager()
+        #self.__passwordManager = M.PasswordManager()
+        self.__db = db.Database()
     
     def isRequestRelevant(self, requestInfo) -> bool:
-        return requestInfo.requestId ==Request.UPDATE or requestInfo.requestId == Request.ADD or requestInfo.requestId == Request.REMOVE
+        return requestInfo.requestId == Request.UPDATE or requestInfo.requestId == Request.ADD or requestInfo.requestId == Request.REMOVE
 
     def handleRequest(self, requestInfo) -> RequestResult:
         if(requestInfo.requestId == Request.ADD):
-            return self.__passwordManager.addPassword(requestInfo.request)
+            return self.addPassword(requestInfo)
         elif(requestInfo.requestId == Request.UPDATE):
-            return self.__passwordManager.updatePassword(requestInfo.request)
+            return self.updatePassword(requestInfo)
         elif(requestInfo.requestId == Request.REMOVE):
-            return self.__passwordManager.removePassword(requestInfo.request)
+            return self.removePassword(requestInfo)
         else:
             pass
 
     def getAllPasswords(self, requestInfo) -> RequestResult:
         pass
+
+    def addPassword(self, requestInfo) -> RequestResult:
+        #self.__passwordManager.addPassword(requestInfo.request)
+        self.__db.addPassword()
+
+    def updatePassword(self, requestInfo) -> RequestResult:
+        #self.__passwordManager.updatePassword(requestInfo.request)
+        self.__db.updatePassword()
+
+    def removePassword(self, requestInfo) -> RequestResult:
+        #self.__passwordManager.removePassword(requestInfo.request)
+        self.__db.deletePassword()

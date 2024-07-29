@@ -6,9 +6,7 @@ LISTEN_PORT = 90
 class Server:
     def __init__(self) -> None:
         self.__sockets = {}
-        #self.__handlerFactory = 
-        #self.__db = 
-    #
+    
     def run(self) -> None:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             server_address = ('', LISTEN_PORT)
