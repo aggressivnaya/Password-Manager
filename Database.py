@@ -48,8 +48,8 @@ class Database():
         users = [row[0] for row in rows]
         return users
 
-    def getPasswords(self) -> list:
-        self.__cursor.execute('SELECT password FROM passwords')
+    def getPasswords(self, username) -> list:
+        self.__cursor.execute('SELECT password FROM passwords WHERE username = ? ',(username))
         rows = self.__cursor.fetchall()
 
         # Extract passwords into a list of strings
