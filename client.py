@@ -1,0 +1,43 @@
+import socket
+import RequestHandler as rh
+from enum import Enum
+
+SERVER_ADDRESS = '127.0.0.1'
+SERVER_PORT = 90
+
+class Messsages(Enum): 
+    LOGIN = '101[]'
+    SIGNUP = '102[alice,123,alice@]'
+    LOGOUT = '107[alice]'
+    ADDPASSWORD = '103[12345]'
+    GETPASSWORDS = '106[alice]'
+
+def sendMessage(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((SERVER_ADDRESS, SERVER_PORT))
+        sock.sendall(message.encode())
+        response = sock.recv(1024)
+        print(f"Received response: {response.decode()}")
+
+def msgs(i) -> str:
+    if i == 1:
+        return Messsages.LOGIN
+    elif i == 2:
+        return Messsages.SIGNUP
+    elif i == 3:
+        return Messsages.ADDPASSWORD
+    elif i == 4:
+        return Messsages.GETPASSWORDS
+    elif i == 5:
+        return Messsages.LOGOUT
+
+def main():
+    i = 2
+    while True:
+        message = msgs(i)
+        print(message.)
+        sendMessage(message)
+        i += 1
+
+if __name__ == "__main__":
+    main()

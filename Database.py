@@ -2,7 +2,8 @@ import sqlite3
 
 class Database():
     def __init__(self) -> None:
-        self.__conn = sqlite3.connect('passwordMangerDB.db')
+        #self.__conn = sqlite3.connect('passwordMangerDB.db')
+        self.__conn = sqlite3.connect('testing.db')
         self.__cursor = self.__conn.cursor()
         self.__cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (

@@ -56,8 +56,15 @@ class Server:
 
 
 def convertRecievedMsg(msg) -> rh.RequestInfo:
-    splittedMsg =  msg.split('{')
+    splittedMsg =  msg.split('[')
     requestInfo = rh.RequestInfo()
     requestInfo.requestId = splittedMsg[0]
-    requestInfo.request = splittedMsg[1].replace('}','')
+    requestInfo.request = splittedMsg[1].replace(']','')
     return requestInfo
+
+def main():
+    server = Server()
+    server.run()
+
+if __name__ == "__main__":
+    main()
