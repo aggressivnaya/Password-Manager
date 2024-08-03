@@ -27,6 +27,8 @@ class Server:
                             client_soc, client_address = s.accept()
                             print(f"New connection from {client_address}")
                             self.__sockets[client_soc] = rh.LoginRequestHandler()
+                            print("did loginRequestHandler")
+                            s.sendall("hello".encode())
                         else:
                             # Handle data from the connected clients
                             msg = s.recv(1024).decode()
@@ -44,6 +46,7 @@ class Server:
                                     if requestResult.newHandler == None:
                                         raise Exception("new handler is none")
                                     
+                                    print(requestResult.response)
                                     s.sendall(requestResult.response.encode())
                                     self.__sockets[client_soc] = requestResult.newHandler
                             else:

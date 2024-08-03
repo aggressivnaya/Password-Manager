@@ -41,7 +41,7 @@ class IRequestHandler():
 
 
 class LoginRequestHandler(IRequestHandler):
-    def __init__(self, currUser) -> None:
+    def __init__(self) -> None:
         self.__db = db.Database()
 
     def isRequestRelevant(self, requestInfo) -> bool:

@@ -12,13 +12,6 @@ class Messsages(Enum):
     ADDPASSWORD = '103[12345]'
     GETPASSWORDS = '106[alice]'
 
-def sendMessage(message):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect((SERVER_ADDRESS, SERVER_PORT))
-        sock.sendall(message.encode())
-        response = sock.recv(1024)
-        print(f"Received response: {response.decode()}")
-
 def msgs(i) -> str:
     if i == 1:
         return Messsages.LOGIN.value
@@ -33,11 +26,17 @@ def msgs(i) -> str:
 
 def main():
     i = 2
-    while i != 5:
-        message = msgs(i)
-        print(message)
-        sendMessage(message)
-        i += 1
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((SERVER_ADDRESS, SERVER_PORT))
+        response = sock.recv(1024)
+        while i != 5:
+            message = msgs(i)
+            print(message)
+            sock.sendall(message.encode())
+            response = sock.recv(1024)
+            print(f"Received response: {response.decode()}")
+            i += 1
+    
 
 if __name__ == "__main__":
     main()
