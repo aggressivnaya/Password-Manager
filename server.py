@@ -33,7 +33,7 @@ class Server:
                             print(f"Received data: {msg} from {s.getpeername()}")
                             if msg:
                                 requestInfo = convertRecievedMsg(msg)
-                                if requestInfo.requestId == rh.Request.LOGOUT:
+                                if requestInfo.requestId == rh.Request.LOGOUT.value:
                                     print(f"Closing connection to {s.getpeername()}")
                                     self.__sockets.remove(s)
                                     s.close()

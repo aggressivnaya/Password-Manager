@@ -21,21 +21,21 @@ def sendMessage(message):
 
 def msgs(i) -> str:
     if i == 1:
-        return Messsages.LOGIN
+        return Messsages.LOGIN.value
     elif i == 2:
-        return Messsages.SIGNUP
+        return Messsages.SIGNUP.value
     elif i == 3:
-        return Messsages.ADDPASSWORD
+        return Messsages.ADDPASSWORD.value
     elif i == 4:
-        return Messsages.GETPASSWORDS
+        return Messsages.GETPASSWORDS.value
     elif i == 5:
-        return Messsages.LOGOUT
+        return Messsages.LOGOUT.value
 
 def main():
     i = 2
-    while True:
+    while i != 5:
         message = msgs(i)
-        print(message.)
+        print(message)
         sendMessage(message)
         i += 1
 
