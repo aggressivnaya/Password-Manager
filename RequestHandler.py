@@ -1,6 +1,4 @@
 from enum import Enum
-import Managers as M
-import Database as db
 
 class Request(Enum):
     LOGIN = 101
@@ -23,12 +21,12 @@ class Response(Enum):
 
 class RequestInfo():
     def __init__(self, requestId, request) -> None:
-        self.requestId = requestId
+        self.requestId = int(requestId)
         self.request = request
 
 class RequestResult():
     def __init__(self, requestId, response, newHandler) -> None:
-        self.requestId = requestId
+        self.requestId = requestId 
         self.response = response
         self.newHandler = newHandler
 
@@ -41,40 +39,44 @@ class IRequestHandler():
 
 
 class LoginRequestHandler(IRequestHandler):
-    def __init__(self) -> None:
-        self.__db = db.Database()
+    def __init__(self, db) -> None:
+        self.__db = db
 
-    def isRequestRelevant(self, requestInfo) -> bool:
-        return requestInfo.requestId == Request.LOGIN or requestInfo.requestId == Request.SIGNUP
+    def isRequestRelevant(self, requestId) -> bool:
+        return requestId == Request.LOGIN.value or requestId == Request.SIGNUP.value
 
     def handleRequest(self, requestInfo) -> RequestResult:
-        if(requestInfo.requestId == Request.LOGIN):
-            return self.login()
-        elif(requestInfo.requestId == Request.SIGNUP):
-            return self.signup()
+        print("in loginrequestHandler")
+        
+        if requestInfo.requestId == Request.LOGIN.value:
+            return self.login(requestInfo)
+        elif requestInfo.requestId == Request.SIGNUP.value :
+            return self.signup(requestInfo)
         else:
             pass
     
     def login(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
+        print("login func")
         if self.__db.doesUserExist(info[0]) and self.__db.doesPasswordMatch(info[0], info[1]):
-            return RequestResult(Response.LOGIN.value, PasswordRequestHandler(info[0]))
+            return RequestResult(Response.LOGIN.value, PasswordRequestHandler(info[0], self.__db))
         else:
             return RequestResult(Response.ERROR.value, None)
 
     def signup(self, requestInfo) -> RequestResult:
+        print("in signup func")
         info = requestInfo.request.split(',')
-        if not self.__db.doesUserExist(info[0]):
-            self.__db.addUser(info[0],info[1], info[2])
-            return RequestResult(Response.LOGIN.value, PasswordRequestHandler(info[0]))
+        if self.__db.doesUserExist(info[0]) == False:
+            #self.__db.addUser(info[0],info[1], info[2])
+            return RequestResult(Response.SIGNUP.value, "202[signin completed]",PasswordRequestHandler(info[0], self.__db))
         else:
             return RequestResult(Response.ERROR.value, None)
 
 
 class PasswordRequestHandler(IRequestHandler):
-    def __init__(self, currUser) -> None:
+    def __init__(self, currUser, db) -> None:
         self.__user = currUser
-        self.__db = db.Database()
+        self.__db = db
     
     def isRequestRelevant(self, requestInfo) -> bool:
         return requestInfo.requestId == Request.UPDATE.value or requestInfo.requestId == Request.ADD.value or requestInfo.requestId == Request.REMOVE.value or requestInfo.requestId == Request.GETPASSWORDS.value
@@ -93,22 +95,22 @@ class PasswordRequestHandler(IRequestHandler):
 
     def getAllPasswords(self) -> RequestResult:
         passwordsLst = self.__db.getPasswords(self.__user)
-        return self.convertToRequestResult(self, Response.GETPASSWORDS.value, passwordsLst)
+        return self.convertToRequestResult(Response.GETPASSWORDS.value, passwordsLst)
 
     def addPassword(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
         passwordsLst = self.__db.addPassword(self.__user, info[0])
-        return self.convertToRequestResult(self, Response.ADD.value, passwordsLst)
+        return self.convertToRequestResult(Response.ADD.value, passwordsLst)
 
     def updatePassword(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
         passwordsLst = self.__db.updatePassword(self.__user, info[0], info[1])
-        return self.convertToRequestResult(self, Response.UPDATE.value, passwordsLst)
+        return self.convertToRequestResult(Response.UPDATE.value, passwordsLst)
 
     def removePassword(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
         passwordsLst = self.__db.deletePassword(self.__user, info[0])
-        return self.convertToRequestResult(self, Response.REMOVE.value, passwordsLst)
+        return self.convertToRequestResult(Response.REMOVE.value, passwordsLst)
     
     def convertToRequestResult(self, requestId, data) -> RequestResult:
         requestRes = RequestResult()

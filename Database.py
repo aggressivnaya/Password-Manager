@@ -26,7 +26,7 @@ class Database():
     def doesUserExist(self, username) -> bool:
         self.__cursor.execute('''
         SELECT username FROM users
-        WHERE username = ? ''',(username))
+        WHERE username = ?''', (username,))
         rows = self.__cursor.fetchall()
         users = [row[0] for row in rows]
 

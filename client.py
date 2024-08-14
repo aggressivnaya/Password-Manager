@@ -1,12 +1,12 @@
 import socket
-import RequestHandler as rh
+import requestHandler as rh
 from enum import Enum
 
 SERVER_ADDRESS = '127.0.0.1'
 SERVER_PORT = 90
 
 class Messsages(Enum): 
-    LOGIN = '101[]'
+    LOGIN = '101[alice,123]'
     SIGNUP = '102[alice,123,alice@]'
     LOGOUT = '107[alice]'
     ADDPASSWORD = '103[12345]'
@@ -27,15 +27,23 @@ def msgs(i) -> str:
 def main():
     i = 2
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect((SERVER_ADDRESS, SERVER_PORT))
-        response = sock.recv(1024)
-        while i != 5:
-            message = msgs(i)
-            print(message)
-            sock.sendall(message.encode())
-            response = sock.recv(1024)
-            print(f"Received response: {response.decode()}")
-            i += 1
+        try:
+            sock.connect((SERVER_ADDRESS, SERVER_PORT))
+            print(f"Connected to server at {SERVER_ADDRESS}:{SERVER_PORT}")
+
+            while i < 6:
+                # Send a message to the server
+                message = msgs(i)
+                print(f"Sending message: {message}")
+                sock.sendall(message.encode())
+
+                # Receive the response from the server
+                response = sock.recv(1024).decode()
+                print(f"Received response: {response}")
+                i += 1
+        except Exception as e:
+            print(f"Error: {e}")
+
     
 
 if __name__ == "__main__":
