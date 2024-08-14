@@ -67,7 +67,7 @@ class LoginRequestHandler(IRequestHandler):
         print("in signup func")
         info = requestInfo.request.split(',')
         if self.__db.doesUserExist(info[0]) == False:
-            #self.__db.addUser(info[0],info[1], info[2])
+            self.__db.addUser(info[0],info[1], info[2])
             return RequestResult(Response.SIGNUP.value, "202[signin completed]",PasswordRequestHandler(info[0], self.__db))
         else:
             return RequestResult(Response.ERROR.value, None)
@@ -78,8 +78,8 @@ class PasswordRequestHandler(IRequestHandler):
         self.__user = currUser
         self.__db = db
     
-    def isRequestRelevant(self, requestInfo) -> bool:
-        return requestInfo.requestId == Request.UPDATE.value or requestInfo.requestId == Request.ADD.value or requestInfo.requestId == Request.REMOVE.value or requestInfo.requestId == Request.GETPASSWORDS.value
+    def isRequestRelevant(self, requestId) -> bool:
+        return requestId == Request.UPDATE.value or requestId == Request.ADD.value or requestId == Request.REMOVE.value or requestId == Request.GETPASSWORDS.value
 
     def handleRequest(self, requestInfo) -> RequestResult:
         if requestInfo.requestId == Request.ADD.value:

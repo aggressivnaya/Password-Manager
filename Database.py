@@ -35,7 +35,7 @@ class Database():
     def doesPasswordMatch(self, username, enteredPass) -> bool:
         self.__cursor.execute('''
         SELECT password FROM users
-        WHERE username = ? AND password = ? ''',(username, enteredPass))
+        WHERE username = ? AND password = ? ''',(username, enteredPass,))
         rows = self.__cursor.fetchall()
         passwords = [row[1] for row in rows]
 
@@ -50,7 +50,7 @@ class Database():
         return users
 
     def getPasswords(self, username) -> list:
-        self.__cursor.execute('SELECT password FROM passwords WHERE username = ? ',(username))
+        self.__cursor.execute('SELECT password FROM passwords WHERE username = ? ',(username,))
         rows = self.__cursor.fetchall()
 
         # Extract passwords into a list of strings
@@ -61,14 +61,14 @@ class Database():
         self.__cursor.execute('''
         INSERT INTO users (username, password, email)
         VALUES (?, ?, ?)
-        ''', (username, password, email))
+        ''', (username, password, email,))
         self.__conn.commit()
 
     def addPassword(self, username, password):
         self.__cursor.execute('''
         INSERT INTO passwords (password, username)
         VALUES (?, ?)
-        ''', (password, username))
+        ''', (password, username,))
         self.__conn.commit()
 
     def updatePassword(self, username, currPassword, newPassword):
@@ -76,12 +76,12 @@ class Database():
         UPDATE passwords
         SET password = ?
         WHERE password = ? AND username = ?
-        ''', (newPassword, currPassword, username))
+        ''', (newPassword, currPassword, username,))
         self.__conn.commit()
 
     def deletePassword(self, username, password):
         self.cursor.execute('''
         DELETE FROM passwords
         WHERE service = ? AND username = ?
-        ''',(password, username))
+        ''',(password, username,))
         self.__conn.commit()
