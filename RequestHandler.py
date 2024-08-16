@@ -20,11 +20,22 @@ class Response(Enum):
     ERROR = 500
 
 class RequestInfo():
+    '''
+    msg that we getting from client
+    requestId : msg type
+    requst : components of the msg
+    '''
     def __init__(self, requestId, request) -> None:
         self.requestId = int(requestId)
         self.request = request
 
 class RequestResult():
+    '''
+    msg that we are sending to client
+    requestId : msg type
+    response : msg from the server
+    newHandler : the next handler
+    '''
     def __init__(self, requestId, response, newHandler) -> None:
         self.requestId = requestId 
         self.response = response
@@ -39,6 +50,9 @@ class IRequestHandler():
 
 
 class LoginRequestHandler(IRequestHandler):
+    '''
+    this class is managing all the func that bind with login
+    '''
     def __init__(self, db) -> None:
         self.__db = db
 
@@ -46,34 +60,33 @@ class LoginRequestHandler(IRequestHandler):
         return requestId == Request.LOGIN.value or requestId == Request.SIGNUP.value
 
     def handleRequest(self, requestInfo) -> RequestResult:
-        print("in loginrequestHandler")
-        
         if requestInfo.requestId == Request.LOGIN.value:
             return self.login(requestInfo)
-        elif requestInfo.requestId == Request.SIGNUP.value :
+        elif requestInfo.requestId == Request.SIGNUP.value:
             return self.signup(requestInfo)
         else:
-            pass
+            raise Exception("something went wrong in login handler")
     
     def login(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
-        print("login func")
         if self.__db.doesUserExist(info[0]) and self.__db.doesPasswordMatch(info[0], info[1]):
-            return RequestResult(Response.LOGIN.value, PasswordRequestHandler(info[0], self.__db))
+            return RequestResult(Response.LOGIN.value, "201[logged in succeful]",PasswordRequestHandler(info[0], self.__db))
         else:
-            return RequestResult(Response.ERROR.value, None)
+            return RequestResult(Response.ERROR.value, "500[error of login]",None)
 
     def signup(self, requestInfo) -> RequestResult:
-        print("in signup func")
         info = requestInfo.request.split(',')
         if self.__db.doesUserExist(info[0]) == False:
             self.__db.addUser(info[0],info[1], info[2])
-            return RequestResult(Response.SIGNUP.value, "202[signin completed]",PasswordRequestHandler(info[0], self.__db))
+            return RequestResult(Response.SIGNUP.value, "202[signin completed]", PasswordRequestHandler(info[0], self.__db))
         else:
-            return RequestResult(Response.ERROR.value, None)
+            return RequestResult(Response.ERROR.value, "500[error of signup]",None)
 
 
 class PasswordRequestHandler(IRequestHandler):
+    '''
+    this class is managing all the func that bind with passwords
+    '''
     def __init__(self, currUser, db) -> None:
         self.__user = currUser
         self.__db = db
@@ -91,7 +104,7 @@ class PasswordRequestHandler(IRequestHandler):
         elif requestInfo.requestId == Request.GETPASSWORDS.value:
             return self.getAllPasswords()
         else:
-            pass
+            raise Exception("something went wrong in password handler")
 
     def getAllPasswords(self) -> RequestResult:
         passwordsLst = self.__db.getPasswords(self.__user)
@@ -113,8 +126,6 @@ class PasswordRequestHandler(IRequestHandler):
         return self.convertToRequestResult(Response.REMOVE.value, passwordsLst)
     
     def convertToRequestResult(self, requestId, data) -> RequestResult:
-        requestRes = RequestResult()
-        requestRes.requestId = requestId
-        requestRes.response = ','.join(data)
-        requestRes.newHandler = PasswordRequestHandler(self.__user)
+        print(data)
+        requestRes = RequestResult(requestId, ','.join(data), PasswordRequestHandler(self.__user, self.__db))
         return requestRes

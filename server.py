@@ -6,6 +6,9 @@ import requestHandler as rh
 LISTEN_PORT = 90
 
 def convertRecievedMsg(msg) -> rh.RequestInfo:
+    '''
+    getting the request from the client and converting to RequestInfo
+    '''
     splittedMsg = msg.split('[')
     requestId = int(splittedMsg[0])
     request = splittedMsg[1].replace(']', '')
@@ -38,7 +41,6 @@ class Server:
                             print(f"New connection from {client_address}")
                             self.__sockets[client_soc] = rh.LoginRequestHandler(self.__db)
                             sockets.append(client_soc)
-                            print("LoginRequestHandler initialized")
                             
                         else:
                             # Handle data from the connected clients
@@ -49,20 +51,15 @@ class Server:
                                 
                                 if requestInfo.requestId == rh.Request.LOGOUT.value:
                                     print(f"Closing connection to {s.getpeername()}")
-                                    self.__sockets.remove(s)
+                                    sockets.remove(s)
+                                    self.__sockets.pop(s)
                                     s.close()
                                     continue
                                 
-                                print("going to check if the requestid is relevant")
                                 handler = self.__sockets[s]
-                                print(f"handler type: {type(handler)}")
-                                #need a lot of time to do this if
                                 if handler.isRequestRelevant(requestInfo.requestId):
                                     print(f"request is relevant to handler:{type(handler)}")
                                     requestResult = handler.handleRequest(requestInfo)
-                                    print(type(requestResult))
-                                    print("getted request result")
-                                    print(requestResult.requestId)
                                     if requestResult.requestId == rh.Response.ERROR.value:
                                         raise Exception("new handler is none")
                                     
@@ -73,10 +70,13 @@ class Server:
                                 # If no data is received, the client has closed the connection
                                 print(f"Closing connection to {s.getpeername()}")
                                 sockets.remove(s)
-                                del self.__sockets[s]
+                                self.__sockets.pop(s)
                                 s.close()
         except Exception as e:
             print(e)
+            sockets.pop(s)
+            self.__sockets.pop(s)
+            s.close()
 
 def main():
     server = Server()

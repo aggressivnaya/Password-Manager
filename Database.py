@@ -3,25 +3,34 @@ import sqlite3
 class Database():
     def __init__(self) -> None:
         #self.__conn = sqlite3.connect('passwordMangerDB.db')
-        self.__conn = sqlite3.connect('testing.db')
+        self.__conn = sqlite3.connect('testing2.db')
         self.__cursor = self.__conn.cursor()
-        self.__cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            username TEXT NOT NULL,
-            password TEXT NOT NULL,
-            email TEXT NOT NULL,
-            PRIMARY KEY (username)
-        )''')
 
         self.__cursor.execute('''
-        CREATE TABLE IF NOT EXISTS passwords (
-            password TEXT NOT NULL,
-            username TEXT NOT NULL,
-            PRIMARY KEY (username),
-            FOREIGN KEY (username) REFERENCES users(username)
-        )''')
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL,
+                email TEXT NOT NULL
+            )''') 
+
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS passwords (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                password TEXT NOT NULL,
+                username TEXT NOT NULL 
+            )''')
 
         self.__conn.commit()
+
+    def findPasswordId(self, password) -> int :
+        self.__cursor.execute('''
+        SELECT id FROM passwords WHERE password = ?
+        ''', (password,))
+        rows = self.__cursor.fetchall()
+        passwordId = [row[0] for row in rows]
+
+        return passwordId[0]
 
     def doesUserExist(self, username) -> bool:
         self.__cursor.execute('''
@@ -37,24 +46,22 @@ class Database():
         SELECT password FROM users
         WHERE username = ? AND password = ? ''',(username, enteredPass,))
         rows = self.__cursor.fetchall()
-        passwords = [row[1] for row in rows]
+        passwords = [row[0] for row in rows]
 
         return len(passwords) > 0
 
     def getUsers(self) -> list:
         self.__cursor.execute('SELECT username FROM users')
         rows = self.__cursor.fetchall()
-
-        # Extract users into a list of strings
         users = [row[0] for row in rows]
+
         return users
 
     def getPasswords(self, username) -> list:
-        self.__cursor.execute('SELECT password FROM passwords WHERE username = ? ',(username,))
+        self.__cursor.execute('''SELECT password FROM passwords WHERE username = ? ''',(username,))
         rows = self.__cursor.fetchall()
-
-        # Extract passwords into a list of strings
         passwords = [row[0] for row in rows]
+
         return passwords
 
     def addUser(self, username, password, email):
@@ -68,20 +75,29 @@ class Database():
         self.__cursor.execute('''
         INSERT INTO passwords (password, username)
         VALUES (?, ?)
-        ''', (password, username,))
+        ''', (password, username))
         self.__conn.commit()
+
+        return self.getPasswords(username)
 
     def updatePassword(self, username, currPassword, newPassword):
-        self.cursor.execute('''
+        print("upd func in db")
+        passId = self.findPasswordId(currPassword)
+        self.__cursor.execute('''
         UPDATE passwords
         SET password = ?
-        WHERE password = ? AND username = ?
-        ''', (newPassword, currPassword, username,))
+        WHERE id = ?
+        ''', (newPassword, passId,))
         self.__conn.commit()
 
+        return self.getPasswords(username)
+
     def deletePassword(self, username, password):
-        self.cursor.execute('''
+        print("del func in db")
+        self.__cursor.execute('''
         DELETE FROM passwords
-        WHERE service = ? AND username = ?
+        WHERE password = ? AND username = ?
         ''',(password, username,))
         self.__conn.commit()
+
+        return self.getPasswords(username)
