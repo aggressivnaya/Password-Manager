@@ -15,6 +15,12 @@ def convertRecievedMsg(msg) -> rh.RequestInfo:
     print(f"requestId: {requestId}, request: {request}")
     return rh.RequestInfo(requestId, request)
 
+def convertToSend(requestResult) -> str:
+    msgToSend = str(requestResult.requestId) + "[" + requestResult.response + "]" 
+    print(msgToSend)
+    return msgToSend
+    
+
 class Server:
     def __init__(self) -> None:
         self.__db = db.Database()
@@ -49,34 +55,30 @@ class Server:
                             if msg:
                                 requestInfo = convertRecievedMsg(msg)
                                 
-                                if requestInfo.requestId == rh.Request.LOGOUT.value:
-                                    print(f"Closing connection to {s.getpeername()}")
-                                    sockets.remove(s)
-                                    self.__sockets.pop(s)
-                                    s.close()
-                                    continue
-                                
                                 handler = self.__sockets[s]
                                 if handler.isRequestRelevant(requestInfo.requestId):
                                     print(f"request is relevant to handler:{type(handler)}")
                                     requestResult = handler.handleRequest(requestInfo)
-                                    if requestResult.requestId == rh.Response.ERROR.value:
-                                        raise Exception("new handler is none")
-                                    
-                                    print(requestResult.response)
-                                    s.sendall(requestResult.response.encode())
-                                    self.__sockets[s] = requestResult.newHandler
+                                    s.sendall(convertToSend(requestResult).encode())
+                                    if requestInfo.requestId == rh.Request.LOGOUT.value:
+                                        self.closeSocket(sockets, s)
+                                        continue
+                                    else:
+                                        self.__sockets[s] = requestResult.newHandler
                             else:
                                 # If no data is received, the client has closed the connection
-                                print(f"Closing connection to {s.getpeername()}")
-                                sockets.remove(s)
-                                self.__sockets.pop(s)
-                                s.close()
+                                self.closeSocket(sockets, s)                              
         except Exception as e:
             print(e)
-            sockets.pop(s)
-            self.__sockets.pop(s)
-            s.close()
+            self.closeSocket(sockets, s)
+        except KeyboardInterrupt as key:
+            print(key)
+
+    def closeSocket(self, sockets ,s):
+        print(f"Closing connection to {s.getpeername()}")
+        sockets.remove(s)
+        self.__sockets.pop(s)
+        s.close()
 
 def main():
     server = Server()

@@ -1,4 +1,5 @@
 import sqlite3
+import enum as Enum
 
 class Database():
     def __init__(self) -> None:
@@ -81,7 +82,6 @@ class Database():
         return self.getPasswords(username)
 
     def updatePassword(self, username, currPassword, newPassword):
-        print("upd func in db")
         passId = self.findPasswordId(currPassword)
         self.__cursor.execute('''
         UPDATE passwords
@@ -93,7 +93,6 @@ class Database():
         return self.getPasswords(username)
 
     def deletePassword(self, username, password):
-        print("del func in db")
         self.__cursor.execute('''
         DELETE FROM passwords
         WHERE password = ? AND username = ?

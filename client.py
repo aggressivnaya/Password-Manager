@@ -17,15 +17,15 @@ class Messsages(Enum):
 def msgs(i) -> str:
     if i == 1:
         return Messsages.LOGIN.value
-    elif i == 2:
+    elif i == 5:
         return Messsages.ADDPASSWORD.value
-    elif i == 3:
+    elif i == 6:
         return Messsages.DELETEPASSWORD.value
     elif i == 4:
         return Messsages.UPDATEPASSWORD.value
-    elif i == 5:
+    elif i == 2:
         return Messsages.GETPASSWORDS.value
-    elif i == 6:
+    elif i == 3:
         return Messsages.LOGOUT.value
 
 def main():
@@ -35,7 +35,7 @@ def main():
             sock.connect((SERVER_ADDRESS, SERVER_PORT))
             print(f"Connected to server at {SERVER_ADDRESS}:{SERVER_PORT}")
 
-            while i < 7:
+            while i < 4:
                 # Send a message to the server
                 message = msgs(i)
                 print(f"Sending message: {message}")

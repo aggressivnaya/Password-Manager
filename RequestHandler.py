@@ -1,5 +1,13 @@
 from enum import Enum
 
+class RHerrors(Enum):
+    LOGIN = '500[error of login]'
+    SIGNUP = '500[error of signup]'
+
+class RHexception(Enum):
+    ELOGINHANDLER = 'something went wrong in login handler'
+    EPASSWORDHANDLER = 'something went wrong in password handler'
+
 class Request(Enum):
     LOGIN = 101
     SIGNUP = 102
@@ -17,6 +25,7 @@ class Response(Enum):
     UPDATE = 204
     REMOVE = 205
     GETPASSWORDS = 206
+    LOGOUT = 207
     ERROR = 500
 
 class RequestInfo():
@@ -48,6 +57,9 @@ class IRequestHandler():
     def handlerRequest(self, requestInfo) -> RequestResult:
         pass
 
+    def logoutRequest(self) -> RequestResult:
+        return RequestResult(Response.LOGOUT.value, "", None)
+
 
 class LoginRequestHandler(IRequestHandler):
     '''
@@ -57,30 +69,32 @@ class LoginRequestHandler(IRequestHandler):
         self.__db = db
 
     def isRequestRelevant(self, requestId) -> bool:
-        return requestId == Request.LOGIN.value or requestId == Request.SIGNUP.value
+        return requestId == Request.LOGIN.value or requestId == Request.SIGNUP.value or requestId == Request.LOGOUT.value
 
     def handleRequest(self, requestInfo) -> RequestResult:
         if requestInfo.requestId == Request.LOGIN.value:
             return self.login(requestInfo)
         elif requestInfo.requestId == Request.SIGNUP.value:
             return self.signup(requestInfo)
+        elif requestInfo.requestId == Request.LOGOUT.value:
+            return IRequestHandler.logoutRequest(self)
         else:
-            raise Exception("something went wrong in login handler")
+            raise Exception(RHexception.ELOGINHANDLER.value)
     
     def login(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
         if self.__db.doesUserExist(info[0]) and self.__db.doesPasswordMatch(info[0], info[1]):
-            return RequestResult(Response.LOGIN.value, "201[logged in succeful]",PasswordRequestHandler(info[0], self.__db))
+            return RequestResult(Response.LOGIN.value, "",PasswordRequestHandler(info[0], self.__db))
         else:
-            return RequestResult(Response.ERROR.value, "500[error of login]",None)
+            return RequestResult(Response.ERROR.value, RHerrors.LOGIN.value ,None)
 
     def signup(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
         if self.__db.doesUserExist(info[0]) == False:
             self.__db.addUser(info[0],info[1], info[2])
-            return RequestResult(Response.SIGNUP.value, "202[signin completed]", PasswordRequestHandler(info[0], self.__db))
+            return RequestResult(Response.SIGNUP.value, "", PasswordRequestHandler(info[0], self.__db))
         else:
-            return RequestResult(Response.ERROR.value, "500[error of signup]",None)
+            return RequestResult(Response.ERROR.value, RHerrors.SIGNUP.value ,None)
 
 
 class PasswordRequestHandler(IRequestHandler):
@@ -92,7 +106,7 @@ class PasswordRequestHandler(IRequestHandler):
         self.__db = db
     
     def isRequestRelevant(self, requestId) -> bool:
-        return requestId == Request.UPDATE.value or requestId == Request.ADD.value or requestId == Request.REMOVE.value or requestId == Request.GETPASSWORDS.value
+        return requestId == Request.UPDATE.value or requestId == Request.ADD.value or requestId == Request.REMOVE.value or requestId == Request.GETPASSWORDS.value or requestId == Request.LOGOUT.value
 
     def handleRequest(self, requestInfo) -> RequestResult:
         if requestInfo.requestId == Request.ADD.value:
@@ -103,8 +117,10 @@ class PasswordRequestHandler(IRequestHandler):
             return self.removePassword(requestInfo)
         elif requestInfo.requestId == Request.GETPASSWORDS.value:
             return self.getAllPasswords()
+        elif requestInfo.requestId == Request.LOGOUT.value:
+            return IRequestHandler.logoutRequest(self)
         else:
-            raise Exception("something went wrong in password handler")
+            raise Exception(RHexception.EPASSWORDHANDLER.value)
 
     def getAllPasswords(self) -> RequestResult:
         passwordsLst = self.__db.getPasswords(self.__user)
