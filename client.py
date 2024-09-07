@@ -9,17 +9,17 @@ class Messsages(Enum):
     LOGIN = '101[alice,123]'
     SIGNUP = '102[alice,123,alice@]'
     LOGOUT = '107[alice]'
-    ADDPASSWORD = '103[1415]'
+    ADDPASSWORD = '103[1415182673969642]'
     GETPASSWORDS = '106[alice]'
-    UPDATEPASSWORD = '104[123415,12]'
+    UPDATEPASSWORD = '104[1415182673969642,074507528342948923840]'
     DELETEPASSWORD = '105[1415]'
 
 def msgs(i) -> str:
     if i == 1:
         return Messsages.LOGIN.value
-    elif i == 6:
-        return Messsages.ADDPASSWORD.value
     elif i == 3:
+        return Messsages.ADDPASSWORD.value
+    elif i == 6:
         return Messsages.DELETEPASSWORD.value
     elif i == 5:
         return Messsages.UPDATEPASSWORD.value

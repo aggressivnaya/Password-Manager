@@ -64,10 +64,11 @@ class Database():
         self.__cursor.execute('''SELECT password FROM passwords WHERE username = ? ''',(username,))
         rows = self.__cursor.fetchall()
         passwords = [row[0] for row in rows]
+        decodedPasswords = []
         for i in passwords:
-            i = e.decryption(i)
+            decodedPasswords.append(str(e.decryption(i)))
 
-        return passwords
+        return decodedPasswords
 
     def addUser(self, username, password, email):
         self.__cursor.execute('''
@@ -83,7 +84,7 @@ class Database():
         VALUES (?, ?)
         ''', (encryptedPassword, username))
         self.__conn.commit()
-
+        
         return self.getPasswords(username)
 
     def updatePassword(self, username, currPassword, newPassword):

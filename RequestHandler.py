@@ -1,8 +1,8 @@
 from enum import Enum
 
 class RHerrors(Enum):
-    LOGIN = '500[error of login]'
-    SIGNUP = '500[error of signup]'
+    LOGIN = 'error of login'
+    SIGNUP = 'error of signup'
 
 class RHexception(Enum):
     ELOGINHANDLER = 'something went wrong in login handler'
@@ -90,6 +90,7 @@ class LoginRequestHandler(IRequestHandler):
 
     def signup(self, requestInfo) -> RequestResult:
         info = requestInfo.request.split(',')
+        print(self.__db.doesUserExist(info[0]))
         if self.__db.doesUserExist(info[0]) == False:
             self.__db.addUser(info[0],info[1], info[2])
             return RequestResult(Response.SIGNUP.value, "", PasswordRequestHandler(info[0], self.__db))

@@ -1,10 +1,12 @@
-import aes, os
+import os
+from aes import AES, encrypt, decrypt
 
 key = os.urandom(16)
 iv = os.urandom(16)
+aess = AES(b'\x00' * 16)
 
-def decryption(password) -> str:
-    return aes.AES(key).decrypt_ctr(password, iv)
+def decryption(password):
+    return (aess.decrypt_block(password)).decode('utf-8')
 
-def encryption(password) -> str:
-    return aes.AES(key).encrypt_ctr(password, iv)
+def encryption(password):
+    return aess.encrypt_block(password.encode('utf-8'))

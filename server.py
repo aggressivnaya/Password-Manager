@@ -57,7 +57,7 @@ class Server:
                                 
                                 handler = self.__sockets[s]
                                 if handler.isRequestRelevant(requestInfo.requestId):
-                                    print(f"request is relevant to handler:{type(handler)}")
+                                    #print(f"request is relevant to handler:{type(handler)}")
                                     requestResult = handler.handleRequest(requestInfo)
                                     s.sendall(convertToSend(requestResult).encode())
                                     if requestInfo.requestId == rh.Request.LOGOUT.value:
