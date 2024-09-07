@@ -1,5 +1,6 @@
 import sqlite3
 import enum as Enum
+import EncryptionDecryption as e
 
 class Database():
     def __init__(self) -> None:
@@ -25,9 +26,10 @@ class Database():
         self.__conn.commit()
 
     def findPasswordId(self, password) -> int :
+        encryptedPassword = e.encryption(password)
         self.__cursor.execute('''
         SELECT id FROM passwords WHERE password = ?
-        ''', (password,))
+        ''', (encryptedPassword,))
         rows = self.__cursor.fetchall()
         passwordId = [row[0] for row in rows]
 
@@ -62,6 +64,8 @@ class Database():
         self.__cursor.execute('''SELECT password FROM passwords WHERE username = ? ''',(username,))
         rows = self.__cursor.fetchall()
         passwords = [row[0] for row in rows]
+        for i in passwords:
+            i = e.decryption(i)
 
         return passwords
 
@@ -73,30 +77,34 @@ class Database():
         self.__conn.commit()
 
     def addPassword(self, username, password):
+        encryptedPassword = e.encryption(password)
         self.__cursor.execute('''
         INSERT INTO passwords (password, username)
         VALUES (?, ?)
-        ''', (password, username))
+        ''', (encryptedPassword, username))
         self.__conn.commit()
 
         return self.getPasswords(username)
 
     def updatePassword(self, username, currPassword, newPassword):
-        passId = self.findPasswordId(currPassword)
+        currEncryptedPassword = e.encryption(currPassword)
+        newEncryptedPassword = e.encryption(newPassword)
+        passId = self.findPasswordId(currEncryptedPassword)
         self.__cursor.execute('''
         UPDATE passwords
         SET password = ?
         WHERE id = ?
-        ''', (newPassword, passId,))
+        ''', (newEncryptedPassword, passId,))
         self.__conn.commit()
 
         return self.getPasswords(username)
 
     def deletePassword(self, username, password):
+        encryptedPassword = e.encryption(password)
         self.__cursor.execute('''
         DELETE FROM passwords
         WHERE password = ? AND username = ?
-        ''',(password, username,))
+        ''',(encryptedPassword, username,))
         self.__conn.commit()
 
         return self.getPasswords(username)
