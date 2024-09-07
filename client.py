@@ -11,21 +11,21 @@ class Messsages(Enum):
     LOGOUT = '107[alice]'
     ADDPASSWORD = '103[1415]'
     GETPASSWORDS = '106[alice]'
-    UPDATEPASSWORD = '104[123415, 12]'
+    UPDATEPASSWORD = '104[123415,12]'
     DELETEPASSWORD = '105[1415]'
 
 def msgs(i) -> str:
     if i == 1:
         return Messsages.LOGIN.value
-    elif i == 5:
-        return Messsages.ADDPASSWORD.value
     elif i == 6:
+        return Messsages.ADDPASSWORD.value
+    elif i == 3:
         return Messsages.DELETEPASSWORD.value
-    elif i == 4:
+    elif i == 5:
         return Messsages.UPDATEPASSWORD.value
     elif i == 2:
         return Messsages.GETPASSWORDS.value
-    elif i == 3:
+    elif i == 4:
         return Messsages.LOGOUT.value
 
 def main():
@@ -35,7 +35,7 @@ def main():
             sock.connect((SERVER_ADDRESS, SERVER_PORT))
             print(f"Connected to server at {SERVER_ADDRESS}:{SERVER_PORT}")
 
-            while i < 4:
+            while i < 5:
                 # Send a message to the server
                 message = msgs(i)
                 print(f"Sending message: {message}")
