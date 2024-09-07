@@ -34,6 +34,15 @@ class Database():
         passwordId = [row[0] for row in rows]
 
         return passwordId[0]
+    
+    def findPasswordById(self, passwordId) -> int :
+        self.__cursor.execute('''
+        SELECT id FROM passwords WHERE id = ?
+        ''', (passwordId,))
+        rows = self.__cursor.fetchall()
+        password = [row[0] for row in rows]
+
+        return str(e.decryption(password[0]))
 
     def doesUserExist(self, username) -> bool:
         self.__cursor.execute('''
@@ -87,15 +96,13 @@ class Database():
         
         return self.getPasswords(username)
 
-    def updatePassword(self, username, currPassword, newPassword):
-        currEncryptedPassword = e.encryption(currPassword)
+    def updatePassword(self, username, currPasswordID, newPassword):
         newEncryptedPassword = e.encryption(newPassword)
-        passId = self.findPasswordId(currEncryptedPassword)
         self.__cursor.execute('''
         UPDATE passwords
         SET password = ?
         WHERE id = ?
-        ''', (newEncryptedPassword, passId,))
+        ''', (newEncryptedPassword, currPasswordID,))
         self.__conn.commit()
 
         return self.getPasswords(username)

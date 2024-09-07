@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Password Master</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center">Password Master</h1>
+    {% if passwords|length < 1 %}
+    <h4 style="text-align: center">There are no password. Create one below!</h4>
+    {% else %}
+    <table>
+        <tr>
+            <th>Password</th>
+            <th>Actions</th>
+        </tr>
+        {% for password in passwords %}
+            <tr>
+                <td>{{ password.content }}</td>
+                <td>{{ password.date_created.date() }}</td>
+                <td>
+                    <a href="/delete/{{password.id}}">Delete</a>
+                    <br>
+                    <a href="/update/{{password.id}}">Update</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <div class="form">
+        <form action="/" method="POST">
+            <input type="text" name="content" id="content">
+            <input type="submit" value="Add Password">
+        </form>
+    </div>
+</div>
+{% endblock %}
