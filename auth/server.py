@@ -1,7 +1,8 @@
 import datetime, os
 from flask import Flask, request
 from aes import AES
-import database 
+#import database 
+from get_from_db import get
 
 server = Flask(__name__)
 aess = AES(b'\x00' * 16)
@@ -9,7 +10,7 @@ aess = AES(b'\x00' * 16)
 #config
 server.config["HOST"] = "127.0.0.1"
 server.config["AUTH_SVC_ADDRESS"] = '127.0.0.1:5000'
-db = database.Database()
+#db = database.Database()
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -17,13 +18,10 @@ def login():
     if not auth:
         return "missing credentials", 401
     
-    if db.doesUserExist(auth.username):
-        if db.doesPasswordMatch(auth.username, auth.password):
-            return createToken(auth.username, auth.password)
-        else:
-            return "invalid credentials", 401
-    else:#if user isn't exist
-        return "invalid credentials", 401
+    if get.login(auth.username, auth.password):
+        return createToken(auth.username, auth.password), 200
+    else:
+        return "invalid credentials", 401    
     
 @server.route('/signup', methods=['POST'])
 def signup():
@@ -31,14 +29,13 @@ def signup():
     if not auth:
         return "missing credentials", 401
     
-    if db.doesUserExist(auth.username):
-        return "invalid credentials", 401
+    if get.signup(auth.username, auth.password, "shhhh@"):
+        return createToken(auth.username, auth.password), 200
     else:
-        db.addUser(auth.username, auth.password, "shhhhhhh@")
-        return createToken(auth.username, auth.password)
+        return "invalid credentials", 401
 
 def createToken(username, password) -> str:
-    stringForToken = username + password + "." + str(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)) + "." + datetime.datetime.utcnow()
+    stringForToken = username + "." + password + "." + str(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)) + "." + datetime.datetime.utcnow()
     return aess.encrypt_block(stringForToken.encode('utf-8'))
 
 @server.route("/validate", methods=["POST"])

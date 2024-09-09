@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template, redirect, url_for, flash
 from validation import validate
 from auth_login import access
-import database as db
+#import database as db
+from get_from_db import get
+from update import updating_data
 
 server = Flask(__name__)
 
@@ -18,12 +20,12 @@ def index():
     if request.method == 'POST':
         try:
             password = request.form['content']
-            db.Database().addPassword(tokenData[0], password)
+            updating_data.addPassword(tokenData[0], password)
             return redirect('/')
         except:
             return 'There was an issue adding your task'
     else:
-        passwords = db.Database().getPasswords(tokenData[0])
+        passwords = get.getPasswords(tokenData[0])
         return render_template('index1.html', passwords=passwords)
 
 @server.route("/login", methods=["POST"])
@@ -56,11 +58,11 @@ def update(id):
         return err
     
     tokenData = access.split('.')
-    currPass = db.Database().findPasswordById(id)
+    currPass = get.getPasswordById(id)
 
     if request.method == 'POST':
         try:
-            db.Database().updatePassword(tokenData[0], id, request.form['content'])
+            updating_data.updatePassword(tokenData[0], id, request.form['content'])
             return redirect('/')
         except:
             return 'There was an issue updating your task'
@@ -77,8 +79,8 @@ def delete(id):
     tokenData = access.split('.')
 
     try:
-        currPass = db.Database().findPasswordById(id)
-        db.Database().deletePassword(tokenData[0], currPass)
+        currPass = get.getPasswordById(id)
+        updating_data.deletePassword(tokenData[0], currPass)
         return redirect('/')
     except:
         return 'There was an issue updating your task'
