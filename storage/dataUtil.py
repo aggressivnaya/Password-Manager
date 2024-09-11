@@ -37,20 +37,18 @@ def login():
 def changes():
     func = request.form.get('func')
     username = request.form.get('username')
-
+    #no need to check the username bc the username that we got in login
+    #no need to check the passwords bc all the passwords are selected so 100% that is exist
     if func == 'add':
         currPassword = request.form.get('curr_password')
-        database.addPassword(username, currPassword)
-        return "success", 200
+        return "success", 200 if database.addPassword(username, currPassword)[1] == 200 else "faild to add", 400
     elif func == 'update':
         currPassword = request.form.get('curr_password_id')
         newPassword = request.form.get('new_password')
-        database.updatePassword(username, currPassword, newPassword)
-        return "success", 200
+        return "success", 200 if database.updatePassword(username, currPassword, newPassword)[1] == 200 else "faild to update", 400
     elif func == 'delete':
         currPassword = request.form.get('curr_password')
-        database.deletePassword(username, currPassword)
-        return "success", 200
+        return "success", 200 if database.deletePassword(username, currPassword)[1] == 200 else "faild to delete", 400
     else:
         return "func is incorrect", 400
     
@@ -61,7 +59,7 @@ def get():
         return database.findPasswordById(id), 200
     else:
         username = request.args.get('username')
-        return database.getPasswords(username)
+        return database.getPasswords(username), 200
     
 if __name__ == "__main__":
     server.run(port=5001)

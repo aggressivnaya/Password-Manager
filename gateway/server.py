@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template, redirect, url_for, flash
 from validation import validate
 from auth_login import access
-#import database as db
 from get_from_db import get
 from update import updating_data
 

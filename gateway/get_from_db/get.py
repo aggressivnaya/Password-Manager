@@ -7,9 +7,9 @@ def getPasswords(username):
     )
 
     if response.status_code == 200:
-        return response.text, None
+        return response.text, response.status_code
     else:
-        return None, (response.text, response.status_code)
+        return None, 400
 
 def getPasswordById(id):
     data = {"password_id" : id}
@@ -18,6 +18,6 @@ def getPasswordById(id):
     )
     
     if response.status_code == 200:
-        return response.text, None
+        return response.text, response.status_code
     else:
-        return None, (response.text, response.status_code)
+        return None, 400

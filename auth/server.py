@@ -10,7 +10,6 @@ aess = AES(b'\x00' * 16)
 #config
 server.config["HOST"] = "127.0.0.1"
 server.config["AUTH_SVC_ADDRESS"] = '127.0.0.1:5000'
-#db = database.Database()
 
 @server.route("/login", methods=["POST"])
 def login():

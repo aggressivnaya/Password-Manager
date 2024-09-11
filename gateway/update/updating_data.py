@@ -8,9 +8,9 @@ def addPassword(username, password):
     )
 
     if response.status_code == 200:
-        return response.text, None
+        return response.text, response.status_code
     else:
-        return None, (response.text, response.status_code)
+        return None, 400
 
 def updatePassword(username, currPasswordID, newPassword):
     data = {"username" : username, "curr_password_id" : currPasswordID, "new_password" : newPassword}
@@ -20,9 +20,9 @@ def updatePassword(username, currPasswordID, newPassword):
     )
 
     if response.status_code == 200:
-        return response.text, None
+        return response.text, response.status_code
     else:
-        return None, (response.text, response.status_code)
+        return None, 400
 
 def deletePassword(username, password):
     data = {"username" : username, "curr_password" : password}
@@ -32,6 +32,6 @@ def deletePassword(username, password):
     )
 
     if response.status_code == 200:
-        return response.text, None
+        return response.text, response.status_code
     else:
-        return None, (response.text, response.status_code)
+        return None, 400
