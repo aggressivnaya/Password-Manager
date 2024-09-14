@@ -1,6 +1,7 @@
 import sqlite3
 import enum as Enum
 import EncryptionDecryption as e
+import datetime
 
 class Database():
     def __init__(self) -> None:
@@ -12,44 +13,85 @@ class Database():
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL,
-                password TEXT NOT NULL,
                 email TEXT NOT NULL
             )''') 
 
         self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL
                 password TEXT NOT NULL,
-                username TEXT NOT NULL 
+            )''')
+        
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS history(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                passwordId INTEGER NOT NULL,
+                userId INTEGER NOT NULL,
+                method TEXT NOT NULL,
+                date TEXT NOT NULL,
+                FOREIGN KEY (passwordId) REFERENCES passwords(id),
+                FOREIGN KEY (userId) REFERENCES users(id)
+            )''')
+        
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS usersPasswords (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                userId INTEGER NOT NULL,
+                passwordId INTEGER NOT NULL,
+                FOREIGN KEY (userId) REFERENCES users(id),
+                FOREIGN KEY (passwordId) REFERENCES passwords(id)
             )''')
 
         self.__conn.commit()
 
-    def findPasswordId(self, password) -> int :
-        encryptedPassword = e.encryption(password)
-        self.__cursor.execute('''
-        SELECT id FROM passwords WHERE password = ?
-        ''', (encryptedPassword,))
-        rows = self.__cursor.fetchall()
-        passwordId = [row[0] for row in rows]
-
-        return passwordId[0]
-    
-    def findPasswordById(self, passwordId) -> int :
-        self.__cursor.execute('''
-        SELECT id FROM passwords WHERE id = ?
-        ''', (passwordId,))
-        rows = self.__cursor.fetchall()
-        password = [row[0] for row in rows]
-
-        return str(e.decryption(password[0]))
+    def findUserIdByUsername(self, username):
+        try:
+            self.__cursor.execute('''
+                SELECT id FROM users WHERE username = ?''', (username,)
+            )
+            userId = self.__cursor.fetchone()
+            if userId:
+                return userId[0]
+            else:
+                return None
+        except Exception as e:
+            print(f"An error occurred while finding user ID by username: {e}")
+            return None
+        
+    def findPasswordIdByPassword(self, password):
+        try:
+            self.__cursor.execute('''
+                SELECT id FROM passwords WHERE password = ?''', (password,)
+            )
+            passwordId = self.__cursor.fetchone()
+            if passwordId:
+                return passwordId[0]
+            else:
+                return None
+        except Exception as e:
+            print(f"An error occurred while finding password ID by password: {e}")
+            return None
+        
+    def findPasswordById(self, passwordId):
+        try:
+            self.__cursor.execute('''
+                SELECT password FROM passwords WHERE id = ?''', (passwordId,)
+            )
+            password = self.__cursor.fetchone() 
+            if password:
+                return password[0]  # Return the encrypted password
+            else:
+                return None 
+        except Exception as e:
+            print(f"An error occurred while finding user ID by username: {e}")
+            return None
 
     def doesUserExist(self, username) -> bool:
         self.__cursor.execute('''
-        SELECT username FROM users
+        SELECT * FROM users
         WHERE username = ?''', (username,))
-        rows = self.__cursor.fetchall()
-        users = [row[0] for row in rows]
+        users = self.__cursor.fetchall()
 
         return len(users) > 0
 
@@ -62,57 +104,150 @@ class Database():
 
         return len(passwords) > 0
 
-    def getUsers(self) -> list:
+    '''def getUsers(self) -> list:
         self.__cursor.execute('SELECT username FROM users')
         rows = self.__cursor.fetchall()
         users = [row[0] for row in rows]
 
-        return users
+        return users'''
 
-    def getPasswords(self, username) -> list:
-        self.__cursor.execute('''SELECT password FROM passwords WHERE username = ? ''',(username,))
-        rows = self.__cursor.fetchall()
-        passwords = [row[0] for row in rows]
-        decodedPasswords = []
-        for i in passwords:
-            decodedPasswords.append(str(e.decryption(i)))
+    def getPasswordsForUser(self, userId):
+        try:
+            self.__cursor.execute('''
+                SELECT p.id, p.name, p.password FROM passwords p
+                JOIN usersPasswords up ON p.id = up.passwordId
+                WHERE up.userId = ?''', 
+                (userId,)
+            )
+            passwords = self.__cursor.fetchall()
+            if passwords:
+                decodedPasswords = []
+                for i in passwords:
+                    decodedPasswords.append(str(e.decryption(i)))
+                return decodedPasswords
+            else:
+                return []
+        except Exception as e:
+            print(f"An error occurred while fetching passwords for user: {e}")
+            return []
 
-        return decodedPasswords
+    def addUser(self, username, email):
+        try:
+            self.__cursor.execute('''
+                INSERT INTO users (username, email) VALUES (?, ?)''', 
+                (username, email)
+            )
+            self.__connection.commit()
+            print(f"User {username} added successfully.")
+        except Exception as e:
+            print(f"An error occurred while adding user: {e}")
 
-    def addUser(self, username, password, email):
-        self.__cursor.execute('''
-        INSERT INTO users (username, password, email)
-        VALUES (?, ?, ?)
-        ''', (username, password, email,))
-        self.__conn.commit()
 
-    def addPassword(self, username, password):
-        encryptedPassword = e.encryption(password)
-        self.__cursor.execute('''
-        INSERT INTO passwords (password, username)
-        VALUES (?, ?)
-        ''', (encryptedPassword, username))
-        self.__conn.commit()
+    def addPassword(self, username, name, password):
+        try:
+            encryptedPassword = e.encryption(password)
+            self.__cursor.execute('''
+                INSERT INTO passwords (name, password) VALUES (?, ?)''', 
+                (name, encryptedPassword)
+            )
+            self.__connection.commit()
+            print(f"Password {name} added successfully.")
+            userId = self.findUserIdByUsername(username)
+            passwordId = self.findPasswordIdByPassword(password)
+            self.assignPasswordToUser(userId, passwordId)
+            self.addHistoryEntry(userId, passwordId, "ADD")
+        except Exception as e:
+            print(f"An error occurred while adding password: {e}")
+
+
+    def updatePassword(self, username, passwordId, newName, newPassword):
+        try:
+            newEncryptedPassword = e.encryption(newPassword)
+            self.__cursor.execute('''
+                UPDATE passwords SET name = ?, password = ? WHERE id = ?''', 
+                (newName, newEncryptedPassword, passwordId)
+            )
+            self.__connection.commit()
+            print(f"Password with ID {passwordId} updated successfully.")
+            userId = self.findUserIdByUsername(username)
+            self.addHistoryEntry(userId, passwordId, "UPDATE")
+        except Exception as e:
+            print(f"An error occurred while updating password: {e}")
+
+    def deletePassword(self, username, passwordId):
+        try:
+            self.__cursor.execute('''
+                DELETE FROM passwords WHERE id = ?''', 
+                (passwordId,)
+            )
+            self.__connection.commit()
+            print(f"Password with ID {passwordId} deleted successfully.")
+            userId = self.findUserIdByUsername(username)
+            self.addHistoryEntry(userId, passwordId, "DELETE")
+        except Exception as e:
+            print(f"An error occurred while deleting password: {e}")
+
+    def addHistoryEntry(self, userId, passwordId, method):
+        try:
+            date = datetime.datetime.now()
+            versionId = self.getLastVersionOfPassword(passwordId) + 1
+            name = self.getPasswordNameById(passwordId)
+            password = self.findPasswordById(passwordId)
+            self.__cursor.execute('''
+                INSERT INTO history (versionId, userId, name, password, passwordId, method, date)
+                VALUE(?, ?, ?, ?, ?, ?, ?)''', 
+                (versionId, userId, name, password, passwordId, method, date)
+            )
+            self.__connection.commit()
+            print(f"Added the change to history table successfully.")
+        except Exception as e:
+            print(f"An error occurred while adding to history: {e}")
+
+    def getLastVersionOfPassword(self, passwordId):
+        try:
+            self.__cursor.execute('''
+                SELECT versionId
+                FROM history
+                WHERE passwordId = ?
+                ORDER BY versionId DESC
+                LIMIT 1
+            ''', (passwordId,))
+            
+            versionId = self.__cursor.fetchone()
+            if versionId:
+                return int(versionId)  # Returns the latest method and date for the password
+            else:
+                return None  # Returns None if no version is found
+        except Exception as e:
+            print(f"An error occurred while getting the latest version of password: {e}")
+            return None
+
+    def getPasswordNameById(self, passwordId):
+        try:
+            self.__cursor.execute('''
+                SELECT name
+                FROM passwords
+                WHERE id = ?
+            ''', (passwordId,))
+            
+            result = self.__cursor.fetchone()
+            
+            if result:
+                return result[0]  # Returning the name (first column in result)
+            else:
+                return None  # No password found with the given ID
         
-        return self.getPasswords(username)
+        except Exception as e:
+            print(f"Error retrieving password name: {e}")
+            return None
 
-    def updatePassword(self, username, currPasswordID, newPassword):
-        newEncryptedPassword = e.encryption(newPassword)
-        self.__cursor.execute('''
-        UPDATE passwords
-        SET password = ?
-        WHERE id = ?
-        ''', (newEncryptedPassword, currPasswordID,))
-        self.__conn.commit()
-
-        return self.getPasswords(username)
-
-    def deletePassword(self, username, password):
-        encryptedPassword = e.encryption(password)
-        self.__cursor.execute('''
-        DELETE FROM passwords
-        WHERE password = ? AND username = ?
-        ''',(encryptedPassword, username,))
-        self.__conn.commit()
-
-        return self.getPasswords(username)
+    def assignPasswordToUser(self, userId, passwordId):
+        try:
+            self.__cursor.execute('''
+                INSERT INTO usersPasswords (userId, passwordId) 
+                VALUES (?, ?)
+                ''', (userId, passwordId))
+            self.__connection.commit()
+            print(f"Password {passwordId} assigned to user {userId} successfully.")
+        except Exception as e:
+            print(e)
