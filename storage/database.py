@@ -2,11 +2,12 @@ import sqlite3
 import enum as Enum
 import EncryptionDecryption as e
 import datetime
+import IDatabase
 
-class Database():
+class Database(IDatabase):
     def __init__(self) -> None:
-        #self.__conn = sqlite3.connect('passwordMangerDB.db')
-        self.__conn = sqlite3.connect('testing2.db')
+        self.__conn = sqlite3.connect('passwordMangerDB.db')
+        #self.__conn = sqlite3.connect('testing2.db')
         self.__cursor = self.__conn.cursor()
 
         self.__cursor.execute('''
@@ -27,11 +28,9 @@ class Database():
             CREATE TABLE IF NOT EXISTS history(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 passwordId INTEGER NOT NULL,
-                userId INTEGER NOT NULL,
                 method TEXT NOT NULL,
                 date TEXT NOT NULL,
                 FOREIGN KEY (passwordId) REFERENCES passwords(id),
-                FOREIGN KEY (userId) REFERENCES users(id)
             )''')
         
         self.__cursor.execute('''
@@ -81,6 +80,20 @@ class Database():
             password = self.__cursor.fetchone() 
             if password:
                 return password[0]  # Return the encrypted password
+            else:
+                return None 
+        except Exception as e:
+            print(f"An error occurred while finding user ID by username: {e}")
+            return None
+        
+    def findPasswordIdByUserId(self, userId):
+        try:
+            self.__cursor.execute('''
+                SELECT passwordId FROM usersPasswords WHERE userId = ?''', (userId,)
+            )
+            passwordId = self.__cursor.fetchone() 
+            if passwordId:
+                return passwordId[0]  # Return the password id
             else:
                 return None 
         except Exception as e:
@@ -249,5 +262,22 @@ class Database():
                 ''', (userId, passwordId))
             self.__connection.commit()
             print(f"Password {passwordId} assigned to user {userId} successfully.")
+        except Exception as e:
+            print(e)
+
+    def getHistoryOfUser(self, userId):
+        passwordId = self.findPasswordIdByUserId(userId)
+        try:
+            self.__cursor.execute('''
+                SELECT * FROM history WHERE passwordId = ?
+                ''', (passwordId,))
+            
+            result = self.__cursor.fetchone()
+            
+            if result:
+                return result
+            else:
+                return None 
+        
         except Exception as e:
             print(e)

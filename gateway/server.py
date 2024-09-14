@@ -83,6 +83,21 @@ def delete(id):
         return redirect('/')
     except:
         return 'There was an issue updating your task'
+    
+@server.route("/history", methods=["GET"])
+def history():
+    access, err = validate.token(request)
+
+    if err:
+        return err
+    
+    tokenData = access.split('.')
+
+    try:
+        get.getHistory(tokenData[0])
+        return redirect('/')
+    except:
+        return 'There was an issue updating your task'
  
 @server.route('/logout')
 def logout():

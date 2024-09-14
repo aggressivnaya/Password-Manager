@@ -16,19 +16,19 @@ server.config["DATA_SVC_ADDRESS"] = "127.0.0.1:5001"
 #update password
 #delete password
 
-def validate(username, password):
-    return database.doesUserExist(username) and database.doesPasswordMatch(username, password)
+def validate(username):
+    return database.doesUserExist(username)
     
 @server.route("/login", methods=["GET"])
 def login():
     username = request.args.get('username')
-    password = request.args.get('password')
+    #password = request.args.get('password')
     email = request.args.get('email')
 
-    if email and not validate(username, password):
-        database.addUser(username, password, email)
+    if email and not validate(username):
+        database.addUser(username, email)
         return "success!", 200
-    elif not email and validate(username,password):
+    elif not email and validate(username):
         return "success!", 200
     else:
         return "fail", 400
@@ -41,10 +41,12 @@ def changes():
     #no need to check the username bc the username that we got in login
     #no need to check the passwords bc all the passwords are selected so 100% that is exist
     if func == 'add':
-        return "success", 200 if database.addPassword(username, currPasswordId)[1] == 200 else "faild to add", 400
+        name = request.form.get("name")
+        return "success", 200 if database.addPassword(username, name, currPasswordId)[1] == 200 else "faild to add", 400
     elif func == 'update':
         newPassword = request.form.get('new_password')
-        return "success", 200 if database.updatePassword(username, currPasswordId, newPassword)[1] == 200 else "faild to update", 400
+        name = request.form.get("new_name")
+        return "success", 200 if database.updatePassword(username, currPasswordId, name, newPassword)[1] == 200 else "faild to update", 400
     elif func == 'delete':
         return "success", 200 if database.deletePassword(username, currPasswordId)[1] == 200 else "faild to delete", 400
     else:
@@ -57,7 +59,15 @@ def get():
         return database.findPasswordById(id), 200
     else:
         username = request.args.get('username')
-        return database.getPasswords(username), 200
+        userId = database.findUserIdByUsername(username)
+        return database.getPasswordsForUser(userId), 200
     
+@server.route("/history", methods=["GET"])
+def history():
+    username = request.args.get('username')
+    userId = database.findUserIdByUsername(username)
+    return database.getHistoryOfUser(userId), 200
+
+
 if __name__ == "__main__":
     server.run(port=5001)

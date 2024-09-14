@@ -28,13 +28,13 @@ def signup():
     if not auth:
         return "missing credentials", 401
     
-    if get.signup(auth.username, auth.password, "shhhh@"):
+    if get.signup(auth.username, auth.password):
         return createToken(auth.username, auth.password), 200
     else:
         return "invalid credentials", 401
 
-def createToken(username, password) -> str:
-    stringForToken = username + "." + password + "." + str(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)) + "." + datetime.datetime.utcnow()
+def createToken(username, email) -> str:
+    stringForToken = username + "." + email + "." + str(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)) + "." + datetime.datetime.utcnow()
     return aess.encrypt_block(stringForToken.encode('utf-8'))
 
 @server.route("/validate", methods=["POST"])
@@ -50,10 +50,15 @@ def validate():
 
     try:
         decoded = (aess.decrypt_block(encodedToken)).decode('utf-8')
+        info = decoded.split('.')
+        #check if username exist
+        if info[2] == info[3] and not get.login(info[0], info[1]):
+            return 'error the token is expiered', 400
+        else:
+            return decoded, 200
     except:
         return "not authorized", 403
 
-    return decoded, 200
-
+    
 if __name__ == "__main__":
     server.run(port=5000)

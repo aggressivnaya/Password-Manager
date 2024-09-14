@@ -21,3 +21,18 @@ def getPasswordById(id):
         return response.text, response.status_code
     else:
         return None, 400
+    
+def getHistory(username, passwordId=0):
+    if passwordId == 0:
+        data = {"username" : username}
+    else:
+        data = {"username" : username, "passwordId" : passwordId}
+
+    response = requests.get(
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/history", params=data
+    )
+    
+    if response.status_code == 200:
+        return response.text, response.status_code
+    else:
+        return None, 400
