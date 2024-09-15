@@ -1,12 +1,9 @@
-import datetime, os
+import datetime, os,jwt
 from flask import Flask, request
-from aes import AES
 #import database 
 from get_from_db import get
 
 server = Flask(__name__)
-aess = AES(b'\x00' * 16)
-iv = b'\x01' * 16
 
 #config
 server.config["HOST"] = "127.0.0.1"
@@ -19,7 +16,7 @@ def login():
         return "missing credentials", 401
     
     if get.login(auth.username):
-        return createToken(auth.username, "ffffff"), 200
+        return createToken(auth.username), 200
     else:
         return "invalid credentials", 401    
     
@@ -30,37 +27,37 @@ def signup():
         return "missing credentials", 401
     
     if get.signup(auth.username, auth.password):
-        return createToken(auth.username, auth.password), 200
+        return createToken(auth.username), 200
     else:
         return "invalid credentials", 401
 
-def createToken(username, email) -> str:
-    now = datetime.datetime.now()
-    expire = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)
-    stringForToken = username + "." + email + "." + expire.strftime("%m/%d/%Y, %H:%M:%S") + "." + now.strftime("%m/%d/%Y, %H:%M:%S")
-    return aess.encrypt_cbc(stringForToken.encode('utf-8'), iv)
+def createToken(username) -> str:
+    return jwt.encode(
+        {
+            "username": username,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(days=1),
+            "iat": datetime.datetime.utcnow(),
+        },
+        "SARCASM",
+        algorithm="HS256",
+    )
 
 @server.route("/validate", methods=["POST"])
 def validate():
-    #this func is for the gateway, it would validate the token
-    encodedToken = request.headers["Authorization"]
+    encoded_jwt = request.headers["Authorization"]
 
-    if not encodedToken:#jwt is not present in Authorization header
+    if not encoded_jwt:
         return "missing credentials", 401
 
-    #Authorization: <type> <token>
-    encodedToken = encodedToken.split(" ")[1]
-
     try:
-        decoded = (aess.decrypt_block(encodedToken)).decode('utf-8')
-        info = decoded.split('.')
-        #check if username exist
-        if info[2] == info[3] and not get.login(info[0], info[1]):
-            return 'error the token is expiered', 400
-        else:
-            return decoded, 200
+        decoded = jwt.decode(
+            encoded_jwt, "SARCASM", algorithms=["HS256"]
+        )
     except:
         return "not authorized", 403
+
+    return decoded, 200
 
     
 if __name__ == "__main__":
