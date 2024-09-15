@@ -17,7 +17,8 @@ server.config["DATA_SVC_ADDRESS"] = "127.0.0.1:5001"
 #delete password
 
 def validate(username):
-    return database.doesUserExist(username)
+    #return database.doesUserExist(username)
+    return database.findUserIdByUsername(username)
     
 @server.route("/login", methods=["GET"])
 def login():
@@ -70,4 +71,4 @@ def history():
 
 
 if __name__ == "__main__":
-    server.run(port=5001)
+    server.run(host="0.0.0.0", port=5001)

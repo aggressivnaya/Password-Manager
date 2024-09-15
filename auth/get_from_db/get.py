@@ -1,9 +1,9 @@
 import os, requests
 
-def login(username, password):
-    data = {"username" : username, "password" : password}
+def login(username):
+    data = {"username" : username}
     response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/login", params=data
+        "http://127.0.0.1:5001/login", params=data
     )
 
     if response.status_code == 200:
@@ -11,10 +11,10 @@ def login(username, password):
     else:
         return False
 
-def signup(username, password, email):
-    data = {"username" : username, "password" : password, "email" : email}
+def signup(username,  email):
+    data = {"username" : username, "email" : email}
     response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/login", params=data
+        "http://127.0.0.1:5001/login", params=data
     )
 
     if response.status_code == 200:

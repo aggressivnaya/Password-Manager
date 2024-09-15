@@ -6,6 +6,7 @@ from get_from_db import get
 
 server = Flask(__name__)
 aess = AES(b'\x00' * 16)
+iv = b'\x01' * 16
 
 #config
 server.config["HOST"] = "127.0.0.1"
@@ -17,8 +18,8 @@ def login():
     if not auth:
         return "missing credentials", 401
     
-    if get.login(auth.username, auth.password):
-        return createToken(auth.username, auth.password), 200
+    if get.login(auth.username):
+        return createToken(auth.username, "ffffff"), 200
     else:
         return "invalid credentials", 401    
     
@@ -34,8 +35,10 @@ def signup():
         return "invalid credentials", 401
 
 def createToken(username, email) -> str:
-    stringForToken = username + "." + email + "." + str(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)) + "." + datetime.datetime.utcnow()
-    return aess.encrypt_block(stringForToken.encode('utf-8'))
+    now = datetime.datetime.now()
+    expire = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)
+    stringForToken = username + "." + email + "." + expire.strftime("%m/%d/%Y, %H:%M:%S") + "." + now.strftime("%m/%d/%Y, %H:%M:%S")
+    return aess.encrypt_cbc(stringForToken.encode('utf-8'), iv)
 
 @server.route("/validate", methods=["POST"])
 def validate():
@@ -61,4 +64,4 @@ def validate():
 
     
 if __name__ == "__main__":
-    server.run(port=5000)
+    server.run(host="127.0.0.1", port=5000)

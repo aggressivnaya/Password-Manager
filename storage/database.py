@@ -2,11 +2,11 @@ import sqlite3
 import enum as Enum
 import EncryptionDecryption as e
 import datetime
-import IDatabase
+from IDatabase import IDatabase
 
 class Database(IDatabase):
     def __init__(self) -> None:
-        self.__conn = sqlite3.connect('passwordMangerDB.db')
+        self.__conn = sqlite3.connect('passwordMangerDB.db', check_same_thread=False)
         #self.__conn = sqlite3.connect('testing2.db')
         self.__cursor = self.__conn.cursor()
 
@@ -20,8 +20,8 @@ class Database(IDatabase):
         self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL
-                password TEXT NOT NULL,
+                name TEXT NOT NULL,
+                password TEXT NOT NULL
             )''')
         
         self.__cursor.execute('''
@@ -30,7 +30,7 @@ class Database(IDatabase):
                 passwordId INTEGER NOT NULL,
                 method TEXT NOT NULL,
                 date TEXT NOT NULL,
-                FOREIGN KEY (passwordId) REFERENCES passwords(id),
+                FOREIGN KEY (passwordId) REFERENCES passwords(id)
             )''')
         
         self.__cursor.execute('''
@@ -102,7 +102,7 @@ class Database(IDatabase):
 
     def doesUserExist(self, username) -> bool:
         self.__cursor.execute('''
-        SELECT * FROM users
+        SELECT id FROM users
         WHERE username = ?''', (username,))
         users = self.__cursor.fetchall()
 
@@ -150,7 +150,7 @@ class Database(IDatabase):
                 INSERT INTO users (username, email) VALUES (?, ?)''', 
                 (username, email)
             )
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"User {username} added successfully.")
         except Exception as e:
             print(f"An error occurred while adding user: {e}")
@@ -163,7 +163,7 @@ class Database(IDatabase):
                 INSERT INTO passwords (name, password) VALUES (?, ?)''', 
                 (name, encryptedPassword)
             )
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"Password {name} added successfully.")
             userId = self.findUserIdByUsername(username)
             passwordId = self.findPasswordIdByPassword(password)
@@ -180,7 +180,7 @@ class Database(IDatabase):
                 UPDATE passwords SET name = ?, password = ? WHERE id = ?''', 
                 (newName, newEncryptedPassword, passwordId)
             )
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"Password with ID {passwordId} updated successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "UPDATE")
@@ -193,7 +193,7 @@ class Database(IDatabase):
                 DELETE FROM passwords WHERE id = ?''', 
                 (passwordId,)
             )
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"Password with ID {passwordId} deleted successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "DELETE")
@@ -211,7 +211,7 @@ class Database(IDatabase):
                 VALUE(?, ?, ?, ?, ?, ?, ?)''', 
                 (versionId, userId, name, password, passwordId, method, date)
             )
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"Added the change to history table successfully.")
         except Exception as e:
             print(f"An error occurred while adding to history: {e}")
@@ -260,7 +260,7 @@ class Database(IDatabase):
                 INSERT INTO usersPasswords (userId, passwordId) 
                 VALUES (?, ?)
                 ''', (userId, passwordId))
-            self.__connection.commit()
+            self.__conn.commit()
             print(f"Password {passwordId} assigned to user {userId} successfully.")
         except Exception as e:
             print(e)
