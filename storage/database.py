@@ -21,7 +21,8 @@ class Database(IDatabase):
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                shared TEXT NOT NULL
             )''')
         
         self.__cursor.execute('''
@@ -41,7 +42,23 @@ class Database(IDatabase):
                 FOREIGN KEY (userId) REFERENCES users(id),
                 FOREIGN KEY (passwordId) REFERENCES passwords(id)
             )''')
-
+        
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL
+            )''') 
+        
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS usersGroups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                userId TEXT NOT NULL,
+                groupId TEXT NOT NULL,
+                FOREIGN KEY (userId) REFERENCES users(id),
+                FOREIGN KEY (groupId) REFERENCES groups(id)
+            )''') 
+        
         self.__conn.commit()
 
     def findUserIdByUsername(self, username):
@@ -281,3 +298,12 @@ class Database(IDatabase):
         
         except Exception as e:
             print(e)
+
+    def createGroup(self):
+        pass
+
+    def enterGroup(self):
+        pass
+
+    def getSharedPasswords(self):
+        pass
