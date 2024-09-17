@@ -54,6 +54,9 @@ def validate():
         decoded = jwt.decode(
             encoded_jwt, "SARCASM", algorithms=["HS256"]
         )
+
+        if not get.login(decoded["username"]) and decoded["exp"] == decoded["iat"]:
+            return "token is wrong", 400
     except:
         return "not authorized", 403
 
