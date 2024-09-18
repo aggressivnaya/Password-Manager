@@ -38,18 +38,21 @@ def login():
 def changes():
     func = request.form.get('func')
     username = request.form.get('username')
-    currPasswordId = request.form.get('curr_password_id')
     #no need to check the username bc the username that we got in login
     #no need to check the passwords bc all the passwords are selected so 100% that is exist
     if func == 'add':
+        password = request.form.get('password')
         name = request.form.get("name")
-        return "success", 200 if database.addPassword(username, name, currPasswordId)[1] == 200 else "faild to add", 400
+        shared = request.form.get("shared")
+        return "success", 200 if database.addPassword(username, name, password,shared) else "faild to add", 400
     elif func == 'update':
+        currPasswordId = request.form.get('curr_password_id')
         newPassword = request.form.get('new_password')
         name = request.form.get("new_name")
-        return "success", 200 if database.updatePassword(username, currPasswordId, name, newPassword)[1] == 200 else "faild to update", 400
+        return "success", 200 if database.updatePassword(username, currPasswordId, name, newPassword) else "faild to update", 400
     elif func == 'delete':
-        return "success", 200 if database.deletePassword(username, currPasswordId)[1] == 200 else "faild to delete", 400
+        currPasswordId = request.form.get('curr_password_id')
+        return "success", 200 if database.deletePassword(username, currPasswordId) else "faild to delete", 400
     else:
         return "func is incorrect", 400
     
