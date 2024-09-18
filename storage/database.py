@@ -54,6 +54,7 @@ class Database(IDatabase):
             CREATE TABLE IF NOT EXISTS usersGroups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 userId TEXT NOT NULL,
+                isAdmin TEXT NOT NULL,
                 groupId TEXT NOT NULL,
                 FOREIGN KEY (userId) REFERENCES users(id),
                 FOREIGN KEY (groupId) REFERENCES groups(id)
@@ -299,11 +300,29 @@ class Database(IDatabase):
         except Exception as e:
             print(e)
 
-    def createGroup(self):
+    def createGroup(self, adminId, name, description):
         pass
 
-    def enterGroup(self):
+    def listOfRequestsToEnter(self, adminId, groupId):
         pass
 
-    def getSharedPasswords(self):
+    def acceptToGroup(self, adminId, userId, groupId):
+        pass
+
+    def enterGroup(self, userId, groupId):
+        pass
+    
+    def leaveGroup(self, userId, groupId):
+        pass
+
+    def removeFromGroup(self, adminId, userId, groupId):
+        pass
+
+    def removeGroup(self, adminId, groupId):
+        pass
+
+    def getSharedPasswords(self, groupId):
+        pass
+
+    def logoutFromServer(self, userId):
         pass
