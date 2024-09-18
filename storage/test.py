@@ -25,10 +25,10 @@ def getPasswordById(id):
         return None, 400
     
 def getHistory(username, passwordId=0):
-    if passwordId == 0:
-        data = {"username" : username}
-    else:
-        data = {"username" : username, "passwordId" : passwordId}
+    #if passwordId == 0:
+    data = {"username" : username}
+    #else:
+      #  data = {"username" : username, "passwordId" : passwordId}
 
     response = requests.get(
         f"http://127.0.0.1:5001/history", params=data
@@ -40,7 +40,7 @@ def getHistory(username, passwordId=0):
         return None, 400
     
 def addPassword(username, password):
-    data = {"username" : username, "curr_password" : password}
+    data = {"func": "add" ,"username" : username, "curr_password_id" : password}
 
     response = requests.post(
         f"http://127.0.0.1:5001/changes", data=data
@@ -51,8 +51,8 @@ def addPassword(username, password):
     else:
         return None, 400
 
-def updatePassword(username, currPasswordID, newPassword):
-    data = {"username" : username, "curr_password_id" : currPasswordID, "new_password" : newPassword}
+def updatePassword(username, currPasswordID, newPassword, name):
+    data = {"func": "update" ,"username" : username, "curr_password_id" : currPasswordID, "new_password" : newPassword, "new_name": name}
 
     response = requests.post(
         f"http://127.0.0.1:5001/changes", data=data
@@ -64,7 +64,7 @@ def updatePassword(username, currPasswordID, newPassword):
         return None, 400
 
 def deletePassword(username, passwordId):
-    data = {"username" : username, "curr_password_id" : passwordId}
+    data = {"func": "delete" ,"username" : username, "curr_password_id" : passwordId}
 
     response = requests.post(
         f"http://127.0.0.1:5001/changes", data=data

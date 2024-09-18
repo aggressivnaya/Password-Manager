@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  router:
+    image: python:3.10-alpine
+    container_name: router
+    cap_add:
+      - NET_ADMIN # Allow network administration capabilities
+    volumes:
+      - /auth:/auth
+      - /gateway:/gateway
+      - /storage:/storage
+    command: sh -c "apk add --no-cache pip install -r /requirements.txt && python /auth/server.py && python /gateway/server.py && python /storage/dataUtil.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.0.5
