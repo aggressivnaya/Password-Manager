@@ -58,7 +58,17 @@ class Database(IDatabase):
                 groupId TEXT NOT NULL,
                 FOREIGN KEY (userId) REFERENCES users(id),
                 FOREIGN KEY (groupId) REFERENCES groups(id)
-            )''') 
+            )''')
+        
+        self.__cursor.excute('''
+            CREATE TABLE IF NOT EXISTS requests(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                userId TEXT NOT NULL,
+                requestCommand TEXT NOT NULL,
+                groupId TEXT NOT NULL,
+                FOREIGN KEY (userId) REFERENCES users(id),
+                FOREIGN KEY (groupId) REFERENCES groups(id)
+            )''')
         
         self.__conn.commit()
 
@@ -126,14 +136,14 @@ class Database(IDatabase):
 
         return len(users) > 0
 
-    def doesPasswordMatch(self, username, enteredPass) -> bool:
-        self.__cursor.execute('''
+    '''def doesPasswordMatch(self, username, enteredPass) -> bool:
+        self.__cursor.execute(
         SELECT password FROM users
-        WHERE username = ? AND password = ? ''',(username, enteredPass,))
+        WHERE username = ? AND password = ? ,(username, enteredPass,))
         rows = self.__cursor.fetchall()
         passwords = [row[0] for row in rows]
 
-        return len(passwords) > 0
+        return len(passwords) > 0'''
 
     '''def getUsers(self) -> list:
         self.__cursor.execute('SELECT username FROM users')
@@ -174,12 +184,12 @@ class Database(IDatabase):
             print(f"An error occurred while adding user: {e}")
 
 
-    def addPassword(self, username, name, password):
+    def addPassword(self, username, name, password, isShared):
         try:
             encryptedPassword = e.encryption(password)
             self.__cursor.execute('''
-                INSERT INTO passwords (name, password) VALUES (?, ?)''', 
-                (name, encryptedPassword)
+                INSERT INTO passwords (name, password, shared) VALUES (?, ?, ?)''', 
+                (name, encryptedPassword, isShared)
             )
             self.__conn.commit()
             print(f"Password {name} added successfully.")
@@ -191,12 +201,12 @@ class Database(IDatabase):
             print(f"An error occurred while adding password: {e}")
 
 
-    def updatePassword(self, username, passwordId, newName, newPassword):
+    def updatePassword(self, username, passwordId, newName, newPassword, isShared):
         try:
             newEncryptedPassword = e.encryption(newPassword)
             self.__cursor.execute('''
-                UPDATE passwords SET name = ?, password = ? WHERE id = ?''', 
-                (newName, newEncryptedPassword, passwordId)
+                UPDATE passwords SET name = ?, password = ?, shared = ? WHERE id = ?''', 
+                (newName, newEncryptedPassword, isShared, passwordId)
             )
             self.__conn.commit()
             print(f"Password with ID {passwordId} updated successfully.")
@@ -283,6 +293,7 @@ class Database(IDatabase):
         except Exception as e:
             print(e)
 
+    #change this, you need to get passwordsId of users and in loop get all the versions
     def getHistoryOfUser(self, userId):
         passwordId = self.findPasswordIdByUserId(userId)
         try:
@@ -300,29 +311,140 @@ class Database(IDatabase):
         except Exception as e:
             print(e)
 
-    def createGroup(self, adminId, name, description):
-        pass
+    def getGroupIdByUserId(self, userId, lastGroup=False):
+        if lastGroup == False:
+            pass
+        else:
+            self.__cursor.execute('''
+                SELECT groupId
+                FROM usersGroup
+                WHERE userId = ?
+                ORDER BY groupId DESC
+                LIMIT 1
+            ''', (userId,))
+            
+            groupId = self.__cursor.fetchone()
+            return int(groupId)
 
-    def listOfRequestsToEnter(self, adminId, groupId):
+    def createGroup(self, adminId, name, description):
+        try:
+            self.__cursor.execute('''
+                INSERT INTO groups (name, description) VALUES(?, ?)
+                ''', (name, description))
+            
+            groupId = self.getGroupdIdByUserId(adminId, True)
+            self.__conn.commit()
+            self.enterGroup(adminId, groupId, True)
+
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def listOfRequests(self, adminId, groupId):
+        try:
+            self.__cursor.execute('''
+                SELECT * FROM requests WHERE userId = ? AND groupId = ?
+                ''',(adminId, groupId))
+            
+            requests = self.__cursor.fetchall()
+            return int(requests)
+        except Exception as e:
+            print(e)
+
+    def deleteRequest(self, adminId, groupId, command):
+        try:
+            self.__cursor.execute('''
+                DELETE FROM request WHERE userId = ? AND gorupId = ? AND requestCommand = ?
+                ''', (adminId, groupId, command))
+            self.__conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def checkAdmin(self, groupId, userId):
         pass
 
     def acceptToGroup(self, adminId, userId, groupId):
-        pass
+        if self.checkAdmin(groupId, adminId):
+            self.enterGroup(userId, groupId)
+            return True
+        else:
+            return False
 
-    def enterGroup(self, userId, groupId):
-        pass
+    def enterGroup(self, userId, groupId, isAdmin=False):
+        try:
+            self.__cursor.execute('''
+                INSERT INTO usersGroups(userId, isAdmin, groupId) VALUES(?, ?, ?)
+                ''',(userId, isAdmin, groupId,))
+            self.__conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
     
     def leaveGroup(self, userId, groupId):
-        pass
+        try:
+            self.__cursor.execute('''
+                DELETE FROM usersGroups WHERE userId = ? AND groupId = ?
+                ''', (userId, groupId,))
+            self.__conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def removeFromGroup(self, adminId, userId, groupId):
-        pass
+        try:
+            if not self.checkAdmin(groupId, adminId):
+                raise Exception("invalid admin id")
+            self.leaveGroup(userId, groupId)
+
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def removeGroup(self, adminId, groupId):
-        pass
+        try:
+            if not self.checkAdmin(adminId):
+                raise Exception("invalid admin id")
+            self.__cursor.execute('''
+                DELETE FROM groups WHERE id = ?
+                ''',(groupId))
+            
+            self.__cursor.execute('''
+                DELETE FROM usersGroups WHERE groupId = ?
+                ''', (groupId))
+            
+            self.__conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def getSharedPasswords(self, groupId):
-        pass
+        try:
+
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def logoutFromServer(self, userId):
-        pass
+        try:
+            self.__cursor.excute('''
+                DELETE FROM users WHERE id = ?
+                ''', (userId,))
+            
+            self.__cursor.excute('''
+                DELETE FROM usersPasswords WHERE userId = ?
+                ''', (userId,))
+            
+            self.deletePassword(userId)#TODO: need to change that by diffault it deletes all the passwords of the user
+
+            #TODO: need to delete from every table the user exist
+        except Exception as e:
+            print(e)
+            return False
