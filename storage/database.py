@@ -28,6 +28,7 @@ class Database(IDatabase):
         self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS history(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                versionId INTEGER NOT NULL,
                 passwordId INTEGER NOT NULL,
                 method TEXT NOT NULL,
                 date TEXT NOT NULL,
@@ -180,26 +181,41 @@ class Database(IDatabase):
             )
             self.__conn.commit()
             print(f"User {username} added successfully.")
+            return True
         except Exception as e:
             print(f"An error occurred while adding user: {e}")
+            return False
 
 
+<<<<<<< HEAD
     def addPassword(self, username, name, password, isShared):
+=======
+    def addPassword(self, username, name, password, shared):
+>>>>>>> 3db2d309d013d41340dbe370bf05e46114f0d6d9
         try:
-            encryptedPassword = e.encryption(password)
+            print("in add func")
+            #encryptedPassword = e.encryption(password)
+            #print(encryptedPassword.type())
             self.__cursor.execute('''
                 INSERT INTO passwords (name, password, shared) VALUES (?, ?, ?)''', 
+<<<<<<< HEAD
                 (name, encryptedPassword, isShared)
+=======
+                (name, password, shared)
+>>>>>>> 3db2d309d013d41340dbe370bf05e46114f0d6d9
             )
             self.__conn.commit()
             print(f"Password {name} added successfully.")
             userId = self.findUserIdByUsername(username)
+            print(userId)
             passwordId = self.findPasswordIdByPassword(password)
+            print(passwordId)
             self.assignPasswordToUser(userId, passwordId)
             self.addHistoryEntry(userId, passwordId, "ADD")
+            return True
         except Exception as e:
             print(f"An error occurred while adding password: {e}")
-
+            return False
 
     def updatePassword(self, username, passwordId, newName, newPassword, isShared):
         try:
@@ -212,8 +228,10 @@ class Database(IDatabase):
             print(f"Password with ID {passwordId} updated successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "UPDATE")
+            return True
         except Exception as e:
             print(f"An error occurred while updating password: {e}")
+            return False
 
     def deletePassword(self, username, passwordId):
         try:
@@ -225,24 +243,32 @@ class Database(IDatabase):
             print(f"Password with ID {passwordId} deleted successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "DELETE")
+            return True
         except Exception as e:
             print(f"An error occurred while deleting password: {e}")
+            return False
 
     def addHistoryEntry(self, userId, passwordId, method):
         try:
             date = datetime.datetime.now()
-            versionId = self.getLastVersionOfPassword(passwordId) + 1
+            versionId = self.getLastVersionOfPassword(passwordId)
+            if versionId == None:
+                versionId = 1
+            else:
+                version += 1
             name = self.getPasswordNameById(passwordId)
             password = self.findPasswordById(passwordId)
             self.__cursor.execute('''
                 INSERT INTO history (versionId, userId, name, password, passwordId, method, date)
-                VALUE(?, ?, ?, ?, ?, ?, ?)''', 
+                VALUES(?, ?, ?, ?, ?, ?, ?)''', 
                 (versionId, userId, name, password, passwordId, method, date)
             )
             self.__conn.commit()
             print(f"Added the change to history table successfully.")
+            return True
         except Exception as e:
             print(f"An error occurred while adding to history: {e}")
+            return False
 
     def getLastVersionOfPassword(self, passwordId):
         try:
@@ -251,12 +277,12 @@ class Database(IDatabase):
                 FROM history
                 WHERE passwordId = ?
                 ORDER BY versionId DESC
-                LIMIT 1
             ''', (passwordId,))
             
-            versionId = self.__cursor.fetchone()
+            versionId = self.__cursor.fetchall()
+            print(f"Fetched result: {versionId}")  # Debugging print
             if versionId:
-                return int(versionId)  # Returns the latest method and date for the password
+                return int(versionId[0])  # Returns the latest method and date for the password
             else:
                 return None  # Returns None if no version is found
         except Exception as e:
