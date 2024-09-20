@@ -44,15 +44,16 @@ def changes():
         password = request.form.get('password')
         name = request.form.get("name")
         shared = request.form.get("shared")
-        return "success", 200 if database.addPassword(username, name, password,shared) else "faild to add", 400
+        return ("success", 200) if database.addPassword(username, name, password,shared) else ("faild to add", 400)
     elif func == 'update':
         currPasswordId = request.form.get('curr_password_id')
         newPassword = request.form.get('new_password')
         name = request.form.get("new_name")
-        return "success", 200 if database.updatePassword(username, currPasswordId, name, newPassword) else "faild to update", 400
+        isShared = request.form.get("shared")
+        return ("success", 200) if database.updatePassword(username, currPasswordId, name, newPassword, isShared) else ("faild to update", 400)
     elif func == 'delete':
         currPasswordId = request.form.get('curr_password_id')
-        return "success", 200 if database.deletePassword(username, currPasswordId) else "faild to delete", 400
+        return ("success", 200) if database.deletePassword(username, currPasswordId) else ("faild to delete", 400)
     else:
         return "func is incorrect", 400
     

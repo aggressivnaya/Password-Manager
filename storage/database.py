@@ -28,6 +28,7 @@ class Database(IDatabase):
         self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS history(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                versionId INTEGER NOT NULL,
                 passwordId INTEGER NOT NULL,
                 method TEXT NOT NULL,
                 date TEXT NOT NULL,
@@ -60,7 +61,7 @@ class Database(IDatabase):
                 FOREIGN KEY (groupId) REFERENCES groups(id)
             )''')
         
-        self.__cursor.excute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS requests(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 userId TEXT NOT NULL,
@@ -162,10 +163,10 @@ class Database(IDatabase):
             )
             passwords = self.__cursor.fetchall()
             if passwords:
-                decodedPasswords = []
-                for i in passwords:
-                    decodedPasswords.append(str(e.decryption(i)))
-                return decodedPasswords
+                #decodedPasswords = []
+                #for i in passwords:
+                 #   decodedPasswords.append(str(e.decryption(i)))
+                return passwords
             else:
                 return []
         except Exception as e:
@@ -186,10 +187,10 @@ class Database(IDatabase):
 
     def addPassword(self, username, name, password, isShared):
         try:
-            encryptedPassword = e.encryption(password)
+            #encryptedPassword = e.encryption(password)
             self.__cursor.execute('''
                 INSERT INTO passwords (name, password, shared) VALUES (?, ?, ?)''', 
-                (name, encryptedPassword, isShared)
+                (name, password, isShared)
             )
             self.__conn.commit()
             print(f"Password {name} added successfully.")
@@ -197,23 +198,27 @@ class Database(IDatabase):
             passwordId = self.findPasswordIdByPassword(password)
             self.assignPasswordToUser(userId, passwordId)
             self.addHistoryEntry(userId, passwordId, "ADD")
+            return True
         except Exception as e:
             print(f"An error occurred while adding password: {e}")
+            return False
 
 
     def updatePassword(self, username, passwordId, newName, newPassword, isShared):
         try:
-            newEncryptedPassword = e.encryption(newPassword)
+            #newEncryptedPassword = e.encryption(newPassword)
             self.__cursor.execute('''
                 UPDATE passwords SET name = ?, password = ?, shared = ? WHERE id = ?''', 
-                (newName, newEncryptedPassword, isShared, passwordId)
+                (newName, newPassword, isShared, passwordId)
             )
             self.__conn.commit()
             print(f"Password with ID {passwordId} updated successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "UPDATE")
+            return True
         except Exception as e:
             print(f"An error occurred while updating password: {e}")
+            return False
 
     def deletePassword(self, username, passwordId):
         try:
@@ -225,19 +230,24 @@ class Database(IDatabase):
             print(f"Password with ID {passwordId} deleted successfully.")
             userId = self.findUserIdByUsername(username)
             self.addHistoryEntry(userId, passwordId, "DELETE")
+            return True
         except Exception as e:
             print(f"An error occurred while deleting password: {e}")
+            return False
 
     def addHistoryEntry(self, userId, passwordId, method):
         try:
             date = datetime.datetime.now()
-            versionId = self.getLastVersionOfPassword(passwordId) + 1
-            name = self.getPasswordNameById(passwordId)
-            password = self.findPasswordById(passwordId)
+            versionId = self.getLastVersionOfPassword(passwordId)
+            if not versionId == None:
+                versionId += 1
+            else:
+                versionId = 1
+            
             self.__cursor.execute('''
-                INSERT INTO history (versionId, userId, name, password, passwordId, method, date)
-                VALUE(?, ?, ?, ?, ?, ?, ?)''', 
-                (versionId, userId, name, password, passwordId, method, date)
+                INSERT INTO history (versionId, passwordId, method, date)
+                VALUES(?, ?, ?, ?)''', 
+                (versionId, passwordId, method, date)
             )
             self.__conn.commit()
             print(f"Added the change to history table successfully.")
@@ -256,7 +266,7 @@ class Database(IDatabase):
             
             versionId = self.__cursor.fetchone()
             if versionId:
-                return int(versionId)  # Returns the latest method and date for the password
+                return int(versionId[0])  # Returns the latest method and date for the password
             else:
                 return None  # Returns None if no version is found
         except Exception as e:
@@ -302,9 +312,8 @@ class Database(IDatabase):
                 ''', (passwordId,))
             
             result = self.__cursor.fetchone()
-            
             if result:
-                return result
+                return list(result)
             else:
                 return None 
         
