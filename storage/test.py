@@ -87,7 +87,7 @@ def signup():
         return False
     
 if __name__ == "__main__":
-    print(signup())
+    '''print(signup())
     print(addPassword(username, "asssa")[0])
     print(addPassword(username, "aieur")[0])
     print(getPasswords(username)[0])
@@ -97,3 +97,4 @@ if __name__ == "__main__":
     print(deletePassword(username, 2)[0])
     print(getPasswords(username)[0])
     print(getHistory(username)[0])
+    '''

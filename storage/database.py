@@ -120,9 +120,9 @@ class Database(IDatabase):
             self.__cursor.execute('''
                 SELECT passwordId FROM usersPasswords WHERE userId = ?''', (userId,)
             )
-            passwordId = self.__cursor.fetchone() 
+            passwordId = self.__cursor.fetchall() 
             if passwordId:
-                return passwordId[0]  # Return the password id
+                return list(passwordId)  # Return the password id
             else:
                 return None 
         except Exception as e:
@@ -229,6 +229,12 @@ class Database(IDatabase):
             self.__conn.commit()
             print(f"Password with ID {passwordId} deleted successfully.")
             userId = self.findUserIdByUsername(username)
+            self.__cursor.execute('''
+                DELETE FROM usersPasswords WHERE userId = ? AND passwordId = ?''', 
+                (userId, passwordId,)
+            )
+            self.__conn.commit()
+
             self.addHistoryEntry(userId, passwordId, "DELETE")
             return True
         except Exception as e:
@@ -300,40 +306,59 @@ class Database(IDatabase):
                 ''', (userId, passwordId))
             self.__conn.commit()
             print(f"Password {passwordId} assigned to user {userId} successfully.")
+            return True
         except Exception as e:
-            print(e)
+            print(f"Error assigning password user: {e}")
+            return False
 
-    #change this, you need to get passwordsId of users and in loop get all the versions
-    def getHistoryOfUser(self, userId):
-        passwordId = self.findPasswordIdByUserId(userId)
+    def getHistoryOfUser(self, userId, passwordId=0):
+        passwordsIds = self.findPasswordIdByUserId(userId)
+        historyOfAllPasswords = []
         try:
-            self.__cursor.execute('''
-                SELECT * FROM history WHERE passwordId = ?
-                ''', (passwordId,))
-            
-            result = self.__cursor.fetchone()
-            if result:
-                return list(result)
-            else:
-                return None 
-        
+            for password in passwordsIds:
+                self.__cursor.execute('''
+                    SELECT * FROM history WHERE passwordId = ? ORDER BY date DESC
+                    LIMIT 5
+                    ''', (password,))
+                result = list(self.__cursor.fetchall())
+                if result:
+                    for i in result:
+                        historyOfAllPasswords.append(i)
+                else:
+                    return None
+            return historyOfAllPasswords
         except Exception as e:
-            print(e)
+            print(f"Error getting the history of the user: {e}")
+            return None
 
     def getGroupIdByUserId(self, userId, lastGroup=False):
-        if lastGroup == False:
-            pass
-        else:
-            self.__cursor.execute('''
-                SELECT groupId
-                FROM usersGroup
-                WHERE userId = ?
-                ORDER BY groupId DESC
-                LIMIT 1
-            ''', (userId,))
-            
-            groupId = self.__cursor.fetchone()
-            return int(groupId)
+        try:
+            #last group means that is the last group that added to the database
+            if lastGroup == False:
+                #getting all the group that user has
+                self.__cursor.execute('''
+                    SELECT groupId
+                    FROM usersGroup
+                    WHERE userId = ?
+                ''', (userId,))
+                
+                groupsIds = list(self.__cursor.fetchall())
+                return groupsIds
+            else:
+                #getting the last group that user entered/created
+                self.__cursor.execute('''
+                    SELECT groupId
+                    FROM usersGroup
+                    WHERE userId = ?
+                    ORDER BY groupId DESC
+                    LIMIT 1
+                ''', (userId,))
+                
+                groupId = self.__cursor.fetchone()
+                return int(groupId[0])
+        except Exception as e:
+            print(f"Error getting group id: {e}")
+            return False
 
     def createGroup(self, adminId, name, description):
         try:
@@ -347,19 +372,20 @@ class Database(IDatabase):
 
             return True
         except Exception as e:
-            print(e)
+            print(f"Error creating group: {e}")
             return False
 
     def listOfRequests(self, adminId, groupId):
         try:
             self.__cursor.execute('''
                 SELECT * FROM requests WHERE userId = ? AND groupId = ?
-                ''',(adminId, groupId))
+                ''',(adminId, groupId,))
             
             requests = self.__cursor.fetchall()
-            return int(requests)
+            return list(requests)
         except Exception as e:
-            print(e)
+            print(f"Error getting list of requests of group: {e}")
+            return False
 
     def deleteRequest(self, adminId, groupId, command):
         try:
@@ -369,11 +395,23 @@ class Database(IDatabase):
             self.__conn.commit()
             return True
         except Exception as e:
-            print(e)
+            print(f"Error delete request: {e}")
             return False
 
     def checkAdmin(self, groupId, userId):
-        pass
+        try:
+            self.__cursor.execute('''
+                SELECT isAdmin FROM usersGroups WHERE groupId = ? AND userId = ?
+                ''', (groupId, userId,))
+            
+            isAdmin = self.__cursor.fetchone()[0]
+            if isAdmin == "True":
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(f"Error checking the admin: {e}")
+            return False
 
     def acceptToGroup(self, adminId, userId, groupId):
         if self.checkAdmin(groupId, adminId):
@@ -386,25 +424,28 @@ class Database(IDatabase):
         try:
             self.__cursor.execute('''
                 INSERT INTO usersGroups(userId, isAdmin, groupId) VALUES(?, ?, ?)
-                ''',(userId, isAdmin, groupId,))
+                ''',(userId, isAdmin, groupId))
             self.__conn.commit()
             return True
         except Exception as e:
-            print(e)
+            print(f"Error with entering the group: {e}")
             return False
     
     def leaveGroup(self, userId, groupId):
         try:
             self.__cursor.execute('''
                 DELETE FROM usersGroups WHERE userId = ? AND groupId = ?
-                ''', (userId, groupId,))
+                ''', (userId, groupId))
             self.__conn.commit()
             return True
         except Exception as e:
-            print(e)
+            print(f"Error with leaving the group: {e}")
             return False
 
     def removeFromGroup(self, adminId, userId, groupId):
+        '''
+        In the my server only the admin of the group can remove other users, so we need to check is the userId is the admin
+        '''
         try:
             if not self.checkAdmin(groupId, adminId):
                 raise Exception("invalid admin id")
@@ -412,10 +453,13 @@ class Database(IDatabase):
 
             return True
         except Exception as e:
-            print(e)
+            print(f"Error with remove user from group: {e}")
             return False
 
     def removeGroup(self, adminId, groupId):
+        '''
+        In the my server only the admin of the group can remove the group, so we need to check is the userId is the admin
+        '''
         try:
             if not self.checkAdmin(adminId):
                 raise Exception("invalid admin id")
@@ -430,15 +474,36 @@ class Database(IDatabase):
             self.__conn.commit()
             return True
         except Exception as e:
-            print(e)
+            print(f"Error with removing the group: {e}")
             return False
 
     def getSharedPasswords(self, groupId):
         try:
-
-            return True
+            self.__cursor.execute('''
+                SELECT p.id, p.name, p.password, p.shared
+                FROM passwords p
+                JOIN usersPasswords up ON p.id = up.passwordId
+                JOIN usersGroups ug ON up.userId = ug.userId
+                WHERE ug.groupId = ?
+                AND p.shared = 'True'
+                ''',(groupId,))
+            
+            requests = self.__cursor.fetchall()
+            return list(requests)
         except Exception as e:
-            print(e)
+            print(f"Error with getting shared passwords: {e}")
+            return False
+        
+    def getGroupInfo(self, groupId):
+        try:
+            self.__cursor.execute('''
+                SELECT * FROM groups WHERE id = ?
+                ''', (groupId,))
+            
+            requests = self.__cursor.fetchall()
+            return requests
+        except Exception as e:
+            print(f"Error with getting the info of the group: {e}")
             return False
 
     def logoutFromServer(self, userId):
@@ -446,14 +511,20 @@ class Database(IDatabase):
             self.__cursor.excute('''
                 DELETE FROM users WHERE id = ?
                 ''', (userId,))
+            self.__conn.commit()
             
+            self.deletePassword(userId)
+
             self.__cursor.excute('''
                 DELETE FROM usersPasswords WHERE userId = ?
                 ''', (userId,))
+            self.__conn.commit()
             
-            self.deletePassword(userId)#TODO: need to change that by diffault it deletes all the passwords of the user
-
-            #TODO: need to delete from every table the user exist
+            self.__cursor.execute('''
+                DELETE FROM usersGroups WHERE userId = ?
+                ''', (userId))
+            
+            self.__conn.commit()
         except Exception as e:
-            print(e)
+            print(f"Error with logout: {e}")
             return False

@@ -7,10 +7,48 @@ services:
     cap_add:
       - NET_ADMIN # Allow network administration capabilities
     volumes:
-      - /auth:/auth
-      - /gateway:/gateway
-      - /storage:/storage
-    command: sh -c "apk add --no-cache pip install -r /requirements.txt && python /auth/server.py && python /gateway/server.py && python /storage/dataUtil.py"
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt"
     networks:
       my_lan:
-        ipv4_address: 182.20.0.5
+        ipv4_address: 182.20.1.5
+
+  auth_server:
+    image: python:3.10-alpine
+    container_name: auth_server
+    volumes:
+      - ./auth:/auth
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /auth/server.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.1.3
+  
+  gateway_server:
+    image: python:3.10-alpine
+    container_name: gateway_server
+    volumes:
+      - ./gateway:/gateway
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /gateway/server.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.1.2
+
+  db_server:
+    image: python:3.10-alpine
+    container_name: db_server
+    volumes:
+      - ./storage:/storage
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /storage/dataUtil.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.1.4
+
+networks:
+  my_lan:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 182.20.0.0/16

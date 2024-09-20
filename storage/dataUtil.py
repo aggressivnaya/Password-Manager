@@ -65,14 +65,46 @@ def get():
     else:
         username = request.args.get('username')
         userId = database.findUserIdByUsername(username)
-        return database.getPasswordsForUser(userId), 200
+        return ("success", 200) if database.getPasswordsForUser(userId) else ("faild to get password", 400)
     
 @server.route("/history", methods=["GET"])
 def history():
     username = request.args.get('username')
     userId = database.findUserIdByUsername(username)
-    return database.getHistoryOfUser(userId), 200
+    return ("success", 200) if database.getHistoryOfUser(userId) else ("faild to get history", 400)
 
+@server.route("/group/create", methods=["POST"])
+def createGroup():
+    username = request.form.get('username')
+    userId = database.findUserIdByUsername(username)
+    name = request.form.get('name')
+    description = request.form.get('description')
+    return ("success", 200) if database.createGroup(userId, name, description) else ("faild to create room", 400)
+
+@server.route("/group/accept_user", methods=["POST"])
+def acceptUser():
+    pass
+
+@server.route("/group/leave_group", methods=["DELETE"])
+def leaveGroup():
+    pass
+
+@server.route("/gorup/remove_user", methods=["DELETE"])
+def removeGroup():
+    pass
+
+@server.route("/group", methods=["GET"])
+def groupInfo():
+    groupId = request.args.get("group_id")
+    groupInfo = database.getGroupInfo(groupId)
+    passwords = database.getSharedPasswords(groupId)
+    return groupInfo, passwords
+
+@server.route("/logout", methods=["DELETE"])
+def logout():
+    username = request.args.get('username')
+    userId = database.findUserIdByUsername(username)
+    return ("success", 200) if database.logoutFromServer(userId) else ("faild to logout", 400)
 
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=5001)

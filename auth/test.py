@@ -42,7 +42,6 @@ def validate(token):
         print(response.text)
 
 if __name__ == "__main__":
-    #signup()
-    token = login()
-    print(token)
-    validate(token)
+    signup()
+    #token = login()
+    #validate(token)
