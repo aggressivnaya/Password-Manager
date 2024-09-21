@@ -97,8 +97,12 @@ def removeGroup():
 def groupInfo():
     groupId = request.args.get("group_id")
     groupInfo = database.getGroupInfo(groupId)
+    print(list(groupInfo[0]))
     passwords = database.getSharedPasswords(groupId)
-    return groupInfo, passwords
+    print(passwords)
+    if not groupInfo:
+        return "error with group info", 400
+    return groupInfo[0], 200
 
 @server.route("/logout", methods=["DELETE"])
 def logout():

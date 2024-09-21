@@ -331,43 +331,32 @@ class Database(IDatabase):
             print(f"Error getting the history of the user: {e}")
             return None
 
-    def getGroupIdByUserId(self, userId, lastGroup=False):
+    '''def getGroupIdByUserId(self, userId):
         try:
             #last group means that is the last group that added to the database
-            if lastGroup == False:
+          
                 #getting all the group that user has
-                self.__cursor.execute('''
+                self.__cursor.execute(
                     SELECT groupId
-                    FROM usersGroup
+                    FROM usersGroups
                     WHERE userId = ?
-                ''', (userId,))
+                , (userId,))
                 
                 groupsIds = list(self.__cursor.fetchall())
                 return groupsIds
-            else:
-                #getting the last group that user entered/created
-                self.__cursor.execute('''
-                    SELECT groupId
-                    FROM usersGroup
-                    WHERE userId = ?
-                    ORDER BY groupId DESC
-                    LIMIT 1
-                ''', (userId,))
-                
-                groupId = self.__cursor.fetchone()
-                return int(groupId[0])
         except Exception as e:
             print(f"Error getting group id: {e}")
-            return False
+            return False'''
 
     def createGroup(self, adminId, name, description):
         try:
             self.__cursor.execute('''
                 INSERT INTO groups (name, description) VALUES(?, ?)
                 ''', (name, description))
-            
-            groupId = self.getGroupdIdByUserId(adminId, True)
             self.__conn.commit()
+            groupId = self.__cursor.lastrowid
+            print(groupId)
+            #groupId = self.getGroupIdByUserId(adminId, True)
             self.enterGroup(adminId, groupId, True)
 
             return True
@@ -489,7 +478,7 @@ class Database(IDatabase):
                 ''',(groupId,))
             
             requests = self.__cursor.fetchall()
-            return list(requests)
+            return requests
         except Exception as e:
             print(f"Error with getting shared passwords: {e}")
             return False
@@ -501,30 +490,46 @@ class Database(IDatabase):
                 ''', (groupId,))
             
             requests = self.__cursor.fetchall()
-            return requests
+
+            groupMetadata = [
+                {
+                    'id': row[0],
+                    'name': row[1],
+                    'description': row[2]
+                }
+                for row in requests
+            ]
+            return groupMetadata
         except Exception as e:
             print(f"Error with getting the info of the group: {e}")
             return False
 
     def logoutFromServer(self, userId):
         try:
-            self.__cursor.excute('''
-                DELETE FROM users WHERE id = ?
-                ''', (userId,))
-            self.__conn.commit()
-            
-            self.deletePassword(userId)
+            passwords = self.getPasswordsForUser(userId)
+            if len(passwords) >= 1:
+                for password in passwords:
+                    passID = password[0]
+                    print(passID)
+                    self.deletePassword(userId, passID)
 
-            self.__cursor.excute('''
-                DELETE FROM usersPasswords WHERE userId = ?
-                ''', (userId,))
-            self.__conn.commit()
-            
+                self.__cursor.execute('''
+                    DELETE FROM usersPasswords WHERE userId = ?
+                    ''', (userId,))
+                self.__conn.commit()
+
+
             self.__cursor.execute('''
                 DELETE FROM usersGroups WHERE userId = ?
                 ''', (userId))
-            
             self.__conn.commit()
+
+            print("deleting other stuff")
+            self.__cursor.execute('''
+                DELETE FROM users WHERE id = ?
+                ''', (userId,))
+            self.__conn.commit()            
+            
         except Exception as e:
             print(f"Error with logout: {e}")
             return False
