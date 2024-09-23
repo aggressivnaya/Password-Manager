@@ -111,4 +111,4 @@ def logout():
     return ("success", 200) if database.logoutFromServer(userId) else ("faild to logout", 400)
 
 if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=5001)
+    server.run(port=5001)

@@ -163,10 +163,19 @@ class Database(IDatabase):
             )
             passwords = self.__cursor.fetchall()
             if passwords:
+                passwordMetadata = [
+                {
+                    'id': row[0],
+                    'name': row[1],
+                    'password': row[2],
+                    'shared': row[3]
+                }
+                for row in passwords
+            ]
                 #decodedPasswords = []
                 #for i in passwords:
                  #   decodedPasswords.append(str(e.decryption(i)))
-                return passwords
+                return passwordMetadata
             else:
                 return []
         except Exception as e:
@@ -322,8 +331,15 @@ class Database(IDatabase):
                     ''', (password,))
                 result = list(self.__cursor.fetchall())
                 if result:
-                    for i in result:
-                        historyOfAllPasswords.append(i)
+                    historyOfAllPasswords = [
+                        {
+                            'id': row[0],
+                            'name': row[1],
+                            'description': row[2]
+                        }
+                        for row in result
+                    ]
+                    return historyOfAllPasswords
                 else:
                     return None
             return historyOfAllPasswords
@@ -380,7 +396,7 @@ class Database(IDatabase):
         try:
             self.__cursor.execute('''
                 DELETE FROM request WHERE userId = ? AND gorupId = ? AND requestCommand = ?
-                ''', (adminId, groupId, command))
+                ''', (adminId, groupId, command,))
             self.__conn.commit()
             return True
         except Exception as e:
@@ -450,7 +466,7 @@ class Database(IDatabase):
         In the my server only the admin of the group can remove the group, so we need to check is the userId is the admin
         '''
         try:
-            if not self.checkAdmin(adminId):
+            if not self.checkAdmin(groupId, adminId):
                 raise Exception("invalid admin id")
             self.__cursor.execute('''
                 DELETE FROM groups WHERE id = ?
@@ -478,7 +494,16 @@ class Database(IDatabase):
                 ''',(groupId,))
             
             requests = self.__cursor.fetchall()
-            return requests
+            
+            sharedPassMetadata = [
+                {
+                    'id': row[0],
+                    'name': row[1],
+                    'description': row[2]
+                }
+                for row in requests
+            ]
+            return sharedPassMetadata
         except Exception as e:
             print(f"Error with getting shared passwords: {e}")
             return False
@@ -495,7 +520,8 @@ class Database(IDatabase):
                 {
                     'id': row[0],
                     'name': row[1],
-                    'description': row[2]
+                    'password': row[2],
+                    'shared': row[3]
                 }
                 for row in requests
             ]
@@ -521,15 +547,15 @@ class Database(IDatabase):
 
             self.__cursor.execute('''
                 DELETE FROM usersGroups WHERE userId = ?
-                ''', (userId))
+                ''', (userId,))
             self.__conn.commit()
 
             print("deleting other stuff")
             self.__cursor.execute('''
                 DELETE FROM users WHERE id = ?
                 ''', (userId,))
-            self.__conn.commit()            
-            
+            self.__conn.commit()   
+            return True
         except Exception as e:
             print(f"Error with logout: {e}")
             return False
