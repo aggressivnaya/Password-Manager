@@ -499,7 +499,8 @@ class Database(IDatabase):
                 {
                     'id': row[0],
                     'name': row[1],
-                    'description': row[2]
+                    'password': row[2],
+                    'shared': row[3]
                 }
                 for row in requests
             ]
@@ -520,8 +521,7 @@ class Database(IDatabase):
                 {
                     'id': row[0],
                     'name': row[1],
-                    'password': row[2],
-                    'shared': row[3]
+                    'description': row[2],
                 }
                 for row in requests
             ]

@@ -5,7 +5,7 @@ import database as db
 server = Flask(__name__)
 database = db.Database()
 
-server.config["DATA_SVC_ADDRESS"] = "127.0.0.1:5001"
+server.config["DATA_SVC_ADDRESS"] = "182.20.1.4:5001"
 #this is the only server that can communicate with database so others would only send query to this server and getting the response
 #querys that server could get:
 #check valide user(if user exist and password match(password by default can be empty then we know that we need to check only if user exist)) -> return true or false
@@ -97,7 +97,7 @@ def removeGroup():
 def groupInfo():
     groupId = request.args.get("group_id")
     groupInfo = database.getGroupInfo(groupId)
-    print(list(groupInfo[0]))
+    print(groupInfo)
     passwords = database.getSharedPasswords(groupId)
     print(passwords)
     if not groupInfo:
@@ -111,4 +111,6 @@ def logout():
     return ("success", 200) if database.logoutFromServer(userId) else ("faild to logout", 400)
 
 if __name__ == "__main__":
-    server.run(port=5001)
+    #127.0.0.1
+    #182.20.1.4
+    server.run(host="127.0.0.1", port=5001)
