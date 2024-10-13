@@ -73,7 +73,7 @@ def history():
     userId = database.findUserIdByUsername(username)
     return ("success", 200) if database.getHistoryOfUser(userId) else ("faild to get history", 400)
 
-@server.route("/group/create", methods=["POST"])
+@server.route("/group/create_group", methods=["POST"])
 def createGroup():
     username = request.form.get('username')
     userId = database.findUserIdByUsername(username)
@@ -81,17 +81,31 @@ def createGroup():
     description = request.form.get('description')
     return ("success", 200) if database.createGroup(userId, name, description) else ("faild to create room", 400)
 
+@server.route("/group/enter_group", methods=["GET"])
+def enterGroup():
+    #sending request to admin user then waiting when admin accept
+    username = request.args.get('username')
+    groupId = request.args.get('group_id')
+    return ("success", 200) if database.addRequest(username, groupId, "ENTER") else ("faild to enter to group", 400)
+
 @server.route("/group/accept_user", methods=["POST"])
 def acceptUser():
-    pass
+    adminUsername = request.form.get('adminUsername')
+    username = request.form.get('username')
+    groupId = request.form.get('group_id')
+    return ("success", 200) if database.accept(adminUsername, username, groupId) else ("faild to accept user to group", 400)
 
 @server.route("/group/leave_group", methods=["DELETE"])
 def leaveGroup():
-    pass
+    username = request.form.get('username')
+    groupId = request.form.get('group_id')
+    return ("success", 200) if database.leave(username, groupId) else ("faild to leave room", 400)
 
-@server.route("/gorup/remove_user", methods=["DELETE"])
+@server.route("/group/remove_user", methods=["DELETE"])
 def removeGroup():
-    pass
+    adminUsername = request.form.get('adminUsername')
+    groupId = request.form.get('group_id')
+    return ("success", 200) if database.remove(adminUsername, groupId) else ("faild to create room", 400)
 
 @server.route("/group", methods=["GET"])
 def groupInfo():

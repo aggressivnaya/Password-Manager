@@ -6,8 +6,8 @@ from get_from_db import get
 server = Flask(__name__)
 
 #config
-server.config["HOST"] = "127.0.0.1"
-server.config["AUTH_SVC_ADDRESS"] = '127.0.0.1:5000'
+server.config["HOST"] = "182.20.1.3"
+server.config["AUTH_SVC_ADDRESS"] = '182.20.1.3:5000'
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -64,4 +64,4 @@ def validate():
 
     
 if __name__ == "__main__":
-    server.run(host="127.0.0.1", port=5000)
+    server.run(host="182.20.1.3", port=5000)
