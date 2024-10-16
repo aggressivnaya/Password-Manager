@@ -5,18 +5,18 @@ from IDatabase import IDatabase
 
 class Database(IDatabase):
     def __init__(self) -> None:
-        self.__conn = sqlite3.connect('passwordMangerDB.db', check_same_thread=False)
+        self.onn = sqlite3.connect('passwordMangerDB.db', check_same_thread=False)
         #self.__conn = sqlite3.connect('testing2.db')
-        self.__cursor = self.__conn.cursor()
+        self.cursor = self.conn.cursor()
 
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL,
                 email TEXT NOT NULL
             )''') 
 
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -24,7 +24,7 @@ class Database(IDatabase):
                 shared TEXT NOT NULL
             )''')
         
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS history(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 versionId INTEGER NOT NULL,
@@ -34,7 +34,7 @@ class Database(IDatabase):
                 FOREIGN KEY (passwordId) REFERENCES passwords(id)
             )''')
         
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS usersPasswords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 userId INTEGER NOT NULL,
@@ -43,14 +43,14 @@ class Database(IDatabase):
                 FOREIGN KEY (passwordId) REFERENCES passwords(id)
             )''')
         
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS groups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 description TEXT NOT NULL
             )''') 
         
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS usersGroups (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 userId TEXT NOT NULL,
@@ -60,7 +60,7 @@ class Database(IDatabase):
                 FOREIGN KEY (groupId) REFERENCES groups(id)
             )''')
         
-        self.__cursor.execute('''
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS requests(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 userId TEXT NOT NULL,
@@ -70,7 +70,7 @@ class Database(IDatabase):
                 FOREIGN KEY (groupId) REFERENCES groups(id)
             )''')
         
-        self.__conn.commit()
+        self.conn.commit()
 
     #added to user
     #def findUserIdByUsername(self, username):
