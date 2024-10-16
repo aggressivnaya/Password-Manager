@@ -1,7 +1,8 @@
 import EncryptionDecryption as e
 import datetime
+import base
 
-class Password():
+class Password(base.Base):
     def __init__(self, connection, cursor):
         self.__conn = connection
         self.__cursor = cursor
@@ -138,7 +139,7 @@ class Password():
             #userId = self.findUserIdByUsername(username)
             passwordId = self.findId(password)
             self.assignPasswordToUser(userId, passwordId)
-            self.addHistoryEntry(userId, passwordId, "ADD")
+            self.add(userId, passwordId, "ADD")
             return True
         except Exception as e:
             print(f"An error occurred while adding password: {e}")
@@ -154,7 +155,7 @@ class Password():
             self.__conn.commit()
             print(f"Password with ID {passwordId} updated successfully.")
             #userId = self.findUserIdByUsername(username)
-            self.addHistoryEntry(userId, passwordId, "UPDATE")
+            self.add(userId, passwordId, "UPDATE")
             return True
         except Exception as e:
             print(f"An error occurred while updating password: {e}")
@@ -175,13 +176,16 @@ class Password():
             )
             self.__conn.commit()
 
-            self.addHistoryEntry(userId, passwordId, "DELETE")
+            self.add(userId, passwordId, "DELETE")
             return True
         except Exception as e:
             print(f"An error occurred while deleting password: {e}")
             return False
 
-    def addHistoryEntry(self, passwordId, method):
+    def add(self, passwordId, method):
+        '''
+        the func is saving to history the change that was made
+        '''
         try:
             date = datetime.datetime.now()
             versionId = self.getLastVersionOfPassword(passwordId)

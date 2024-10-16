@@ -1,4 +1,6 @@
-class Request():
+import base
+
+class Request(base.Base):
     def __init__(self, connection, cursor):
         self.__conn = connection
         self.__cursor = cursor

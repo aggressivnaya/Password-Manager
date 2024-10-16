@@ -1,9 +1,8 @@
 import sqlite3
 import enum as Enum
 import EncryptionDecryption as e
-from IDatabase import IDatabase
 
-class Database(IDatabase):
+class Database():
     def __init__(self) -> None:
         self.onn = sqlite3.connect('passwordMangerDB.db', check_same_thread=False)
         #self.__conn = sqlite3.connect('testing2.db')

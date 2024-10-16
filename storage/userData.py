@@ -1,6 +1,7 @@
 import EncryptionDecryption as e
+import base
 
-class User():
+class User(base.Base):
     def __init__(self, connection, cursor):
         self.__conn = connection
         self.__cursor = cursor
