@@ -6,7 +6,68 @@
     <title>Dashboard</title>
 </head>
 <body>
-    <h1>Welcome to Your Dashboard</h1>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <h2>Welcome, User!</h2>
+    <h3>Your Private Passwords</h3>
+    <ul id="privatePasswords">
+        <!-- Passwords will be dynamically inserted here -->
+    </ul>
+
+    <h3>Groups</h3>
+    <ul id="groupsList">
+        <!-- Groups will be dynamically inserted here -->
+    </ul>
+
+    <div id="sharedPasswordsSection">
+        <h3>Shared Passwords in Group</h3>
+        <ul id="sharedPasswords">
+            <!-- Shared passwords will be dynamically shown here -->
+        </ul>
+    </div>
+
+    <button onclick="logout()">Logout</button>
+
+    <script>
+        // Example function to handle logout
+        function logout() {
+            window.location.href = "/logout";
+        }
+
+        // Fetching private passwords and groups dynamically (this should be handled in backend)
+        // Example:
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/getPrivatePasswords').then(response => response.json()).then(data => {
+                // Populate private passwords list
+                const privatePasswords = document.getElementById('privatePasswords');
+                data.forEach(password => {
+                    const li = document.createElement('li');
+                    li.textContent = password.name; // Just a sample
+                    privatePasswords.appendChild(li);
+                });
+            });
+
+            fetch('/getGroups').then(response => response.json()).then(data => {
+                // Populate groups list
+                const groupsList = document.getElementById('groupsList');
+                data.forEach(group => {
+                    const li = document.createElement('li');
+                    li.textContent = group.name; // Just a sample
+                    li.onclick = () => showSharedPasswords(group.id);
+                    groupsList.appendChild(li);
+                });
+            });
+        });
+
+        function showSharedPasswords(groupId) {
+            fetch(`/getSharedPasswords?groupId=${groupId}`).then(response => response.json()).then(data => {
+                const sharedPasswords = document.getElementById('sharedPasswords');
+                sharedPasswords.innerHTML = ''; // Clear previous passwords
+                data.forEach(password => {
+                    const li = document.createElement('li');
+                    li.textContent = password.name; // Just a sample
+                    sharedPasswords.appendChild(li);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

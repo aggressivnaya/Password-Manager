@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Login</title>
 </head>
 <body>
-    <h1>Welcome to the Password Manager</h1>
-    <a href="{{ url_for('login') }}">Login</a> | 
-    <a href="{{ url_for('signup') }}">Signup</a>
+    <h2>Login</h2>
+    <form id="loginForm" method="POST" action="/login">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="signup.html">Sign up</a></p>
 </body>
 </html>
