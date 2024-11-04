@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd simulator
+cd Password-Manager
 docker-compose down --remove-orphans
 cd ..
