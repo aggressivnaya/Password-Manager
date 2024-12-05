@@ -64,8 +64,4 @@ def validate():
 
     
 if __name__ == "__main__":
-<<<<<<< HEAD
-    server.run(port=5000)
-=======
     server.run(host="182.20.1.3", port=5000)
->>>>>>> c15fae950b7d106740580145ab12b19fa8a381e1

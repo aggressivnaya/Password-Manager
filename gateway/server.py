@@ -25,7 +25,7 @@ def index():
             return 'There was an issue adding your task'
     else:
         passwords = get.getPasswords(tokenData[0])
-        return render_template('index1.html', passwords=passwords)
+        return render_template('index.html', passwords=passwords)
 
 @server.route("/login", methods=["POST"])
 def login():
@@ -33,10 +33,12 @@ def login():
 
     if not err:
         #return token
-        render_template('index1.html')
+        #render_template('index.html')
+        return "success", 200
     else:
         #return err
-        redirect(url_for('login'))
+        #redirect(url_for('login'))
+        return "fail", 400
 
 @server.route("/signup", methods=["POST"]) 
 def signup():
@@ -44,10 +46,12 @@ def signup():
 
     if not err:
         #return token
-        return render_template('index1.html')
+        #return render_template('index.html')
+        return "success", 200
     else:
         #return err
-        return redirect(url_for('signup'))
+       # return redirect(url_for('signup'))
+        return "success", 200
     
 @server.route("/update/<int:id>", methods=["GET", "POST"])
 def update(id):
@@ -66,7 +70,7 @@ def update(id):
         except:
             return 'There was an issue updating your task'
     else:
-        return render_template('updare.html', password=currPass)
+        return render_template('update.html', password=currPass)
     
 @server.route("/delete/<int:id>")
 def delete(id):

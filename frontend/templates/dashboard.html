@@ -35,7 +35,12 @@
         // Fetching private passwords and groups dynamically (this should be handled in backend)
         // Example:
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('/getPrivatePasswords').then(response => response.json()).then(data => {
+            fetch('182.20.1.2:8080/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer <token>'
+                }
+                }).then(response => response.json()).then(data => {
                 // Populate private passwords list
                 const privatePasswords = document.getElementById('privatePasswords');
                 data.forEach(password => {
@@ -45,7 +50,7 @@
                 });
             });
 
-            fetch('/getGroups').then(response => response.json()).then(data => {
+            fetch('182.20.1.2:8080/getGroups').then(response => response.json()).then(data => {
                 // Populate groups list
                 const groupsList = document.getElementById('groupsList');
                 data.forEach(group => {
@@ -58,7 +63,7 @@
         });
 
         function showSharedPasswords(groupId) {
-            fetch(`/getSharedPasswords?groupId=${groupId}`).then(response => response.json()).then(data => {
+            fetch(`182.20.1.2:8080/getSharedPasswords?groupId=${groupId}`).then(response => response.json()).then(data => {
                 const sharedPasswords = document.getElementById('sharedPasswords');
                 sharedPasswords.innerHTML = ''; // Clear previous passwords
                 data.forEach(password => {
