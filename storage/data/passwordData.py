@@ -1,6 +1,6 @@
 import EncryptionDecryption as e
 import datetime
-import base
+import storage.data.base as base
 
 class Password(base.Base):
     def __init__(self, connection, cursor):

@@ -8,8 +8,9 @@ class User(Base):
     username = Column(String)
     email = Column(String)
 
-    users = relationship('UserPassword', backref='UserPassword.userId',primaryjoin='User.id==UserPassword.userId', lazy='dynamic')
-    users = relationship('UserPassword', backref='UserPassword.userId',primaryjoin='User.id==UserGroup.userId', lazy='dynamic')
+    usersPasswords = relationship('UserPassword', backref='UserPassword.userId',primaryjoin='User.id==UserPassword.userId', lazy='dynamic')
+    usersGroup = relationship('UserGroup', backref='UserGroup.userId',primaryjoin='User.id==UserGroup.userId', lazy='dynamic')
+    usersRequest = relationship('Request', backref='Request.userId',primaryjoin='User.id==Request.userId', lazy='dynamic')
 
     def __init__(self, username, email):
         self.username = username

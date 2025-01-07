@@ -1,7 +1,9 @@
-import datetime, os,jwt
+import datetime, os, jwt, random
 from flask import Flask, request
-#import database 
+from .user import Users
+from common.base import session_factory
 from get_from_db import get
+from send_noti import notification
 
 server = Flask(__name__)
 
@@ -15,7 +17,8 @@ def login():
     if not auth:
         return "missing credentials", 401
     
-    if get.login(auth.username):
+    genaretedCode = str(random.randint(100000, 999999))
+    if findUser(auth.username, auth.password) != None and notification.sendEmail(auth.username, genaretedCode):
         return createToken(auth.username), 200
     else:
         return "invalid credentials", 401    
@@ -57,11 +60,19 @@ def validate():
 
         if not get.login(decoded["username"]) and decoded["exp"] == decoded["iat"]:
             return "token is wrong", 400
+
     except:
         return "not authorized", 403
 
     return decoded, 200
 
+def findUser(email, password):
+    session = session_factory()
+    userQuery = session.query(Users).filter_by(email=email, password=password)
+    session.close()
+    user = userQuery.all()
+
+    return user
     
 if __name__ == "__main__":
     server.run(host="182.20.1.3", port=5000)

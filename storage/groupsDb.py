@@ -8,6 +8,7 @@ class Group(Base):
     description = Column(String)
 
     groups = relationship('UserGroup', backref='UserGroup.groupId',primaryjoin='Group.id==UserGroup.groupId', lazy='dynamic')
+    groupsRequest = relationship('Request', backref='Request.groupId',primaryjoin='Group.id==Request.groupId', lazy='dynamic')
 
     def __init__(self, name, description):
         self.name = name

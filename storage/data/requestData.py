@@ -1,4 +1,4 @@
-import base
+import storage.data.base as base
 
 class Request(base.Base):
     def __init__(self, connection, cursor):

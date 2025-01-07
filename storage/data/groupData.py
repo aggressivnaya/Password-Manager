@@ -1,5 +1,5 @@
 import EncryptionDecryption as e
-import base
+import storage.data.base as base
 
 class Group(base.Base):
     def __init__(self, connection, cursor):
