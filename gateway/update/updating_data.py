@@ -1,10 +1,11 @@
 import os, requests
 
-def addPassword(username, password):
-    data = {"username" : username, "curr_password" : password}
+def addPassword(token, password):
+    header = {"Authorization" : token}
+    data = { "curr_password" : password}
 
     response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes", data=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
     )
 
     if response.status_code == 200:
@@ -12,11 +13,12 @@ def addPassword(username, password):
     else:
         return None, 400
 
-def updatePassword(username, currPasswordID, newPassword):
-    data = {"username" : username, "curr_password_id" : currPasswordID, "new_password" : newPassword}
+def updatePassword(token, currPasswordID, newPassword):
+    header = {"Authorization" : token}
+    data = {"curr_password_id" : currPasswordID, "new_password" : newPassword}
 
     response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes", data=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
     )
 
     if response.status_code == 200:
@@ -24,11 +26,12 @@ def updatePassword(username, currPasswordID, newPassword):
     else:
         return None, 400
 
-def deletePassword(username, password):
-    data = {"username" : username, "curr_password" : password}
+def deletePassword(token, password):
+    header = {"Authorization" : token}
+    data = { "curr_password" : password}
 
     response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes", data=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
     )
 
     if response.status_code == 200:

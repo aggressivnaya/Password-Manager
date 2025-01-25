@@ -1,9 +1,9 @@
 import os, requests
 
-def getPasswords(username):
-    data = {"username" : username}
+def getPasswords(token):
+    header = {"Authorization" : token}
     response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get", params=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get",headers=header 
     )
 
     if response.status_code == 200:
@@ -11,10 +11,11 @@ def getPasswords(username):
     else:
         return None, 400
 
-def getPasswordById(id):
+def getPasswordById(token, id):
+    header = {"Authorization" : token}
     data = {"password_id" : id}
     response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get", params=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get",headers=header , params=data
     )
     
     if response.status_code == 200:
@@ -22,14 +23,15 @@ def getPasswordById(id):
     else:
         return None, 400
     
-def getHistory(username, passwordId=0):
-    if passwordId == 0:
-        data = {"username" : username}
+def getHistory(token, passwordId=-1):
+    header = {"Authorization" : token}
+    if passwordId != -1:
+        data = { "passwordId" : passwordId}
     else:
-        data = {"username" : username, "passwordId" : passwordId}
+        data = {}
 
     response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/history", params=data
+        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/history",headers=header , params=data
     )
     
     if response.status_code == 200:

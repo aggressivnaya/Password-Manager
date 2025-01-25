@@ -4,8 +4,6 @@ services:
   router:
     image: python:3.10-alpine
     container_name: router
-    cap_add:
-      - NET_ADMIN # Allow network administration capabilities
     volumes:
       - ./requirements.txt:/requirements.txt
     command: sh -c "pip install -r /requirements.txt"
@@ -39,23 +37,12 @@ services:
     image: python:3.10-alpine
     container_name: db_server
     volumes:
-      - ./storage:/storage/dataUtil.py
+      - ./dal:/dal/server.py
       - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt && python /storage/dataUtil.py"
+    command: sh -c "pip install -r /requirements.txt && python /dal/server.py"
     networks:
       my_lan:
         ipv4_address: 182.20.1.4
-
-  web:
-    image: nginx:latest
-    ports:
-      - "8080:80"
-    volumes:
-      - ./frontend/templates:/usr/share/nginx/html:ro
-      #- ./html:/usr/share/nginx/html:ro
-      #- ./frontend/templates/index.html:/usr/share/nginx/html:ro
-      #- ./frontend/templates/signup.html:/usr/share/nginx/html:ro
-      #- ./frontend/templates/dashboard.html:/usr/share/nginx/html:ro
 
 networks:
   my_lan:
