@@ -1,5 +1,8 @@
 from sqlalchemy import Column, String, Integer, Table, relationship
 import sqlalchemy as s
+import os
+import sys
+sys.path.append(os.path.absppath('../..'))
 from common.base import Base
 
 class User(Base):

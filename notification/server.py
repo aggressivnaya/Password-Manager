@@ -1,21 +1,19 @@
-from flask import Flask, request
+from fastapi import FastAPI
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from ..storage.notification import Notification
+import os
+import sys
+sys.path.append(os.path.absppath('..'))
+from dal.classes.notificationDb import Notification
 from common.base import session_factory
 
-server = Flask(__name__)
+server = FastAPI()
 HOST = 'smtp.gmail.com'
 PORT = 587
 
-@server.route("/send_msg", methods=["POST"])
-def sendNotification():
-    #fromDepartment = request.form.get('from_department')
-    doctorsEmail = request.form.get('from_doctor')
-    #toDepartment = request.form.get('to_department')
-    toDoctor = request.form.get('to_doctor')
-    msgToSend = request.form.get('data')
+@server.post("/send_msg/")
+def sendNotification(sender: str, to: str, subject: str, body: str):
 
     fromEmail = 'princessaaaa96@gmail.com'
     password = 'bdin qfib scdq kwzn'
@@ -24,11 +22,11 @@ def sendNotification():
     # Create message container
     msg = MIMEMultipart()
     msg['From'] = fromEmail
-    msg['To'] = toDoctor
-    msg['Subject'] = msgToSend
+    msg['To'] = to
+    msg['Subject'] = subject
 
     # Attach the body with the msg instance
-    msg.attach(MIMEText(msgToSend, 'plain'))
+    msg.attach(MIMEText(body, 'plain'))
 
     context = ssl.create_default_context()
     try:
@@ -42,15 +40,15 @@ def sendNotification():
         statusCode, response = server.login(fromEmail, password)  # Login to the email server
         print(f'Loggin in: {statusCode} {response}')
         text = msg.as_string()  # Convert the message to a string
-        server.sendmail(fromEmail, toDoctor, text)  # Send the email
+        server.sendmail(fromEmail, to, text)  # Send the email
         print("Email sent successfully")
-        insertNotification(Notification('1', doctorsEmail, '2',toDoctor, msgToSend))
+        insertNotification(Notification('1', sender, '2',to, body))
         getNotifications()
         server.quit()
-        return 'True' ,200
+        return {'sended': 'True'}
     except Exception as e:
         print(f"Failed to send email: {e}")
-        return 'False', 400
+        return {'sended': 'False'}
 
 def insertNotification(notification):
     session = session_factory()

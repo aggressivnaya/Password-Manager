@@ -14,8 +14,11 @@ services:
   auth_server:
     image: python:3.10-alpine
     container_name: auth_server
+    user: root
     volumes:
       - ./auth:/auth/server.py
+      - ./dal:/dal
+      - ./common:/common
       - ./requirements.txt:/requirements.txt
     command: sh -c "pip install -r /requirements.txt && python /auth/server.py"
     networks:
@@ -25,6 +28,7 @@ services:
   gateway_server:
     image: python:3.10-alpine
     container_name: gateway_server
+    user: root
     volumes:
       - ./gateway:/gateway/server.py
       - ./requirements.txt:/requirements.txt
@@ -36,13 +40,29 @@ services:
   db_server:
     image: python:3.10-alpine
     container_name: db_server
+    user: root
     volumes:
       - ./dal:/dal/server.py
+      - ./common:/common
       - ./requirements.txt:/requirements.txt
     command: sh -c "pip install -r /requirements.txt && python /dal/server.py"
     networks:
       my_lan:
         ipv4_address: 182.20.1.4
+
+  notification_server:
+    image: python:3.10-alpine
+    container_name: notification_server
+    user: root
+    volumes:
+      - ./noification:/noification/server.py
+      - ./dal:/dal
+      - ./common:/common
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /dal/server.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.1.6
 
 networks:
   my_lan:

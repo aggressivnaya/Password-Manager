@@ -1,4 +1,7 @@
 from sqlalchemy import Column, String, Integer, Table, relationship
+import os
+import sys
+sys.path.append(os.path.absppath('../..'))
 from common.base import Base
 
 class Password(Base):

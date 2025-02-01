@@ -1,106 +1,79 @@
-import os
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Header
 from sqlalchemy import update
 import jwt
+import os
+import sys
+sys.path.append(os.path.absppath('..'))
 from common.base import session_factory, engine, Base
-from groupsDb import Group
-from historyDb import History
-from request import Request
-from usersDb import User
-from passwordDb import Password
-from usersGroups import UserGroup
-from usersPasswordsDb import UserPassword
+from classes.groupsDb import Group
+from classes.historyDb import History
+from classes.requestDb import Request
+from classes.usersDb import User
+from classes.passwordDb import Password
+from classes.usersGroupsDb import UserGroup
+from classes.usersPasswordsDb import UserPassword
 
-server = Flask(__name__)
+server = FastAPI()
 server.config["DATA_SVC_ADDRESS"] = "182.20.1.4:5001"
 db = session_factory()
-
-'''
-def validate(user):
-    results = session_factory.query(User).filter(User.username == user.username).all()
-    return results != None
     
-@server.route("/login", methods=["GET"])
-def login():
-    username = request.args.get('username', type = str)
-    #password = request.args.get('password')
-    email = request.args.get('email', type = str)
-    user = User(username, email)
+@server.post("/changes/add/")
+def addPassword(authorization: str = Header(None), password: str = None, name: str = None, shared: str = None):
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
-    if email and not validate(user):
-        db.add(user)
-        db.commit()
-        return "success!", 200
-    elif not email and validate(username):
-        return "success!", 200
-    else:
-        return "fail", 400
-'''
-    
-@server.route("/changes", methods=["POST"])
-def changes():
-    func = request.args.get('func', type = str)
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
-    #username = request.args.get('username', type = str)
-    
-    #no need to check the username bc the username that we got in login
-    #no need to check the passwords bc all the passwords are selected so 100% that is exist
-    if func == 'add':
-        password = request.args.get('password', type = str)
-        name = request.args.get("name", type = str)
-        shared = request.args.get("shared", type = str)
-        password = Password(name, password, shared)
-        return ("success", 200) if db.add(password) else ("faild to add", 400)
-    elif func == 'update':
-        currPasswordId = request.args.get('curr_password_id', type = int)
-        newPassword = request.args.get('new_password', type = str)
-        name = request.args.get("new_name", type = str)
-        isShared = request.args.get("shared", type = str)
+    password = Password(name, password, shared)
+    db.add(password)
+    return {"success", 200} if db.commit() else {"faild to add", 400}
 
-        #query that updates the password by id
-        stmt = (
+@server.post("/changes/update/")
+def updatePassword(authorization: str = Header(None), currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+    currUser = getCurrentUser(authorization.split(' ')[1])
+
+    #query that updates the password by id
+    stmt = (
             update(Password)
             .where(Password.id == currPasswordId)
-            .values(password=newPassword, name=name, shared=isShared)
+            .values(password=newPassword, name=newName, shared=shared)
         )
 
-        db.execute(stmt)
-        return ("success", 200) if db.commit() else ("faild to update", 400)
-    elif func == 'delete':
-        currPasswordId = request.args.get('curr_password_id', type = int)
-        password = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
-        return ("success", 200) if db.delete(password) else ("faild to delete", 400)
-    else:
-        return "func is incorrect", 400
-    
-@server.route("/get", methods=["GET"])
-def get():
-    if request.args.get('password_id', default = -1, type = int) != -1:
-        #finding the password by id
-        passId = request.args.get('password_id', default = -1, type = int)
-        password = (db.query(Password).filter(Password.id == passId).all())[0]
-        return password, 200
-    else:
-        #finding by the user all his passwords
-        #username = request.args.get('username', type = str)
-        currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    db.execute(stmt)
+    return {"success", 200} if db.commit() else {"faild to update", 400}
 
-        passwords = (
-            db.query(Password)
-            .join(UserPassword, Password.id == UserPassword.passwordId)
-            .filter(UserPassword.userId == currUser.id)
-            .all()
-        )
+@server.delete("/changes/delete/")
+def deletePassword(authorization: str = Header(None), currPasswordId: int = None):
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
-        # Return a list of password details
-        return jsonify([{"id": password.id, "name": password.name, "password": password.password} for password in passwords]), 200
+    password = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
+    db.delete(password)
+    return {"success", 200} if db.commit() else {"faild to delete", 400}
     
-@server.route("/history", methods=["GET"])
-def history():
-    #tokenData = request.headers["Authorization"].split(' ')[1]
+@server.get("/getPassword")
+def getRequiredPassword(passwordId: int = None):
+    #finding the password by id
+    password = (db.query(Password).filter(Password.id == passwordId).all())[0]
+    return {"password": password}
+
+@server.get("/getPasswords")
+def getUserPasswords(authorization: str = Header(None)):
+    #finding by the user all his passwords
+    currUser = getCurrentUser(authorization.split(' ')[1])
+
+    passwords = (
+        db.query(Password)
+        .join(UserPassword, Password.id == UserPassword.passwordId)
+        .filter(UserPassword.userId == currUser.id)
+        .all()
+    )
+
+    # Return a list of password details
+    return [{"id": password.id, "name": password.name, "password": password.password} for password in passwords]
+    
+@server.get("/history")
+def history(authorization: str = Header(None)):
+    #tokenData = authorization.split(' ')[1]
     #username = request.args.get('username', type = str)
     #user = (db.query(User).filter(User.username == username).all())[0]
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
     result = (
         db.query(History)
@@ -110,17 +83,18 @@ def history():
         .all()
     )#lst of history objects
 
-    return ("success", 200) if jsonify(result) else ("faild to get history", 400)
+    if result:
+        {"error":"faild to get history"}
 
-@server.route("/group/create_group", methods=["POST"])
-def createGroup():
+    return result
+
+@server.post("/group/create_group")
+def createGroup(authorization: str = Header(None), name: str = None, description: str = None):
     #username = request.args.get('username', type = str)
     #user = (db.query(User).filter(User.username == username).all())[0]
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
     #creating the group
-    name = request.args.get('name', type = str)
-    description = request.args.get('description')
     group = Group(name, description)
     db.add(group)
     db.commit()
@@ -129,28 +103,28 @@ def createGroup():
     group = (db.query(Group).filter(Group.name == name and Group.description == description).all())[0]
     userGroup = UserGroup(currUser.id, group.id, True)
     db.add(userGroup)
-    return ("success", 200) if db.commit() else ("faild to create room", 400)
+    return {"success", 200} if db.commit() else {"faild to create room", 400}
 
-@server.route("/group/enter_group", methods=["GET"])
-def enterGroup():
-    #sending request to admin user then waiting when admin accept
+@server.get("/group/enter_group")
+def enterGroup(authorization: str = Header(None), groupLink: str = None):
+    '''sending request to admin user then waiting when admin accept'''
+
     #username = request.args.get('username', type = str)
     #user = (db.query(User).filter(User.username == username).all())[0]
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
-    groupName = request.args.get('group_name', type = str)
-    group = (db.query(Group).filter(Group.name == groupName).all())[0]
+    group = (db.query(Group).filter(Group.link == groupLink).all())[0]
 
     #finding the admin of the group
     userGroup = (db.query(UserGroup).filter(UserGroup.groupId == group.id and UserGroup.isAdmin == True).all())[0]
     request = Request(currUser.id, userGroup.userId, group.id)#creating an request to join to the group
     db.add(request)
-    return ("success", 200) if db.commit() else ("faild to enter to group", 400)
+    return {"success", 200} if db.commit() else {"faild to enter group", 400}
 
-@server.route("/group/accept_user", methods=["POST"])
-def acceptUser():
-    #admin is accepting the request of user to enter to group
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+@server.post("/group/accept_user")
+def acceptUser(authorization: str = Header(None)):
+    #Admin is accepting the request of user to enter to group
+    currUser = getCurrentUser(authorization.split(' ')[1])
     #adminUsername = request.args.get('adminUsername', type = str)#TODO: check with token
     username = request.args.get('username', type = str)
     user = (db.query(User).filter(User.username == username).all())[0]
@@ -177,26 +151,25 @@ def acceptUser():
     # Delete the request
     db.delete(request)
     
-    return ("success", 200) if db.commit() else ("faild to accept user to group", 400)
+    return {"success", 200} if db.commit() else {"faild to accept user to group", 400}
 
-@server.route("/group/leave_group", methods=["DELETE"])
-def leaveGroup():
+@server.delete("/group/leave_group")
+def leaveGroup(authorization: str = Header(None), groupName: str = None):
     #username = request.args.get('username', type = str)
     #user = (db.query(User).filter(User.username == username).all())[0]
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    currUser = getCurrentUser(authorization.split(' ')[1])
 
-    groupName = request.args.get('group_name', type = str)
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
 
     userGroup = UserGroup(currUser.id, group.id)
     db.delete(userGroup)
-    return ("success", 200) if db.commit() else ("faild to leave room", 400)
+    
+    return {"success", 200} if db.commit() else {"faild to leave roo", 400}
 
 @server.route("/group/remove_user", methods=["DELETE"])
-def removeGroup():
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
-    #adminUsername = request.args.get('adminUsername', type = str)#TODO: you need to get this from the token
-    groupName = request.args.get('group_name', type = str)
+def removeGroup(authorization: str = Header(None), groupName: str = None):
+    currUser = getCurrentUser(authorization.split(' ')[1])
+    #adminUsername = request.args.get('adminUsername', type = str)
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
 
     # Delete references to the group in the UserGroup table
@@ -204,12 +177,11 @@ def removeGroup():
     
     # Delete the group itself
     db.query(Group).filter(Group.id == group.id).delete()
+    
+    return {"success", 200} if db.commit() else {"faild to delete group", 400}
 
-    return ("success", 200) if db.commit() else ("faild to delete room", 400)
-
-@server.route("/group", methods=["GET"])
-def groupInfo():
-    groupName = request.args.get("group_name", type = str)
+@server.get("/group")
+def groupInfo(groupName: str = None):
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
     #getting the users that in the group
     usersInGroup = getUsersOfGroup(group)
@@ -220,15 +192,15 @@ def groupInfo():
     groupInfo = {"name": group.name, "description": group.description, "users": usersInGroup, "shared_passwords": sharedPasswords}
     
     if not groupInfo:
-        return "error with group info", 400
-    return groupInfo, 200
+        return {"error": "error with group info"}
+    return groupInfo
 
-@server.route("/logout", methods=["DELETE"])
-def logout():
+@server.delete("/logout")
+def logout(authorization: str = Header(None)):
     #loging out from the app complitely
     #username = request.args.get('username', type = str)
     #user = (db.query(User).filter(User.username == username).all())[0]
-    currUser = getCurrentUser(request.headers["Authorization"].split(' ')[1])
+    currUser = getCurrentUser(authorization.split(' ')[1])
     db.delete(currUser)
     return ("success", 200) if db.commit() else ("faild to logout", 400)
 

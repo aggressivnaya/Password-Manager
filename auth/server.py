@@ -1,40 +1,33 @@
 import datetime, os, jwt, random
-from flask import Flask, request
-from dal.usersDb import User
+#from flask import Flask, request
+from fastapi import FastAPI, Header
+from dal.classes.usersDb import User
 from common.base import session_factory
 from send_noti import notification
 
-server = Flask(__name__)
+server = FastAPI()
 db = session_factory()
 
 #config
 #server.config["HOST"] = "182.20.1.3"
-server.config["AUTH_SVC_ADDRESS"] = '182.20.1.3:5000'
+#server.config["AUTH_SVC_ADDRESS"] = '182.20.1.3:5000'
 
-@server.route("/login", methods=["POST"])
-def login():
-    auth = request.authorization#getting the password and username
-    if not auth:
-        return "missing credentials", 401
-    
+@server.post("/login/")
+def login(name: str, email: str):
     genaretedCode = str(random.randint(100000, 999999))
 
-    findingUser = (db.query(User).filter(User.username == auth.username and User.email == auth.password).all())[0]
-    if findingUser != None and notification.sendEmail(auth.username, genaretedCode):
-        return createToken(auth.username), 200
+    findingUser = (db.query(User).filter(User.username == name and User.email == email).all())[0]
+    if findingUser != None and notification.sendEmail(name, genaretedCode):
+        return {"token": createToken(name)}
     else:
-        return "invalid credentials", 401    
+        return {"error": "invalid credentials"}
     
-@server.route('/signup', methods=['POST'])
-def signup():
-    auth = request.authorization#getting the password and username
-    if not auth:
-        return "missing credentials", 401
-    
-    if db.add(User(auth.username, auth.password)):
-        return createToken(auth.username), 200
+@server.post('/signup/')
+def signup(name: str, email: str):
+    if db.add(User(name, email)):
+        return {"token": createToken(name)}
     else:
-        return "invalid credentials", 401
+        return {"error": "invalid credentials"}
 
 def createToken(username) -> str:
     return jwt.encode(
@@ -48,13 +41,12 @@ def createToken(username) -> str:
         algorithm="HS256",
     )
 
-@server.route("/validate", methods=["POST"])
-def validate():
-    encoded_jwt = request.headers["Authorization"]
-    encoded_jwt = encoded_jwt.split(" ")[1]
+@server.post("/validate/")
+def validate(authorization: str = Header(None)):
+    if not authorization:
+        return {"error": "missing credentials"}
 
-    if not encoded_jwt:
-        return "missing credentials", 401
+    encoded_jwt = authorization.split(" ")[1]
 
     try:
         decoded = jwt.decode(
@@ -63,12 +55,12 @@ def validate():
 
         findingUser = (db.query(User).filter(User.username == decoded["username"]).all())[0]
         if not findingUser and decoded["exp"] == decoded["iat"]:
-            return "token is wrong", 400
+            return {"error": "token is wrong"}
 
     except:
-        return "not authorized", 403
+        return {"error": "not authorized"}
 
-    return decoded, 200
+    return {"decoded": decoded}
     
 if __name__ == "__main__":
     server.run(host="182.20.1.3", port=5000)

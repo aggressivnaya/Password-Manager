@@ -1,4 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, relationship, Boolean
+import os
+import sys
+sys.path.append(os.path.absppath('../..'))
 from common.base import Base
 from groupsDb import Group
 from usersDb import User
