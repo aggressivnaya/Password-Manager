@@ -1,40 +1,70 @@
 import os, requests
+from fastapi import HTTPException, Request
 
-def addPassword(token, password):
-    header = {"Authorization" : token}
+DATA_SVC_ADDRESS = '182.20.1.4:5001'
+
+def addPassword(request, password):
+    header = {"Authorization" : request.header.get('Authorization')}
+
     data = { "curr_password" : password}
 
-    response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
-    )
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/changes/add/",headers=header , data=data
+        )
+        return True
+    except:
+        #raise HTTPException(status_code=400, detail="Password not added")
+        return False
 
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400
 
-def updatePassword(token, currPasswordID, newPassword):
-    header = {"Authorization" : token}
+def updatePassword(request, currPasswordID, newPassword):
+    header = {"Authorization" : request.header.get('Authorization')}
+
     data = {"curr_password_id" : currPasswordID, "new_password" : newPassword}
 
-    response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
-    )
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/changes/update/",headers=header , data=data
+        )
 
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400
+        if response.json()['success']:
+            return True
+        return False
+    except:
+        #raise HTTPException(status_code=400)
+        return False
 
-def deletePassword(token, password):
-    header = {"Authorization" : token}
+def deletePassword(request, password):
+    header = {"Authorization" : request.header.get('Authorization')}
+
     data = { "curr_password" : password}
 
-    response = requests.post(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/changes",headers=header , data=data
-    )
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/changes/delete/",headers=header , data=data
+        )
+        
+        if response.json()['success']:
+            return True
+        return False
+    except:
+        #raise HTTPException(status_code=400, detail="Password not deleted")
+        return False
 
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400
+#TODO: implement this
+def addPasswordToGroup(request, group):
+    header = {"Authorization" : request.header.get('Authorization')}
+
+    data = { "curr_group" : group}
+
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/",headers=header , data=data
+        )
+
+        if response.json()['success']:
+            return True
+        return False
+    except:
+        raise HTTPException(status_code=400, detail="Group not added")

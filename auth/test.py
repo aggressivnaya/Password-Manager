@@ -1,33 +1,36 @@
 import requests, os
 
-def login():
-    username = "alice"
-    email = "alice@gmail.com"
+username = "alice"
+email = "alice.agrest@gmail.com"
 
-    basicAuth = (username, "fff")
+def login():
+    data = {
+    "name": username,
+    "email": email,
+    }
 
     response = requests.post(
-        "http://127.0.0.1:5000/login", auth=basicAuth
+        "http://127.0.0.1:5000/login/", json=data
     )
 
     if response.status_code == 200:
-        print("response: " + response.text)
-        return response.text
+        print("response: " + response.json['token'])
+        #return response.text
     else:
         print("error with login")
     
 def signup():
-    username = "alice"
-    email = "alice@gmail.com"
-
-    basicAuth = (username, email)
+    data = {
+    "name": username,
+    "email": email,
+    }
 
     response = requests.post(
-        "http://127.0.0.1:5000/signup", auth=basicAuth
+        "http://127.0.0.1:5000/signup/", json=data
     )
 
     if response.status_code == 200:
-        print("response: " + response.text)
+        response.json['token']
     else:
         print("error with signup")
 

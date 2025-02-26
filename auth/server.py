@@ -1,31 +1,48 @@
 import datetime, os, jwt, random
+from pydantic import BaseModel
 #from flask import Flask, request
-from fastapi import FastAPI, Header
-from dal.classes.usersDb import User
+from fastapi import FastAPI, Header, Request, HTTPException
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+#from dal.classes.usersDb import User
+from common.classes import User
 from common.base import session_factory
 from send_noti import notification
 
 server = FastAPI()
 db = session_factory()
 
-#config
-#server.config["HOST"] = "182.20.1.3"
-#server.config["AUTH_SVC_ADDRESS"] = '182.20.1.3:5000'
+genaretedCode = ''
+
+class User(BaseModel):
+    name: str
+    email: str
 
 @server.post("/login/")
-def login(name: str, email: str):
+def login(user: User):
+    global genaretedCode
     genaretedCode = str(random.randint(100000, 999999))
 
-    findingUser = (db.query(User).filter(User.username == name and User.email == email).all())[0]
-    if findingUser != None and notification.sendEmail(name, genaretedCode):
-        return {"token": createToken(name)}
+    findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())[0]
+    if findingUser != None and notification.sendEmail(user.name, genaretedCode):
+        return {"token": createToken(user.name)}
     else:
         return {"error": "invalid credentials"}
     
+@server.get('/check')
+def checkCode(code: str):
+    if code == genaretedCode:
+        return {'success': True}
+    else:
+        return {"error": "invalid code"}
+    
 @server.post('/signup/')
-def signup(name: str, email: str):
-    if db.add(User(name, email)):
-        return {"token": createToken(name)}
+def signup(user: User):
+    findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())[0]
+    if findingUser == None and notification.sendEmail(user.name, genaretedCode):
+        db.add(User(user.name, user.email))
+        return {"token": createToken(user.name)}
     else:
         return {"error": "invalid credentials"}
 
@@ -42,11 +59,11 @@ def createToken(username) -> str:
     )
 
 @server.post("/validate/")
-def validate(authorization: str = Header(None)):
-    if not authorization:
-        return {"error": "missing credentials"}
+def validate(request: Request):
+    if not request.headers.get("Authorization"):
+        raise HTTPException(status_code=401, detail="not authorized")
 
-    encoded_jwt = authorization.split(" ")[1]
+    encoded_jwt = request.headers.get("Authorization").split(" ")[1]
 
     try:
         decoded = jwt.decode(
@@ -55,12 +72,14 @@ def validate(authorization: str = Header(None)):
 
         findingUser = (db.query(User).filter(User.username == decoded["username"]).all())[0]
         if not findingUser and decoded["exp"] == decoded["iat"]:
-            return {"error": "token is wrong"}
+            raise HTTPException(status_code=401, detail="not authorized")
 
     except:
-        return {"error": "not authorized"}
+        raise HTTPException(status_code=401, detail="not authorized")
 
-    return {"decoded": decoded}
+    return {"validated": True}
     
 if __name__ == "__main__":
-    server.run(host="182.20.1.3", port=5000)
+    import uvicorn
+    uvicorn.run(server, host="182.20.1.3", port=5000)
+    

@@ -1,20 +1,22 @@
-from sqlalchemy import Column, Integer, ForeignKey, relationship, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
 import os
 import sys
-sys.path.append(os.path.absppath('../..'))
+sys.path.append(os.path.abspath('../..'))
 from common.base import Base
-from groupsDb import Group
-from usersDb import User
+from dal.classes.groupsDb import Group
+from dal.classes.usersDb import User
 
 class UserGroup(Base):
-    __tablename__ = 'UserGroup'
+    __tablename__ = 'usersGroups'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
-    userId = Column(Integer, ForeignKey(User.id))
-    groupId = Column(Integer, ForeignKey(Group.id))
+    userId = Column(Integer, ForeignKey("users.id"))
+    groupId = Column(Integer, ForeignKey("group.id"))
     isAdmin = Column(Boolean)
 
-    user = relationship('User', back_populates='User')
-    group = relationship('Group', back_populates='Group')
+    user = relationship('User', back_populates='groups')
+    group = relationship('Group', back_populates='users')
 
     def __init__(self, userId, groupId, isAdmin=False):
         self.userId = userId

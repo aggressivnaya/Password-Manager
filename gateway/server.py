@@ -7,81 +7,138 @@ from update import updating_data
 
 server = FastAPI()
 
-'''
-@server.route('/', methods=['POST', 'GET'])
-def index():
-    access, err = validate.token(request)
-
-    if err:
-        return err
-    
-    tokenData = request.headers["Authorization"]
-
-    #in the same index page we see passwords and adding them
-    if request.method == 'POST':
-        try:
-            password = request.form['content']
-            updating_data.addPassword(tokenData, password)
-            return redirect('/')
-        except:
-            return 'There was an issue adding your task'
-    else:
-        passwords = get.getPasswords(tokenData)
-        return render_template('index.html', passwords=passwords)'''
-
 @server.post("/login")
-def login(request: Request):
-    token, err = access.login(request)
+def login(request: Request, name: str, email: str):
+    token = access.login(request)
 
-    if err:
-        return {"fail", 400}
-    
-    return {"success", 200}
+    if token['token']:
+        return {"success", 200}
+    return {"error", 400}
 
 @server.post("/signup") 
-def signup(request: Request):
-    token, err = access.signup(request)
-
-    if err:
-        return {"error", 400}
+def signup(request: Request, name: str, email: str):
+    try:
+        access = validate.token(request)
+    except Exception as e:
+        return e
     
     return {"success", 200}
-    
-@server.route("/update", methods=["GET", "POST"])#TODO:split
-def update(request: Request):
-    access, err = validate.token(request)
-    id = request.args.get('id')
 
-    if err:
-        return err
-    
-    updating_data.updatePassword(tokenData[0], id, request.form['content'])
-    
-@server.delete("/delete")
-def delete(request: Request, id: int):
-    access, err = validate.token(request)
+@server.get('/check')
+def check(request: Request, code: str):
+    return access.check(request)
 
-    if err:
-        return {"error", 400}
+@server.get("/passwords")
+def passwords(request: Request, passwordId: int):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
     
-    return access
+    try:
+        return get.getPasswords(request)
+    except Exception as e:
+        return e
+
+@server.post("/passwords/add")
+def passwordAdd(request: Request, password: str = None, name: str = None, shared: str = None):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
     
+    try:
+        return updating_data.addPassword(request)
+    except Exception as e:
+        return e
+    
+@server.post("/passwords/update")
+def passwordUpd(request: Request, currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.updatePassword(request)
+    except Exception as e:
+        return e
+    
+@server.post("/passwords/delete")
+def passwordDlt(request: Request, currPasswordId: int = None):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.deletePassword(request)
+    except Exception as e:
+        return e
+
+@server.get("/groups")
+def groups(request: Request, groupName: str = None):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return get.getGroups(request)
+    except Exception as e:
+        return e
+    
+@server.get("/groups/{groupName}/passwords")
+def groups(request: Request, groupName: str = None):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return get.getGroupPasswords(request)
+    except  Exception as e:
+        return e
+    
+@server.post("/groups/{groupName}/passwords/add")
+def groups(request: Request):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.addPasswordToGroup(request)
+    except  Exception as e:
+        return e
+
 @server.get("/history")
 def history(request: Request):
-    access, err = validate.token(request)
+    access = validate.token(request)
 
-    if err:
-        return {err, 400}
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
     
     try:
         return get.getHistory(request)
-    except:
-        return 'There was an issue updating your task'
+    except Exception as e:
+        return e
  
 @server.route('/logout')
-def logout():
-    # Handle logout logic
-    pass
+def logout(request: Request):
+    try:
+        access = validate.token(request)['token']
+    except Exception as e:
+        return e
+    
+    try:
+        return access.logout(request)
+    except Exception as e:
+        return e
     
 if __name__ == "__main__":
-    server.run(port=8080)
+    import uvicorn
+    uvicorn.run(server, host="182.20.1.2", port=5002)
+    

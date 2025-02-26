@@ -1,23 +1,24 @@
-from sqlalchemy import Column, String, Integer, Table, relationship,ForeignKey
+from sqlalchemy import Column, String, Integer, Table,ForeignKey
+from sqlalchemy.orm import relationship
 import os
 import sys
-sys.path.append(os.path.absppath('../..'))
+sys.path.append(os.path.abspath('../..'))
 from common.base import Base
-from groupsDb import Group
-from usersDb import User
+#from dal.classes.groupsDb import Group
+#from dal.classes.usersDb import User
 
 class Request(Base):
-    __tablename__ = 'Request'
+    __tablename__ = 'requests'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
-    senderId = Column(Integer, ForeignKey(User.id))
-    groupId = Column(Integer, ForeignKey(Group.id))
+    senderId = Column(Integer, ForeignKey("users.id"))
+    groupId = Column(Integer, ForeignKey("group.id"))
     requestCommand = Column(String)
 
-    user = relationship('User', back_populates='User')
-    group = relationship('Group', back_populates='Group')
+    sender = relationship('User', back_populates='sentRequests')
+    group = relationship('Group', back_populates='groupRequest')
 
-    def __init__(self, userId ,managerGroupID , groupId ,requestCommand ):
-        self.userId = userId
+    def __init__(self, senderId , groupId ,requestCommand ):
+        self.senderId = senderId
         self.groupId = groupId
-        self.managerGroupID = managerGroupID
         self.requestCommand = requestCommand

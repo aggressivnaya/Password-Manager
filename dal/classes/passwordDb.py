@@ -1,18 +1,20 @@
-from sqlalchemy import Column, String, Integer, Table, relationship
+from sqlalchemy import Column, String, Integer, Table
+from sqlalchemy.orm import relationship
 import os
 import sys
-sys.path.append(os.path.absppath('../..'))
+sys.path.append(os.path.abspath('../..'))
 from common.base import Base
+from dal.classes.historyDb import History  # Import the History class
 
 class Password(Base):
-    __tablename__ = 'Password'
+    __tablename__ = 'passwords'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     password = Column(String)
     shared = Column(String)
 
-    passwords = relationship('UserPassword', backref='UserPassword.passwordId',primaryjoin='Password.id==UserPassword.passwordId', lazy='dynamic')
-    passwordsHistory = relationship('History', backref='History.passwordId',primaryjoin='Password.id==History.passwordId', lazy='dynamic')
+    users = relationship('UserPassword', back_populates='password')
+    history = relationship('History', back_populates='password')
     
     def __init__(self, name, password ,shared ):
         self.name = name

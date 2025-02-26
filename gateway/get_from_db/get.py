@@ -1,40 +1,44 @@
 import os, requests
+from fastapi import HTTPException, Request
 
-def getPasswords(token):
-    header = {"Authorization" : token}
-    response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get",headers=header 
-    )
+DATA_SVC_ADDRESS = '182.20.1.4:5001'
 
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400
+def getPasswords(request: Request):
+    header = {"Authorization" : request.header.get('Authorization')}
 
-def getPasswordById(token, id):
-    header = {"Authorization" : token}
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/get",headers=header 
+        )
+        return {'passwords': response.json()['passwords']}
+    except:
+        raise HTTPException(status_code=400, detail="Passwords not found")
+
+def getPasswordById(request: Request, id):
+    header = {"Authorization" : request.header.get('Authorization')}
     data = {"password_id" : id}
-    response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/get",headers=header , params=data
-    )
+
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/get",headers=header , params=data
+        )
+        return {'password': response.json()['password']}
+    except:
+        raise HTTPException(status_code=400, detail="Password not found")
     
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400
     
-def getHistory(token, passwordId=-1):
-    header = {"Authorization" : token}
+def getHistory(request: Request, passwordId=-1):
+    header = {"Authorization" : request.header.get('Authorization')}
     if passwordId != -1:
         data = { "passwordId" : passwordId}
     else:
         data = {}
 
-    response = requests.get(
-        f"http://{os.environ.get('DATA_SVC_ADDRESS')}/history",headers=header , params=data
-    )
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/history",headers=header , params=data
+        )
+        return {'history': response.json()['history']}
+    except:
+        raise HTTPException(status_code=400, detail="History not found")
     
-    if response.status_code == 200:
-        return response.text, response.status_code
-    else:
-        return None, 400

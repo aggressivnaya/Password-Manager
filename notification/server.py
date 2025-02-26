@@ -4,20 +4,18 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import sys
-sys.path.append(os.path.absppath('..'))
+sys.path.append(os.path.abspath('..'))
 from dal.classes.notificationDb import Notification
 from common.base import session_factory
 
 server = FastAPI()
 HOST = 'smtp.gmail.com'
 PORT = 587
+fromEmail = 'princessaaaa96@gmail.com'
+password = 'bdin qfib scdq kwzn'
 
 @server.post("/send_msg/")
 def sendNotification(sender: str, to: str, subject: str, body: str):
-
-    fromEmail = 'princessaaaa96@gmail.com'
-    password = 'bdin qfib scdq kwzn'
-
     #bdin qfib scdq kwzn
     # Create message container
     msg = MIMEMultipart()
@@ -65,4 +63,5 @@ def getNotifications():
         print(f"from {n.fromDepartment} ,{n.fromDoctor} to {n.toDepartment}, {n.toDoctor} data {n.data}")
 
 if __name__ == "__main__":
-    server.run(host='127.0.0.1', port=2343)
+    import uvicorn
+    uvicorn.run(server, host="182.20.1.6", port=5003)

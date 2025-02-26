@@ -1,18 +1,22 @@
-from sqlalchemy import Column, String, Integer, Table, ForeignKey, relationship
+from sqlalchemy import Column, String, Integer, Table, ForeignKey
+from sqlalchemy.orm import relationship
 import os
 import sys
-sys.path.append(os.path.absppath('../..'))
+sys.path.append(os.path.abspath('../..'))
 from common.base import Base
-from usersDb import User
+#from dal.classes.usersDb import User
 
 class Notification(Base):
-    __tablename__ = 'Notification'
+    __tablename__ = 'notifications'
     id = Column(Integer, primary_key=True)
-    recieverId = Column(Integer, ForeignKey(User.id))
+    senderId = Column(Integer, ForeignKey("users.id"))
+    receiverId = Column(Integer, ForeignKey("users.id"))
     data = Column(String)
 
-    user = relationship('User', back_populates='User')
+    sender = relationship("User", foreign_keys=[senderId], back_populates="sentNotifications")
+    receiver = relationship("User", foreign_keys=[receiverId], back_populates="receivedNotifications")
 
-    def __init__(self, recieverId, data):
+    def __init__(self, senderId, recieverId, data):
+        self.senderId = senderId
         self.recieverId = recieverId
         self.data = data
