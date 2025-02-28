@@ -1,52 +1,53 @@
-import requests, os
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from auth.server import server, db, User, createToken
+from common.base import Base, engine
 
-AUTH_SVC_ADDRESS = '182.20.1.3:5000'
+client = TestClient(server)
 
-username = "alice"
-email = "alice.agrest@gmail.com"
-token = ""
+# Create a test database
+#SQLALCHEMY_DATABASE_URL = "sqlite:///projectdb1.db"
+#engine = create_engine(SQLALCHEMY_DATABASE_URL)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def login():
-    data = {
-    "name": username,
-    "email": email,
-    }
-    try:
-        response = requests.post(
-            f"http://{AUTH_SVC_ADDRESS}/login/", json=data
-        )
-        global token
-        token = response.json()['access_token']
-        print(token)
-    except Exception as e:
-        print(e)
-    
-def signup():
-    data = {
-    "name": username,
-    "email": email,
-    }
+@pytest.fixture(scope="module")
+def test_db():
+    db = TestingSessionLocal()
+    yield db
+    db.close()
 
-    try:
-        response = requests.post(
-            f"http://{AUTH_SVC_ADDRESS}/signup/", json=data
-        )
-        global token
-        token = response.json()['access_token']
-        print(token)
-    except Exception as e:
-        print(e)
+@pytest.fixture(scope="module")
+def client_with_db(test_db):
+    server.dependency_overrides[db] = lambda: test_db
+    yield client
+    server.dependency_overrides = {}
 
-def validate(token):
-    try:
-        response = requests.post(
-            f"http://{AUTH_SVC_ADDRESS}/validate/", headers={"Authorization": 'Bearer '+token}
-        )
-        print(response.json()['validated'])
-    except Exception as e:
-        print(e)
+def test_signup(client_with_db):
+    response = client_with_db.post("/signup/", json={"name": "testuser", "email": "testuser@example.com"})
+    assert response.status_code == 200
+    assert "access_token" in response.json()
 
-if __name__ == "__main__":
-    signup()
-    #token = login()
-    #validate(token)
+def test_login(client_with_db):
+    response = client_with_db.post("/login/", json={"name": "testuser", "email": "testuser@example.com"})
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+def test_login_invalid_credentials(client_with_db):
+    response = client_with_db.post("/login/", json={"name": "invaliduser", "email": "invalid@example.com"})
+    assert response.status_code == 401
+    assert response.json() == {"detail": "invalid credentials"}
+
+def test_validate(client_with_db):
+    token = createToken("testuser", "testuser@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client_with_db.post("/validate/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"validated": True}
+
+def test_validate_invalid_token(client_with_db):
+    headers = {"Authorization": "Bearer invalidtoken"}
+    response = client_with_db.post("/validate/", headers=headers)
+    assert response.status_code == 401
+    assert response.json() == {"detail": "not authorized"}
