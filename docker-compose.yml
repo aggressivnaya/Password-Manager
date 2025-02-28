@@ -57,6 +57,18 @@ services:
         ipv4_address: 182.20.1.4
     ports:
       - "5001:5001"
+
+  client_auth:
+    image: python:3.10-alpine
+    container_name: client_auth
+    user: root
+    volumes:
+      - ./auth:/auth
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /auth/test.py"
+    networks:
+      my_lan:
+        ipv4_address: 182.20.1.9
   
   client_db:
     image: python:3.10-alpine
@@ -66,10 +78,22 @@ services:
       - ./dal:/dal
       - ./common:/common
       - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt && python /dal/insert_data.py && python /dal/client_db.py"
+    command: sh -c "pip install -r /requirements.txt && python /dal/insert_data.py && python /dal/test.py"
     networks:
       my_lan:
         ipv4_address: 182.20.1.8
+
+  client_gateway:
+    image: python:3.10-alpine
+    container_name: client_gateway
+    user: root
+    volumes:
+      - ./gateway:/gateway
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /gateway/test.py"
+    networks:
+      my_lan:
+        ipv4_address:
 
   notification_server:
     image: python:3.10-alpine

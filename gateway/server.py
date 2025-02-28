@@ -1,32 +1,45 @@
 #from flask import Flask, request, render_template, redirect, url_for, flash
-from fastapi import FastAPI, Header, Request
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from validation import validate
 from auth_login import access
 from get_from_db import get
 from update import updating_data
+from send import send
 
 server = FastAPI()
+server.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @server.post("/login")
 def login(request: Request, name: str, email: str):
-    token = access.login(request)
+    try:
+        token = access.login(request, name, email)
+        #TODO: send email
+        #send.sendAuth(token)
+        return {"access_token": token}
+    except Exception as e:
+        return e
 
-    if token['token']:
-        return {"success", 200}
-    return {"error", 400}
 
 @server.post("/signup") 
 def signup(request: Request, name: str, email: str):
     try:
-        access = validate.token(request)
+        token = access.token(request, name, email)
+        #TODO: send email
+        #send.sendAuth(token)
+        return {"access_token": token}
     except Exception as e:
         return e
-    
-    return {"success", 200}
 
 @server.get('/check')
 def check(request: Request, code: str):
-    return access.check(request)
+    return send.checkGeneratedCode(code)
 
 @server.get("/passwords")
 def passwords(request: Request, passwordId: int):

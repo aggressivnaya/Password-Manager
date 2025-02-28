@@ -8,7 +8,7 @@ def token(request):
     try:
         response = requests.post(
             f"http://{AUTH_SVC_ADDRESS}/validate/",
-            headers=request.headers,
+            headers={"Authorization": request.headers.get("Authorization")},
         )
         return response.json()['validated']
     except Exception as e:

@@ -1,23 +1,25 @@
 import requests, os
 
+AUTH_SVC_ADDRESS = '182.20.1.3:5000'
+
 username = "alice"
 email = "alice.agrest@gmail.com"
+token = ""
 
 def login():
     data = {
     "name": username,
     "email": email,
     }
-
-    response = requests.post(
-        "http://127.0.0.1:5000/login/", json=data
-    )
-
-    if response.status_code == 200:
-        print("response: " + response.json['token'])
-        #return response.text
-    else:
-        print("error with login")
+    try:
+        response = requests.post(
+            f"http://{AUTH_SVC_ADDRESS}/login/", json=data
+        )
+        global token
+        token = response.json()['access_token']
+        print(token)
+    except Exception as e:
+        print(e)
     
 def signup():
     data = {
@@ -25,24 +27,24 @@ def signup():
     "email": email,
     }
 
-    response = requests.post(
-        "http://127.0.0.1:5000/signup/", json=data
-    )
-
-    if response.status_code == 200:
-        response.json['token']
-    else:
-        print("error with signup")
+    try:
+        response = requests.post(
+            f"http://{AUTH_SVC_ADDRESS}/signup/", json=data
+        )
+        global token
+        token = response.json()['access_token']
+        print(token)
+    except Exception as e:
+        print(e)
 
 def validate(token):
-    response = requests.post(
-        "http://127.0.0.1:5000/validate", headers={"Authorization": token}
-    )
-
-    if response.status_code == 200:
-        print("response: " + response.text)
-    else:
-        print(response.text)
+    try:
+        response = requests.post(
+            f"http://{AUTH_SVC_ADDRESS}/validate/", headers={"Authorization": 'Bearer '+token}
+        )
+        print(response.json()['validated'])
+    except Exception as e:
+        print(e)
 
 if __name__ == "__main__":
     signup()

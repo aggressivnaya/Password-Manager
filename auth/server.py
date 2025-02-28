@@ -1,7 +1,8 @@
 import datetime, os, jwt, random
 from pydantic import BaseModel
-#from flask import Flask, request
-from fastapi import FastAPI, Header, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import sys
 sys.path.append(os.path.abspath('..'))
@@ -12,68 +13,71 @@ from send_noti import notification
 
 server = FastAPI()
 db = session_factory()
+server.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
-genaretedCode = ''
-
-class User(BaseModel):
+class BodyUser(BaseModel):
     name: str
     email: str
 
 @server.post("/login/")
-def login(user: User):
-    global genaretedCode
-    genaretedCode = str(random.randint(100000, 999999))
-
+def login(user: BodyUser):
     findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())[0]
-    if findingUser != None and notification.sendEmail(user.name, genaretedCode):
-        return {"token": createToken(user.name)}
+    if findingUser != None:
+        return {"access_token": createToken(user.name ,user.email)}
     else:
-        return {"error": "invalid credentials"}
-    
-@server.get('/check')
-def checkCode(code: str):
-    if code == genaretedCode:
-        return {'success': True}
-    else:
-        return {"error": "invalid code"}
+        raise HTTPException(status_code=401, detail="invalid credentials")
     
 @server.post('/signup/')
 def signup(user: User):
     findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())[0]
-    if findingUser == None and notification.sendEmail(user.name, genaretedCode):
+    if findingUser == None:
         db.add(User(user.name, user.email))
-        return {"token": createToken(user.name)}
+        return {"access_token": createToken(user.name, user.email)}
     else:
-        return {"error": "invalid credentials"}
+        raise HTTPException(status_code=401, detail="invalid credentials")
 
-def createToken(username) -> str:
+def createToken(username, email) -> str:
     return jwt.encode(
         {
             "username": username,
-            "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-            + datetime.timedelta(days=1),
-            "iat": datetime.datetime.utcnow(),
+            "email": email,
+            "exp": datetime.datetime.now() + datetime.timedelta(days=1),
         },
         "SARCASM",
-        algorithm="HS256",
+        algorithm="HS256"
     )
+
+oauth2Schema = OAuth2PasswordBearer(tokenUrl="/login/")
 
 @server.post("/validate/")
 def validate(request: Request):
-    if not request.headers.get("Authorization"):
+    authHeader = request.headers.get("Authorization")
+    if not authHeader:
         raise HTTPException(status_code=401, detail="not authorized")
 
-    encoded_jwt = request.headers.get("Authorization").split(" ")[1]
+    parts = authHeader.split(" ")
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="not authorized")
+    
+    encoded_jwt = parts[1]
+    if not encoded_jwt:
+        raise HTTPException(status_code=401, detail="not authorized")
 
     try:
         decoded = jwt.decode(
             encoded_jwt, "SARCASM", algorithms=["HS256"]
         )
+        isExpired = datetime.datetime.fromtimestamp(decoded["exp"]) < datetime.datetime.utcnow()
 
-        findingUser = (db.query(User).filter(User.username == decoded["username"]).all())[0]
-        if not findingUser and decoded["exp"] == decoded["iat"]:
+        findingUser = (db.query(User).filter(User.username == decoded["username"] and User.email == decoded['email']).all())[0]
+        if not findingUser and not isExpired:
             raise HTTPException(status_code=401, detail="not authorized")
-
     except:
         raise HTTPException(status_code=401, detail="not authorized")
 
