@@ -19,30 +19,39 @@ namespace password_manager
 
     public partial class GroupsPage : Page
     {
-        private PasswordManager _passwordManager;
-
-        public GroupsPage(PasswordManager passwordManager)
+        public GroupsPage()
         {
             InitializeComponent();
-            _passwordManager = passwordManager;
+            
             LoadGroups();
         }
 
         private void LoadGroups()
         {
-            var groups = _passwordManager.GetGroups();
-            GroupsListView.ItemsSource = groups;
+            
+        }
+
+        private void ViewGroupPasswords_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button clickedButton){ NavigationService.Navigate(new PasswordsPage(clickedButton.Content.ToString()));}
+            else { MessageBox.Show("Ops something went wronk"); }
+        }
+
+        private void CreateNewGroup_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService nav = NavigationService.GetNavigationService(this);
+            nav.Navigate(new AddGroupPage());
         }
 
         private void GroupsListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (GroupsListView.SelectedItem != null)
+            /*if (GroupsListView.SelectedItem != null)
             {
                 var selectedGroup = GroupsListView.SelectedItem as Group;
                 //GroupDetailsPage groupDetailsPage = new GroupDetailsPage(_passwordManager, selectedGroup);
                 //groupDetailsPage.Show();
-                myFrame.Navigate(new GroupDetailsPage(_passwordManager, selectedGroup));
-            }
+                myFrame.Navigate(new GroupDetailsPage(selectedGroup));
+            }*/
         }
     }
 }

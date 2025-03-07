@@ -122,21 +122,21 @@
                             Click="GetPrivatePasswordsPage"
                             Margin="0,0,0,10"/>
 
-                    <Button Content="👥 Shared Passwords" 
+                    <Button Content="👥 Groups" 
                             Foreground="White"
                             Background="Transparent"
                             BorderThickness="0"
                             HorizontalAlignment="Left"
                             Margin="0,0,0,10"
-                            Click="GetSharedPasswordsPage"/>
+                            Click="GetUserGroupsPage"/>
 
-                    <Button Content="➕ Add New Password" 
+                    <!--<Button Content="➕ Add New Password" 
                             Foreground="White"
                             Background="#FF4a4a8a"
                             BorderThickness="0"
                             Padding="10,5"
                             HorizontalAlignment="Left"
-                            Margin="0,20,0,0"/>
+                            Margin="0,20,0,0"/>-->
                 </StackPanel>
 
                 <!-- Main Content Area -->
@@ -147,7 +147,18 @@
                     </Grid.RowDefinitions>
 
                     <!-- Search Bar -->
-                    <Grid Grid.Row="0" Margin="0,0,0,20">
+					<!--<Grid Grid.Row="0" Margin="0,0,0,20">
+						<TextBox x:Name="SearchBox"
+								 Background="#FF2a2a4a"
+								 Foreground="White"
+								 BorderThickness="0"
+								 Padding="10"
+								 FontSize="14"/>
+					</Grid>-->
+
+					<Frame x:Name="myFrame" Grid.Column="1" />
+					
+                    <!--<Grid Grid.Row="0" Margin="0,0,0,20">
                         <TextBox Background="#FF2a2a4a"
                                  Foreground="White"
                                  BorderThickness="0"
@@ -176,10 +187,10 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                    </Grid>
+                    </Grid>-->
 
-                    <!-- Password List -->
-                    <ListBox Grid.Row="1" 
+                    <!--Password List -->
+					<!--<ListBox Grid.Row="1" 
                              Background="Transparent" 
                              BorderThickness="0"
                              ItemContainerStyle="{StaticResource PasswordListBoxItem}">
@@ -238,7 +249,7 @@
                                 </StackPanel>
                             </Grid>
                         </ListBoxItem>
-                    </ListBox>
+                    </ListBox> -->
                 </Grid>
             </Grid>
         </Grid>

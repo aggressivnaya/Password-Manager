@@ -8,6 +8,7 @@ namespace password_manager
 {
     public class Group
     {
+        public Group() {}
         public string GroupName { get; set; }
         public List<string> Members { get; set; }
         public List<Password> GroupPasswords { get; set; }

@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -35,16 +35,13 @@ namespace password_manager
 
         private void ViewGroupsButton_Click(object sender, RoutedEventArgs e)
         {
-            //GroupsPage groupsPage = new GroupsPage(_passwordManager);
-            //groupsPage.Show();
-            //TODO: go to group page
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserGroupsPage());
+            nav.Navigate(new GroupsPage());
         }
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            _passwordManager.Logout();
+            //_passwordManager.Logout();
             //myFrame.Navigate(new MainWindow());
             //LoginPage loginWindow = new LoginPage();
             //loginWindow.Show();
@@ -53,39 +50,57 @@ namespace password_manager
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Window parentWindow = Window.GetWindow(this);
+            if (parentWindow != null)
+            {
+                parentWindow.Close(); // Closes the window
+            }
         }
+
         private void MaximizeButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Window parentWindow = Window.GetWindow(this); // Get the parent window
+            if (parentWindow != null)
+            {
+                parentWindow.WindowState = (parentWindow.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+            }
         }
+
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
-
+            Window parentWindow = Window.GetWindow(this); // Get the parent window
+            if (parentWindow != null)
+            {
+                parentWindow.WindowState = WindowState.Minimized;
+            }
         }
+
         private void Grid_MouseLeftButtonDown(object sender, RoutedEventArgs e)
         {
-
+            // Allow dragging the window from the top bar
+            Window parentWindow = Window.GetWindow(this);
+            if (parentWindow != null)
+            {
+                parentWindow.DragMove();
+            }
         }
 
+        //NO NEED FOR THIS
         private void GetAllPasswordsPage(object sender, RoutedEventArgs e)
         {
-            NavigationService nav = NavigationService.GetNavigationService(this);
+            //NavigationService nav = NavigationService.GetNavigationService(this);
             //nav.Navigate(new ());
+            //this.myFrame.Source = nav.Navigate(new());
         }
 
         private void GetPrivatePasswordsPage(object sender, RoutedEventArgs e)
         {
-            int i = 0;
-            NavigationService nav = NavigationService.GetNavigationService(this);
-            i++;
-            nav.Navigate(new GroupPasswordsPage());
+            this.myFrame.Navigate(new PasswordsPage(null));
         }
 
-        private void GetSharedPasswordsPage(object sender, RoutedEventArgs e)
+        private void GetUserGroupsPage(object sender, RoutedEventArgs e)
         {
-            NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserGroupsPage());
+            this.myFrame.Navigate(new GroupsPage());
         }
     }
 }
