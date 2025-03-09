@@ -12,3 +12,7 @@ def session_factory():
     # Create database tables (if they don't exist)
     Base.metadata.create_all(engine)
     return _SessionFactory
+
+if __name__ == "__main__":
+    session_factory()
+    print("Database created")

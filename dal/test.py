@@ -2,6 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
 from common.base import Base, engine
 from server import server, getCurrentUser, db
 
@@ -31,123 +34,159 @@ def setup_database():
 def test_add_password(setup_database):
     response = client.post(
         "/changes/add/",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"password": "testpassword", "name": "testname", "shared": "False"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_update_password(setup_database):
     response = client.post(
         "/changes/update/",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"currPasswordId": 1, "newPassword": "newpassword", "newName": "newname", "shared": "False"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_delete_password(setup_database):
     response = client.delete(
         "/changes/delete/",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"currPasswordId": 1}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_get_required_password(setup_database):
     response = client.get("/getPassword", params={"passwordId": 1})
     assert response.status_code == 200
     assert "password" in response.json()
+    print(response.json())
 
 def test_get_user_passwords(setup_database):
-    response = client.get("/getPasswords", headers={"Authorization": "Bearer testtoken"})
+    response = client.get("/getPasswords", headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"})
     assert response.status_code == 200
     assert "passwords" in response.json()
+    print(response.json())
 
 def test_history(setup_database):
-    response = client.get("/history", headers={"Authorization": "Bearer testtoken"})
+    response = client.get("/history", headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"})
     assert response.status_code == 200
     assert "history" in response.json()
+    print(response.json())
 
 def test_create_group(setup_database):
     response = client.post(
         "/group/create_group",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"name": "testgroup", "description": "testdescription"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_enter_group(setup_database):
     response = client.get(
         "/group/enter_group",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         params={"groupLink": "testgroup123456"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_accept_user(setup_database):
     response = client.post(
         "/group/accept_user",
-        headers={"Authorization": "Bearer testtoken"},
-        json={"groupName": "testgroup"}
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
+        json={"groupName": "testgroup", "username": "testuser"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_leave_group(setup_database):
     response = client.delete(
         "/group/leave_group",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"groupName": "testgroup"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_remove_group(setup_database):
     response = client.delete(
         "/group/remove_group",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         json={"groupName": "testgroup"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_add_password_to_group(setup_database):
     response = client.get(
         "/group/addPassword",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         params={"groupName": "testgroup", "password": "testpassword", "name": "testname", "shared": "False"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_remove_password_from_group(setup_database):
     response = client.get(
         "/group/removePassword",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         params={"groupName": "testgroup", "passwordId": 1}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_update_password_in_group(setup_database):
     response = client.get(
         "/group/updPassword",
-        headers={"Authorization": "Bearer testtoken"},
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"},
         params={"groupName": "testgroup", "passwordId": 1, "newPassword": "newpassword", "newName": "newname", "shared": "False"}
     )
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
 
 def test_group_info(setup_database):
     response = client.get("/group", params={"groupName": "testgroup"})
     assert response.status_code == 200
     assert "name" in response.json()
+    print(response.json())
 
 def test_logout(setup_database):
-    response = client.delete("/logout/", headers={"Authorization": "Bearer testtoken"})
+    response = client.delete("/logout/", headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s"})
     assert response.status_code == 200
     assert response.json() == {"success", 200}
+    print(response.json())
+
+
+if __name__ == "__main__":
+    test_add_password(setup_database)
+    test_update_password(setup_database)
+    test_delete_password(setup_database)
+    test_get_required_password(setup_database)
+    test_get_user_passwords(setup_database)
+    test_history(setup_database)
+    test_create_group(setup_database)
+    test_enter_group(setup_database)
+    test_accept_user(setup_database)
+    test_leave_group(setup_database)
+    test_remove_group(setup_database)
+    test_add_password_to_group(setup_database)
+    test_remove_password_from_group(setup_database)
+    test_update_password_in_group(setup_database)
+    test_group_info(setup_database)
+    test_logout(setup_database)
+    print("All tests passed")

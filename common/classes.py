@@ -13,7 +13,7 @@ class User(Base):
     groups = relationship("UserGroup", back_populates="user")
     sent_notifications = relationship("Notification", foreign_keys="[Notification.sender_id]", back_populates="sender")
     received_notifications = relationship("Notification", foreign_keys="[Notification.receiver_id]", back_populates="receiver")
-    sent_requests = relationship("Request", foreign_keys="[Request.sender_id]", back_populates="sender")
+    sent_requests = relationship("Requestt", foreign_keys="[Requestt.sender_id]", back_populates="sender")
 
     def __init__(self, username="", email=""):
         print("User created")
@@ -54,7 +54,7 @@ class Group(Base):
     link = Column(String)
 
     users = relationship("UserGroup",foreign_keys="[UserGroup.group_id]", back_populates="group")
-    group_requests = relationship('Request', foreign_keys="[Request.group_id]",back_populates='group')
+    group_requests = relationship('Requestt', foreign_keys="[Requestt.group_id]",back_populates='group')
 
     def __init__(self, name="", description="", link=""):
         print("Group created")
@@ -65,11 +65,12 @@ class UserGroup(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
+    isAdmin = Column(String)
 
     user = relationship("User",foreign_keys=[user_id], back_populates="groups")
     group = relationship("Group", foreign_keys=[group_id], back_populates="users")
 
-    def __init__(self, user_id=-1, group_id=-1, isAdmin=False):
+    def __init__(self, user_id, group_id, isAdmin):
         print("UserGroup created")
 
 class History(Base):
@@ -84,7 +85,7 @@ class History(Base):
 
     password = relationship("Password", foreign_keys=[password_id], back_populates="history")
 
-    def __init__(self, version_id=-1, name="", password_id=-1, method="", date=""):
+    def __init__(self, version_id, name="", password_id='', method="", date=""):
         print("History created")
 
 class Notification(Base):
@@ -98,10 +99,10 @@ class Notification(Base):
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_notifications")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_notifications")
 
-    def __init__(self, sender_id=-1, receiver_id=-1, data=""): 
+    def __init__(self, sender_id, receiver_id, data=""): 
         print("Notification created")
 
-class Request(Base):
+class Requestt(Base):
     __tablename__ = "requests"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -112,5 +113,5 @@ class Request(Base):
     sender = relationship("User",foreign_keys=[sender_id] , back_populates="sent_requests")
     group = relationship("Group",foreign_keys=[group_id], back_populates="group_requests")
 
-    def __init__(self, sender_id=-1, group_id=-1, request_command=""):
+    def __init__(self, sender_id, group_id, request_command=""):
         print("Request created")
