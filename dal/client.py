@@ -2,20 +2,22 @@ import os, requests
 from fastapi import HTTPException, Request
 
 DAL_SVC_ADDRESS = '182.20.1.4:5001'
-token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTYzNzg0MH0.TPe9UBgXnYlf6axw_BDzZmD0Ks9leqfyiyK8ozjDt6s'
+token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIzIiwiZW1haWwiOiIxYXNkZiIsImV4cCI6MTc0MTc4NTA1OH0.MXsZAoTnW3_LEwHX4u3IXXaASBty1075H8_KnH1u9pk'
 
-def getPasswords(request: Request):
+def getPasswords():
     header = {"Authorization" : token}
 
     try:
         response = requests.get(
             f"http://{DAL_SVC_ADDRESS}/get",headers=header 
         )
-        return {'passwords': response.json()['passwords']}
-    except:
-        raise HTTPException(status_code=400, detail="Passwords not found")
+        
+        print('user passwords: ',response.json()['passwords'])
+    except Exception as e:
+        #raise HTTPException(status_code=400, detail="Passwords not found")
+        print(e)
 
-def getPasswordById(request: Request, id):
+def getPasswordById( id):
     header = {"Authorization" : token}
     data = {"password_id" : id}
 
@@ -23,12 +25,14 @@ def getPasswordById(request: Request, id):
         response = requests.get(
             f"http://{DAL_SVC_ADDRESS}/get",headers=header , params=data
         )
-        return {'password': response.json()['password']}
-    except:
-        raise HTTPException(status_code=400, detail="Password not found")
+        
+        print('password by id: ',response.json()['password'])
+    except Exception as e:
+        #raise HTTPException(status_code=400, detail="Password not found")
+        print(e)
     
     
-def getHistory(request: Request, passwordId=-1):
+def getHistory( passwordId=-1):
     header = {"Authorization" : token}
     if passwordId != -1:
         data = { "passwordId" : passwordId}
@@ -39,12 +43,14 @@ def getHistory(request: Request, passwordId=-1):
         response = requests.get(
             f"http://{DAL_SVC_ADDRESS}/history",headers=header , params=data
         )
-        return {'history': response.json()['history']}
-    except:
-        raise HTTPException(status_code=400, detail="History not found")
+        
+        print('History: ',response.json()['history'])
+    except Exception as e:
+        #raise HTTPException(status_code=400, detail="History not found")
+        print(e)
     
 
-def addPassword(request, password):
+def addPassword(password):
     header = {"Authorization" : token}
 
     data = { "curr_password" : password}
@@ -53,13 +59,13 @@ def addPassword(request, password):
         response = requests.post(
             f"http://{DAL_SVC_ADDRESS}/changes/add/",headers=header , data=data
         )
-        return True
-    except:
+        print(response.json()['success'])
+    except Exception as e:
         #raise HTTPException(status_code=400, detail="Password not added")
-        return False
+        print(e)
 
 
-def updatePassword(request, currPasswordID, newPassword):
+def updatePassword(currPasswordID, newPassword):
     header = {"Authorization" : token}
 
     data = {"curr_password_id" : currPasswordID, "new_password" : newPassword}
@@ -69,14 +75,12 @@ def updatePassword(request, currPasswordID, newPassword):
             f"http://{DAL_SVC_ADDRESS}/changes/update/",headers=header , data=data
         )
 
-        if response.json()['success']:
-            return True
-        return False
-    except:
+        print(response.json()['success'])
+    except Exception as e:
         #raise HTTPException(status_code=400)
-        return False
+        print(e)
 
-def deletePassword(request, password):
+def deletePassword(password):
     header = {"Authorization" : token}
 
     data = { "curr_password" : password}
@@ -86,19 +90,18 @@ def deletePassword(request, password):
             f"http://{DAL_SVC_ADDRESS}/changes/delete/",headers=header , data=data
         )
         
-        if response.json()['success']:
-            return True
-        return False
-    except:
+        print(response.json()['success'])  
+        
+    except Exception as e:
         #raise HTTPException(status_code=400, detail="Password not deleted")
-        return False
+        print(e)
     
 
 if __name__ == "__main__":
-    getPasswords(Request)
-    getPasswordById(Request, 1)
-    getHistory(Request, 1)
-    addPassword(Request, "testpassword")
-    updatePassword(Request, 1, "newpassword")
-    deletePassword(Request, "testpassword")
-    print("All tests passed")
+    getPasswords()
+    #getPasswordById(1)
+    #getHistory(1)
+    #addPassword("testpassword")
+    #updatePassword(1, "newpassword")
+    #deletePassword("testpassword")
+    #print("All tests passed")

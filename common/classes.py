@@ -1,103 +1,74 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from common.base import Base
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-
-    passwords = relationship("UserPassword", back_populates="user")
-    groups = relationship("UserGroup", back_populates="user")
-    sent_notifications = relationship("Notification", foreign_keys="[Notification.sender_id]", back_populates="sender")
-    received_notifications = relationship("Notification", foreign_keys="[Notification.receiver_id]", back_populates="receiver")
-    sent_requests = relationship("Requestt", foreign_keys="[Requestt.sender_id]", back_populates="sender")
-
-    def __init__(self, username="", email=""):
-        print("User created")
-
-class Password(Base):
-    __tablename__ = "passwords"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    password = Column(String)
-    shared = Column(String)
-
-    users = relationship("UserPassword", back_populates="password")
-    history = relationship("History", back_populates="password")
-
-    def __init__(self, name="", password="", shared=""):
-        print("Password created")
-
-class UserPassword(Base):
-    __tablename__ = "usersPasswords"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    password_id = Column(Integer, ForeignKey("passwords.id"))
-
-    user = relationship("User", foreign_keys=[user_id], back_populates="passwords")
-    password = relationship("Password", foreign_keys=[password_id], back_populates="users")
-
-    def __init__(self, user_id=-1, password_id=-1):
-        print("UserPassword created")
+from common.base import Base, session_factory
 
 class Group(Base):
-    __tablename__ = "group"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    __tablename__ = 'group'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
     description = Column(String)
+    ManagerId = Column(String)
     link = Column(String)
+    users = relationship('UserGroup', back_populates='group')
+    request2 = relationship('Requestt', back_populates='group')
 
-    users = relationship("UserGroup",foreign_keys="[UserGroup.group_id]", back_populates="group")
-    group_requests = relationship('Requestt', foreign_keys="[Requestt.group_id]",back_populates='group')
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    email = Column(String, unique=True, nullable=False)
+    passwords = relationship('UserPassword', back_populates='user')
+    groups = relationship('UserGroup', back_populates='user')
+    notifiaction1 = relationship('Notification', foreign_keys="[Notification.sender_id]", back_populates='sender')
+    notifiaction2 = relationship('Notification', foreign_keys="[Notification.reciever_id]", back_populates='reciever')
+    request1 = relationship('Requestt', back_populates='sender')
 
-    def __init__(self, name="", description="", link=""):
-        print("Group created")
-
-class UserGroup(Base):
-    __tablename__ = "usersGroups"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    group_id = Column(Integer, ForeignKey("group.id"))
-    isAdmin = Column(String)
-
-    user = relationship("User",foreign_keys=[user_id], back_populates="groups")
-    group = relationship("Group", foreign_keys=[group_id], back_populates="users")
-
-    def __init__(self, user_id, group_id, isAdmin):
-        print("UserGroup created")
+class Password(Base):
+    __tablename__ = 'password'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    shared = Column(Boolean, default=False)
+    users = relationship('UserPassword', back_populates='password')
+    history = relationship('History', back_populates='password')
 
 class History(Base):
-    __tablename__ = "history"
+    __tablename__ = 'history'
+    id = Column(Integer, primary_key=True)
+    versionId = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
+    passwordId = Column(Integer, ForeignKey('password.id'), nullable=False)
+    method = Column(String, nullable=False)
+    date = Column(String, nullable=False)
+    password = relationship('Password', back_populates='history')
 
-    id = Column(Integer, primary_key=True, index=True)
-    version_id = Column(Integer, index=True)
-    name = Column(String, index=True)
-    password_id = Column(Integer, ForeignKey("passwords.id"))
-    method = Column(String)
-    date = Column(String)
+class UserGroup(Base):
+    __tablename__ = 'user_group'
+    id = Column(Integer, primary_key=True)
+    userId = Column(Integer, ForeignKey('user.id'), nullable=False)
+    groupId = Column(Integer, ForeignKey('group.id'), nullable=False)
+    isAdmin = Column(Boolean, default=False)
+    user = relationship('User', back_populates='groups')
+    group = relationship('Group', back_populates='users')
 
-    password = relationship("Password", foreign_keys=[password_id], back_populates="history")
-
-    def __init__(self, version_id, name="", password_id='', method="", date=""):
-        print("History created")
+class UserPassword(Base):
+    __tablename__ = 'user_password'
+    id = Column(Integer, primary_key=True)
+    userId = Column(Integer, ForeignKey('user.id'), nullable=False)
+    passwordId = Column(Integer, ForeignKey('password.id'), nullable=False)
+    user = relationship('User', back_populates='passwords')
+    password = relationship('Password', back_populates='users')
 
 class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, ForeignKey("users.id"))
-    receiver_id = Column(Integer, ForeignKey("users.id"))
+    sender_id = Column(Integer, ForeignKey("user.id"))
+    reciever_id = Column(Integer, ForeignKey("user.id"))
     data = Column(String)
 
-    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_notifications")
-    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_notifications")
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="notifiaction1")
+    reciever = relationship("User", foreign_keys=[reciever_id], back_populates="notifiaction2")
 
     def __init__(self, sender_id, receiver_id, data=""): 
         print("Notification created")
@@ -106,12 +77,14 @@ class Requestt(Base):
     __tablename__ = "requests"
 
     id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, ForeignKey("users.id"))
+    sender_id = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
     request_command = Column(String)
 
-    sender = relationship("User",foreign_keys=[sender_id] , back_populates="sent_requests")
-    group = relationship("Group",foreign_keys=[group_id], back_populates="group_requests")
+    sender = relationship("User",foreign_keys=[sender_id] , back_populates="request1")
+    group = relationship("Group",foreign_keys=[group_id], back_populates="request2")
 
     def __init__(self, sender_id, group_id, request_command=""):
         print("Request created")
+
+session_factory()

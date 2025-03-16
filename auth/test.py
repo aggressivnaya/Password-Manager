@@ -10,7 +10,7 @@ AUTH_SVC_ADDRESS = '182.20.1.3:5000'
 
 def login(name, email):
     data = {
-    "name": name,
+    "username": name,
     "email": email,
     }
     try:
@@ -23,7 +23,7 @@ def login(name, email):
     
 def signup( name ,email):
     data = {
-    "name": name,
+    "username": name,
     "email": email,
     }
     try:
@@ -35,5 +35,5 @@ def signup( name ,email):
         print(e)
 
 if __name__ == "__main__":
-    signup("user3", "1asdf")
-    login("user3", "1asdf")
+    #signup("user3", "1asdf")
+    login("user1", "user1@example.com")

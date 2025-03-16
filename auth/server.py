@@ -10,11 +10,12 @@ import sys
 sys.path.append(os.path.abspath('..'))
 #from dal.classes.usersDb import User
 from common.classes import User
-from common.base import _SessionFactory,  session_factory
+from common.base import _SessionFactory, session_factory
 from send_noti import notification
+from check import check
 
 server = FastAPI()
-db = _SessionFactory()
+
 session_factory()
 server.add_middleware(
     CORSMiddleware,
@@ -25,26 +26,35 @@ server.add_middleware(
 )
 
 class BodyUser(BaseModel):
-    name: str
+    username: str
     email: str
 
 @server.post("/login/")
 def login(user: BodyUser):
-    findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())[0]
-    if findingUser != None:
-        return {"access_token": createToken(user.name ,user.email)}
+    db = _SessionFactory()
+    print(user.email+ " "+ user.username)
+    #findingUser = (db.query(User).filter(User.username == user.username ).all())[0]
+    findingUser = check.isExist(user.username, user.email)
+    if findingUser != None and len(findingUser) != 0:
+        return {"access_token": createToken(user.username ,user.email)}
     else:
         raise HTTPException(status_code=401, detail="invalid credentials")
     
 @server.post('/signup/')
 def signup(user: BodyUser):
-    findingUser = (db.query(User).filter(User.username == user.name and User.email == user.email).all())
+    db = _SessionFactory()
+    findingUser = (db.query(User).filter(User.username == user.username and User.email == user.email).all())
     if findingUser == None or len(findingUser) == 0:
-        insert_stmt = insert(User).values(username=user.name, email=user.email)
+        insert_stmt = insert(User).values(username=user.username, email=user.email)
         db.execute(insert_stmt)
         db.commit()
+        #db.flush()
+
+        #user = (db.query(User).filter(User.username == user.username and User.email == user.email).all())[0]
+        print(user.email+ " "+ user.username)
         #login(user)
-        return {"access_token": createToken(user.name, user.email)}
+        db.close()
+        return {"access_token": createToken(user.username, user.email)}
     else:
         raise HTTPException(status_code=401, detail="invalid credentials")
 
