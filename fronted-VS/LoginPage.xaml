@@ -129,20 +129,20 @@
                      Margin="0,0,0,40"/>
 
                 <!-- Login Form -->
+                <TextBlock Text="Username" 
+                     Foreground="#FFaaaaaa" 
+                     Margin="0,0,0,8"
+                     FontSize="14"/>
+                <TextBox x:Name="UsernameTextBox" 
+                    Style="{StaticResource ModernTextBox}"
+                    Margin="0,0,0,20"/>
+
                 <TextBlock Text="Email" 
                      Foreground="#FFaaaaaa" 
                      Margin="0,0,0,8"
                      FontSize="14"/>
                 <TextBox x:Name="EmailTextBox" 
-                    Style="{StaticResource ModernTextBox}"
-                    Margin="0,0,0,20"/>
-
-                <TextBlock Text="Password" 
-                     Foreground="#FFaaaaaa" 
-                     Margin="0,0,0,8"
-                     FontSize="14"/>
-                <PasswordBox x:Name="PasswordBox" 
-                       Style="{StaticResource ModernPasswordBox}"
+                       Style="{StaticResource ModernTextBox}"
                        Margin="0,0,0,30"/>
 
                 <!-- Buttons -->

@@ -27,6 +27,14 @@ namespace password_manager
             this.SettingsButton.Visibility = (groupName == null) ? Visibility.Collapsed : Visibility.Visible;
         }
 
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NavigationService != null && NavigationService.CanGoBack)
+            {
+                NavigationService.GoBack();
+            }
+        }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (NavigationService != null && NavigationService.CanGoBack)
