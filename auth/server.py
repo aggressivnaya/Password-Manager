@@ -33,9 +33,9 @@ class BodyUser(BaseModel):
 def login(user: BodyUser):
     db = _SessionFactory()
     print(user.email+ " "+ user.username)
-    #findingUser = (db.query(User).filter(User.username == user.username ).all())[0]
-    findingUser = check.isExist(user.username, user.email)
-    if findingUser != None and len(findingUser) != 0:
+    findingUser = (db.query(User).filter(User.username == user.username ).all())[0]
+    #findingUser = check.isExist(user.username, user.email)
+    if findingUser != None :
         return {"access_token": createToken(user.username ,user.email)}
     else:
         raise HTTPException(status_code=401, detail="invalid credentials")
@@ -48,11 +48,11 @@ def signup(user: BodyUser):
         insert_stmt = insert(User).values(username=user.username, email=user.email)
         db.execute(insert_stmt)
         db.commit()
-        #db.flush()
+        db.flush()
 
         #user = (db.query(User).filter(User.username == user.username and User.email == user.email).all())[0]
         print(user.email+ " "+ user.username)
-        #login(user)
+        login(user)
         db.close()
         return {"access_token": createToken(user.username, user.email)}
     else:
@@ -73,19 +73,8 @@ oauth2Schema = OAuth2PasswordBearer(tokenUrl="/login/")
 
 @server.post("/validate/")
 def validate(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
-    '''authHeader = request.headers.get("Authorization")
-    if not authHeader:
-        raise HTTPException(status_code=401, detail="not authorized")
-
-    parts = authHeader.split(" ")
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(status_code=401, detail="not authorized")
-    
-    encoded_jwt = parts[1]
-    if not encoded_jwt:
-        raise HTTPException(status_code=401, detail="not authorized")
-    '''
     try:
+        db = _SessionFactory()
         decoded = jwt.decode(
             token, "SARCASM", algorithms=["HS256"]
         )
