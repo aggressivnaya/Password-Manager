@@ -146,22 +146,22 @@ def test_logout():
 
 
 if __name__ == "__main__":
-    '''test_add_password()
-    test_update_password()
-    test_delete_password()
+    #test_add_password()
+    #test_update_password()
+    #test_delete_password()
     test_get_user_passwords()
     test_get_required_password()
     test_history()
-    test_create_group()
-    test_enter_group()
+    #test_create_group()
+    #test_enter_group()
     #test_accept_user()
-    test_leave_group()
-    test_remove_group()
-    test_create_group()#'''
-    test_add_password_to_group()
+    #test_leave_group()
+    #test_remove_group()
+    #test_create_group()#
+    #test_add_password_to_group()
     #test_remove_password_from_group()
     #test_update_password_in_group()
     #test_add_password_to_group()
     test_group_info()
-    #test_logout()
+    test_logout()
     print("All tests passed")

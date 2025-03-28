@@ -79,7 +79,7 @@ def validate(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
             token, "SARCASM", algorithms=["HS256"]
         )
         isExpired = datetime.datetime.fromtimestamp(decoded["exp"]) < datetime.datetime.utcnow()
-
+        print(decoded)
         findingUser = (db.query(User).filter(User.username == decoded["username"] and User.email == decoded['email']).all())[0]
         if not findingUser and not isExpired:
             raise HTTPException(status_code=401, detail="not authorized")

@@ -34,7 +34,7 @@ oauth2Schema = OAuth2PasswordBearer(tokenUrl="placeholder")
 def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
     db = _SessionFactory()
     currUser = getCurrentUser(token)
-
+    print('adding password')
     #password = Password(name, password, shared)
     if shared == "True":
         shared = True
@@ -154,6 +154,21 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 
     return {'history':result}
 
+@server.get("/groups")
+def getGroups(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+
+    # Get all groups the user is in
+    groups = (
+        db.query(Group)
+        .join(UserGroup, Group.id == UserGroup.groupId)
+        .filter(UserGroup.userId == currUser.id)
+        .all()
+    )
+    db.close()
+    return {"groups": [group.name for group in groups]}
+
 @server.post("/group/create_group")
 def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], name: str = None, description: str = None):
     db = _SessionFactory()
@@ -226,24 +241,24 @@ def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     if userGroup.isAdmin == False:
         return {"error": "You are not the admin of this group"}
 
-
+    print('username: ',username)
     user = (db.query(User).filter(User.username == username).all())[0]
 
 
-    request = (db.query(Requestt).filter(Requestt.groupId == group.id and Requestt.senderId == user.id).all())[0]
+    request = (db.query(Requestt).filter(Requestt.group_id == group.id and Requestt.sender_id == user.id).all())[0]
 
     # Find the manager of the group (isAdmin=True in UserGroup)
     manager = (
         db.query(UserGroup)
-        .filter(UserGroup.groupId == request.groupId, UserGroup.isAdmin == True)
+        .filter(UserGroup.groupId == request.group_id, UserGroup.isAdmin == True)
         .first()
     )
     if not manager:
-        print(f"No manager found for group ID {request.groupId}.")
+        print(f"No manager found for group ID {request.group_id}.")
         return False
     
     # Add the user to the group
-    insert_stmt = insert(UserGroup).values(user_id=request.senderId, groupId=request.groupId, isAdmin=False)
+    insert_stmt = insert(UserGroup).values(userId=request.sender_id, groupId=request.group_id, isAdmin=False)
     db.execute(insert_stmt)
     db.commit()
     #new_user_group = UserGroup(user_id=request.senderId, groupId=request.groupId, isAdmin=False)
@@ -251,7 +266,7 @@ def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     
     # Delete the request
     #db.delete(request)
-    delete_stmt = delete(Request).where(Request.groupId == request.groupId and Request.senderId == request.senderId)
+    delete_stmt = delete(Requestt).where(Requestt.group_id == request.group_id and Requestt.sender_id == request.sender_id)
     db.execute(delete_stmt)
     
     try:

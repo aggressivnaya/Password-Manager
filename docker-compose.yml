@@ -61,21 +61,35 @@ services:
       my_lan:
         ipv4_address: "182.20.1.9"
   
-  client_db:
+  
+
+  gateway_server:
     image: python:3.10-alpine
-    container_name: client_db
+    container_name: gateway_server
     user: root
-    environment:
-      DATABASE_URL: sqlite:///projectdb1.db
     volumes:
+      - ./gateway:/gateway
       - ./dal:/dal
       - ./common:/common
       - ./requirements.txt:/requirements.txt
-      - ./projectdb1.db:/projectdb1.db
-    command: sh -c "pip install -r /requirements.txt && python /dal/test.py"
+    command: sh -c "pip install -r /requirements.txt && python /gateway/server.py"
     networks:
       my_lan:
-        ipv4_address: "182.20.1.8"
+        ipv4_address: "182.20.1.2"
+    ports:
+      - "5002:5002"
+
+  client_gateway:
+    image: python:3.10-alpine
+    container_name: client_gateway
+    user: root
+    volumes:
+      - ./gateway:/gateway
+      - ./requirements.txt:/requirements.txt
+    command: sh -c "pip install -r /requirements.txt && python /gateway/test.py"
+    networks:
+      my_lan:
+        ipv4_address: "182.20.1.10"
     
 networks:
   my_lan:

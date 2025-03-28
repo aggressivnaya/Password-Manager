@@ -54,112 +54,207 @@ def check(request: Request, token: Annotated[str, Depends(oauth2Schema)], code: 
     return send.checkGeneratedCode(code)
 
 @server.get("/passwords")
-def passwords(request: Request, passwordId: int):
+def passwords(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return get.getPasswords(request)
+        return get.getPasswords(token)
     except Exception as e:
         return e
 
 @server.post("/passwords/add")
 def passwordAdd(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
     try:
-        access = validate.token(request)['token']
+        validate.token(token)
     except Exception as e:
         return e
-    
+    print('aaaaaaaaaaaaaa')
     try:
-        return updating_data.addPassword(request)
+        print('token', token)
+        return updating_data.addPassword(token, password, name, shared)
     except Exception as e:
         return e
     
 @server.post("/passwords/update")
 def passwordUpd(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return updating_data.updatePassword(request)
+        return updating_data.updatePassword(token, currPasswordId, newPassword, newName, shared)
     except Exception as e:
         return e
     
-@server.post("/passwords/delete")
+@server.delete("/passwords/delete")
 def passwordDlt(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return updating_data.deletePassword(request)
+        return updating_data.deletePassword(token, currPasswordId)
     except Exception as e:
         return e
 
 @server.get("/groups")
-def groups(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+def groups(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return get.getGroups(request)
+        return get.getGroups(token)
+    except Exception as e:
+        return e
+
+@server.get("/groups/{groupName}")
+def group(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    try:
+        access = validate.token(token)
     except Exception as e:
         return e
     
-@server.get("/groups/{groupName}/passwords")
-def groups(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
     try:
-        access = validate.token(request)['token']
+        return get.getRequestedGroup(token, groupName)
     except Exception as e:
-        return e
-    
-    try:
-        return get.getGroupPasswords(request)
-    except  Exception as e:
         return e
     
 @server.post("/groups/{groupName}/passwords/add")
-def groups(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+def addPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, password: str = None, name: str = None, shared: str = None):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return updating_data.addPasswordToGroup(request)
+        return updating_data.addPasswordToGroup(token, groupName, password,shared, name)
+    except  Exception as e:
+        return e
+    
+@server.delete("/groups/{groupName}/passwords/delete")
+def delPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.deletePasswordFromGroup(token, groupName, passwordId)
+    except  Exception as e:
+        return e
+    
+@server.post("/groups/{groupName}/passwords/update")
+def updPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.updatePasswordInGroup(token, groupName, passwordId, newPassword, newName, shared)
+    except  Exception as e:
+        return e
+    
+@server.post("/groups/{groupName}/createGroup")
+def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, description: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.createGroup(token, groupName, description)
+    except  Exception as e:
+        return e
+    
+@server.post('/groups/{groupName}/enterGroup')
+def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.enterGroup(token, groupName)
+    except  Exception as e:
+        return e
+
+@server.post("/groups/{groupName}/acceptUser")
+def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, username: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.addUserToGroup(token, groupName, username)
+    except  Exception as e:
+        return e
+    
+@server.delete("/groups/{groupName}/removeUser")
+def removeUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, user: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.removeUserFromGroup(token, groupName, user)
+    except  Exception as e:
+        return e
+    
+@server.delete("/groups/{groupName}/leaveGroup")
+def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.leaveGroup(token, groupName)
+    except  Exception as e:
+        return e
+    
+@server.delete("/groups/{groupName}/removeGroup")
+def removeGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.deleteGroup(token, groupName)
     except  Exception as e:
         return e
 
 @server.get("/history")
 def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
-    access = validate.token(request)
-
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return get.getHistory(request)
+        return get.getHistory(token)
     except Exception as e:
         return e
  
 @server.route('/logout')
 def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
-        access = validate.token(request)['token']
+        access = validate.token(token)
     except Exception as e:
         return e
     
     try:
-        return access.logout(request)
+        return access.logout(token)
     except Exception as e:
         return e
     
