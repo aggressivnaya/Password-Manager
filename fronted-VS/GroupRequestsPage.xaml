@@ -1,0 +1,227 @@
+<Page x:Class="password_manager.GroupRequestsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:password_manager"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="GroupRequestsPage">
+
+    <Page.Resources>
+        <!-- Gradient Brushes -->
+        <LinearGradientBrush x:Key="BackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FF1a1a2e" Offset="0"/>
+            <GradientStop Color="#FF16213e" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- ListBox Item Style -->
+        <Style x:Key="RequestListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="#FF2a2a4a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="8">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#FF4a4a8a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF5a5a9a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Accept Button Style -->
+        <Style x:Key="AcceptButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#FF4a8a4a"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF5a9a5a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Reject Button Style -->
+        <Style x:Key="RejectButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#FF8a4a4a"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF9a5a5a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Icon Button Style -->
+        <Style x:Key="IconButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#FFaaaaaa"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{StaticResource BackgroundGradient}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0">
+            <TextBlock Text="Group Requests" FontSize="24" FontWeight="Bold" Foreground="White" Margin="20,20,20,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,20,0">
+                <Button x:Name="BackButton" Content="⬅️" Width="30" Height="30" Style="{StaticResource IconButton}" Click="BackButton_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Tabs -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,0,20,20">
+            <Button x:Name="JoinRequestsTab" Content="Join Requests" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="JoinRequestsTab_Click"/>
+            <Button x:Name="EditRequestsTab" Content="Edit Requests" Style="{StaticResource ModernButton}" Click="EditRequestsTab_Click"/>
+        </StackPanel>
+
+        <!-- Requests List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,0,20,20">
+            <StackPanel>
+                <!-- Join Requests Section -->
+                <Grid x:Name="JoinRequestsPanel" Visibility="Visible">
+                    <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
+                        <ListBoxItem>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="👤" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="John Doe" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="Wants to join Work Team" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Message: I'm the new project manager and need access to the team passwords." 
+                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Requested: 2 hours ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <Button Content="Accept" Style="{StaticResource AcceptButton}" Margin="0,0,10,0" Click="AcceptJoinRequest_Click"/>
+                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectJoinRequest_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="👤" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Jane Smith" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="Wants to join Family" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Message: Hi, I need access to our shared accounts." 
+                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Requested: 1 day ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <Button Content="Accept" Style="{StaticResource AcceptButton}" Margin="0,0,10,0" Click="AcceptJoinRequest_Click"/>
+                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectJoinRequest_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </ListBoxItem>
+                    </ListBox>
+                </Grid>
+
+                <!-- Edit Requests Section -->
+                <Grid x:Name="EditRequestsPanel" Visibility="Collapsed">
+                    <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
+                        <ListBoxItem>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔑" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Password Edit Request" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="From: Mike Johnson (Work Team)" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Password: Work Portal" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Reason: Password has been changed by admin" 
+                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Requested: 3 hours ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <Button Content="Review" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="ReviewEditRequest_Click"/>
+                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectEditRequest_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔑" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Password Edit Request" FontWeight="Bold" FontSize="16"/>
+                                    <TextBlock Text="From: Sarah Williams (Home Devices)" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Password: WiFi Router" Foreground="#FFaaaaaa"/>
+                                    <TextBlock Text="Reason: Updated after router reset" 
+                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                    <TextBlock Text="Requested: 1 day ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <Button Content="Review" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="ReviewEditRequest_Click"/>
+                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectEditRequest_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </ListBoxItem>
+                    </ListBox>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

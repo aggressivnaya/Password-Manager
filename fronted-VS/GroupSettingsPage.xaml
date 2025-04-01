@@ -1,0 +1,212 @@
+<Page x:Class="password_manager.GroupSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:password_manager"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="GroupSettingsPage">
+
+    <Page.Resources>
+        <!-- Gradient Brushes -->
+        <LinearGradientBrush x:Key="BackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FF1a1a2e" Offset="0"/>
+            <GradientStop Color="#FF16213e" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- ListBox Item Style -->
+        <Style x:Key="UserListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="#FF2a2a4a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="8">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#FF4a4a8a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF5a5a9a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Danger Button Style -->
+        <Style x:Key="DangerButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#FF8a4a4a"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF9a5a5a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Icon Button Style -->
+        <Style x:Key="IconButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#FFaaaaaa"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{StaticResource BackgroundGradient}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0">
+            <TextBlock x:Name="GroupNameText" Text="Work Team Settings" FontSize="24" FontWeight="Bold" Foreground="White" Margin="20,20,20,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,20,0">
+                <Button x:Name="BackButton" Content="⬅️" Width="30" Height="30" Style="{StaticResource IconButton}" Click="BackButton_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Group Info -->
+        <StackPanel Grid.Row="1" Margin="20,0,20,20">
+            <TextBlock x:Name="GroupRoleText" Text="Your Role: Manager" Foreground="#FFaaaaaa" Margin="0,0,0,5"/>
+            <TextBlock x:Name="GroupMembersText" Text="5 members • 12 passwords" Foreground="#FFaaaaaa"/>
+        </StackPanel>
+
+        <!-- Members List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,0,20,20">
+            <StackPanel>
+                <TextBlock Text="Group Members" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,10"/>
+                <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource UserListBoxItem}">
+                    <ListBoxItem>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="👑" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="You (John Doe)" FontWeight="Bold"/>
+                                <TextBlock Text="Manager" Foreground="#FFaaaaaa"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="👤" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Jane Smith" FontWeight="Bold"/>
+                                <TextBlock Text="Member" Foreground="#FFaaaaaa"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Make Manager" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="MakeManager_Click"/>
+                                <Button Content="Remove" Style="{StaticResource DangerButton}" Click="RemoveUser_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="👤" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Mike Johnson" FontWeight="Bold"/>
+                                <TextBlock Text="Member" Foreground="#FFaaaaaa"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Make Manager" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="MakeManager_Click"/>
+                                <Button Content="Remove" Style="{StaticResource DangerButton}" Click="RemoveUser_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="👑" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Sarah Williams" FontWeight="Bold"/>
+                                <TextBlock Text="Manager" Foreground="#FFaaaaaa"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Remove" Style="{StaticResource DangerButton}" Click="RemoveUser_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="👤" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="David Brown" FontWeight="Bold"/>
+                                <TextBlock Text="Member" Foreground="#FFaaaaaa"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Make Manager" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="MakeManager_Click"/>
+                                <Button Content="Remove" Style="{StaticResource DangerButton}" Click="RemoveUser_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Leave Group Button -->
+        <Button Grid.Row="3" Content="Leave Group" Style="{StaticResource DangerButton}" HorizontalAlignment="Left" Margin="20,0,20,20" Click="LeaveGroup_Click"/>
+    </Grid>
+</Page>

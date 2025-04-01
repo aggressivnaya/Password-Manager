@@ -23,28 +23,28 @@ namespace password_manager
 {
     public partial class LoginPage : Page
     {
-        private PasswordManager _passwordManager;
+        //private PasswordManager _passwordManager;
         private Common _communicator;
 
         public LoginPage()
         {
             InitializeComponent();
-            _passwordManager = new PasswordManager();
+           // _passwordManager = new PasswordManager();
             _communicator = new Common();
         }
 
         //private void NavigationService_Navigating(object sender, NavigatingCancelEventArgs e) { }
 
-        private async Task LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string email = EmailTextBox.Text;
             string username = UsernameTextBox.Text;
-            User user = new User(username, email);
-            string token = await _communicator.LoginAsync(user);
+            //User user = new User(username, email);
+            /*string token = await _communicator.LoginAsync(user);
             if (token != null)
             {
                 Console.WriteLine($"Login successful! Token: {token}");
-            }
+            }*/
 
             /*if (_passwordManager.Login(email, password))
             {
@@ -61,9 +61,10 @@ namespace password_manager
 
             NavigationService nav = NavigationService.GetNavigationService(this);
             nav.Navigate(new UserDashboardPage());
+
         }
 
-        private async Task SignupButton_Click(object sender, RoutedEventArgs e)
+        private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
             // Handle signup logic or show a signup window here.
             string email = EmailTextBox.Text;

@@ -18,7 +18,7 @@ namespace password_manager
     
     public partial class UserDashboardPage : Page
     {
-        private PasswordManager _passwordManager;
+        //private PasswordManager _passwordManager;
 
         public UserDashboardPage()
         {
@@ -95,12 +95,32 @@ namespace password_manager
 
         private void GetPrivatePasswordsPage(object sender, RoutedEventArgs e)
         {
-            this.myFrame.Navigate(new PasswordsPage(null));
+            this.myFrame.Navigate(new PasswordsPage(1, "name", true));
         }
+
+        /*private void GetUserGroupsPage(object sender, RoutedEventArgs e)
+        {
+            this.myFrame.Navigate(new GroupsPage());
+        }*/
 
         private void GetUserGroupsPage(object sender, RoutedEventArgs e)
         {
-            this.myFrame.Navigate(new GroupsPage());
+            // Navigate to the groups page
+            myFrame.Navigate(new GroupsPage());
+        }
+
+        // Add a method to handle group requests navigation
+        private void ViewGroupRequests_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to group requests page
+            myFrame.Navigate(new GroupRequestsPage(1));
+        }
+
+        // Add a method to join a group
+        private void JoinGroup_Click(object sender, RoutedEventArgs e)
+        {
+            // Navigate to join group request page
+            myFrame.Navigate(new JoinGroupRequestPage());
         }
     }
 }
