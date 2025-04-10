@@ -119,6 +119,21 @@
                         </Grid>
                     </ListBoxItem>
                     <ListBoxItem>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                                <TextBlock Text="Group Description:" Foreground="White"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                                <TextBox x:Name="GroupDescriptionTextBox" Background="#FF2a2a4a" Foreground="White" Padding="10"/>
+                            </StackPanel>
+                        </Grid>
+                    </ListBoxItem>
+                    <ListBoxItem>
                         <!-- Buttons -->
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="Cancel" Click="BackButton_Click" Style="{StaticResource IconButton}" Margin="0,0,50,0"/>

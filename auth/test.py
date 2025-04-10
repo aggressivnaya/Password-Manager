@@ -7,6 +7,7 @@
 import os, requests
 
 AUTH_SVC_ADDRESS = '182.20.1.3:5000'
+#AUTH_SVC_ADDRESS = '127.0.0.1:5000'
 
 def login(name, email):
     data = {
@@ -35,5 +36,5 @@ def signup( name ,email):
         print(e)
 
 if __name__ == "__main__":
-    #signup("user3", "1asdf")
-    login("user1", "user1@example.com")
+    signup("user33", "1asdf111")
+    #login("user1", "user1@example.com")

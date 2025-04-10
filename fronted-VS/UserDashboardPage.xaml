@@ -106,13 +106,13 @@
                                Foreground="White"
                                Margin="0,0,0,30"/>
 
-                    <Button Content="📁 All Passwords" 
+                    <!-- <Button Content="📁 All Passwords" 
                             Foreground="White"
                             Background="Transparent"
                             BorderThickness="0"
                             HorizontalAlignment="Left"
                             Click="GetAllPasswordsPage"
-                            Margin="0,0,0,10"/>
+                            Margin="0,0,0,10"/> -->
 
                     <Button Content="🔒 Private Passwords" 
                             Foreground="White"
@@ -149,127 +149,17 @@
                             </Style>
                         </Button.Style>
                     </Button>
-
-                    <!--<Button Content="➕ Add New Password" 
-                            Foreground="White"
-                            Background="#FF4a4a8a"
-                            BorderThickness="0"
-                            Padding="10,5"
-                            HorizontalAlignment="Left"
-                            Margin="0,20,0,0"/>-->
                 </StackPanel>
 
                 <!-- Main Content Area -->
                 <Grid Grid.Column="1" Margin="20,0,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                   
+                    <Frame x:Name="myFrame"/>
 
-                    <!-- Search Bar -->
-					<!--<Grid Grid.Row="0" Margin="0,0,0,20">
-						<TextBox x:Name="SearchBox"
-								 Background="#FF2a2a4a"
-								 Foreground="White"
-								 BorderThickness="0"
-								 Padding="10"
-								 FontSize="14"/>
-					</Grid>-->
-
-					<Frame x:Name="myFrame" Grid.Column="1" />
-					
-                    <!--<Grid Grid.Row="0" Margin="0,0,0,20">
-                        <TextBox Background="#FF2a2a4a"
-                                 Foreground="White"
-                                 BorderThickness="0"
-                                 Padding="10"
-                                 FontSize="14">
-                            <TextBox.Resources>
-                                <Style TargetType="{x:Type Border}">
-                                    <Setter Property="CornerRadius" Value="8"/>
-                                </Style>
-                            </TextBox.Resources>
-                        </TextBox>
-                        <TextBlock IsHitTestVisible="False"
-                                   Text="🔍 Search passwords..."
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Left"
-                                   Margin="10,0,0,0"
-                                   Foreground="#FF6a6a8a">
-                            <TextBlock.Style>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>-->
-
-                    <!--Password List -->
-					<!--<ListBox Grid.Row="1" 
-                             Background="Transparent" 
-                             BorderThickness="0"
-                             ItemContainerStyle="{StaticResource PasswordListBoxItem}">
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="🌐" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="example.com" FontWeight="Bold"/>
-                                    <TextBlock Text="john.doe@example.com" Foreground="#FFaaaaaa"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                    <Button Content="👁" Style="{StaticResource IconButton}" Margin="0,0,10,0"/>
-                                    <Button Content="📋" Style="{StaticResource IconButton}"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="📧" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Gmail" FontWeight="Bold"/>
-                                    <TextBlock Text="jane.smith@gmail.com" Foreground="#FFaaaaaa"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                    <Button Content="👁" Style="{StaticResource IconButton}" Margin="0,0,10,0"/>
-                                    <Button Content="📋" Style="{StaticResource IconButton}"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="💼" FontSize="20" Grid.Column="0" Margin="0,0,15,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Work Portal" FontWeight="Bold"/>
-                                    <TextBlock Text="j.doe@company.com" Foreground="#FFaaaaaa"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                    <Button Content="👥" Style="{StaticResource IconButton}" Margin="0,0,10,0"/>
-                                    <Button Content="👁" Style="{StaticResource IconButton}" Margin="0,0,10,0"/>
-                                    <Button Content="📋" Style="{StaticResource IconButton}"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListBoxItem>
-                    </ListBox> -->
+                    <Image x:Name="BackgroundImage" 
+                       Source="/Logo/Photo_logo.jpg" 
+                       Stretch="UniformToFill" 
+                       Opacity="0.20" />
                 </Grid>
             </Grid>
         </Grid>

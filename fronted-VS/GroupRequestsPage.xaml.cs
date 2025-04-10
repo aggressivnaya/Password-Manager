@@ -3,29 +3,19 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using password_manager.Models;
 
 namespace password_manager
 {
     public partial class GroupRequestsPage : Page
     {
-        private Common _apiClient;
-        private int _groupId;
-        private string _authToken;
-        private List<GroupRequestItem> _joinRequests;
-        private List<PasswordEditRequestItem> _editRequests;
-
-        public GroupRequestsPage(int groupId)
+        private Token _authToken;
+        private GroupResponse _groupResponse;
+        
+        public GroupRequestsPage(Token token, GroupResponse group)
         {
+            _authToken = token;
+            _groupResponse = group;
             InitializeComponent();
-
-            _groupId = groupId;
-
-            // Get the API client
-            _apiClient = new Common();
-
-            // Get the auth token from session manager
-            _authToken = SessionManager.Instance.AuthToken;
 
             // Load requests
             LoadRequestsAsync();
@@ -33,29 +23,7 @@ namespace password_manager
 
         private async void LoadRequestsAsync()
         {
-            try
-            {
-                // Show loading indicator if you have one
-                // LoadingIndicator.Visibility = Visibility.Visible;
-
-                // Get join requests from the server
-                _joinRequests = await _apiClient.GetPendingGroupRequestsAsync(_authToken, _groupId);
-
-                // Get password edit requests from the server
-                _editRequests = await _apiClient.GetPasswordEditRequestsAsync(_authToken, _groupId);
-
-                // Show join requests by default
-                ShowJoinRequests();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading requests: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                // Hide loading indicator if you have one
-                // LoadingIndicator.Visibility = Visibility.Collapsed;
-            }
+            
         }
 
         private void ShowJoinRequests()
@@ -65,7 +33,7 @@ namespace password_manager
             EditRequestsPanel.Visibility = Visibility.Collapsed;
 
             // Clear existing items
-            var listBox = (ListBox)FindName("JoinRequestsListBox");
+            /*var listBox = (ListBox)FindName("JoinRequestsListBox");
             if (listBox != null)
             {
                 listBox.Items.Clear();
@@ -180,13 +148,13 @@ namespace password_manager
 
                     listBox.Items.Add(item);
                 }
-            }
+            }*/
         }
 
         private void ShowEditRequests()
         {
             // Show edit requests panel, hide join requests panel
-            JoinRequestsPanel.Visibility = Visibility.Collapsed;
+            /*JoinRequestsPanel.Visibility = Visibility.Collapsed;
             EditRequestsPanel.Visibility = Visibility.Visible;
 
             // Clear existing items
@@ -310,7 +278,7 @@ namespace password_manager
 
                     listBox.Items.Add(item);
                 }
-            }
+            }*/
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -332,7 +300,7 @@ namespace password_manager
         private async void AcceptJoinRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button button = sender as Button;
+            /*Button button = sender as Button;
             if (button != null && button.Tag != null)
             {
                 int requestId = Convert.ToInt32(button.Tag);
@@ -358,13 +326,13 @@ namespace password_manager
                     MessageBox.Show($"Error accepting request: {ex.Message}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
+            }*/
         }
 
         private async void RejectJoinRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button button = sender as Button;
+            /*Button button = sender as Button;
             if (button != null && button.Tag != null)
             {
                 int requestId = Convert.ToInt32(button.Tag);
@@ -390,13 +358,13 @@ namespace password_manager
                     MessageBox.Show($"Error rejecting request: {ex.Message}",
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
+            }*/
         }
 
         private void ReviewEditRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button button = sender as Button;
+            /*Button button = sender as Button;
             if (button != null && button.Tag != null)
             {
                 int requestId = Convert.ToInt32(button.Tag);
@@ -419,13 +387,13 @@ namespace password_manager
                     MessageBox.Show($"Reviewing edit request for {selectedRequest.PasswordName}.",
                         "Review Request", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-            }
+            }*/
         }
 
         private async void RejectEditRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button button = sender as Button;
+            /*Button button = sender as Button;
             if (button != null && button.Tag != null)
             {
                 int requestId = Convert.ToInt32(button.Tag);
@@ -459,7 +427,7 @@ namespace password_manager
                             "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-            }
+            }*/
         }
     }
 }

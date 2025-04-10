@@ -48,21 +48,7 @@ services:
         ipv4_address: "182.20.1.4"
     ports:
       - "5001:5001"
-    
-  client_auth:
-    image: python:3.10-alpine
-    container_name: client_auth
-    user: root
-    volumes:
-      - ./auth:/auth
-      - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt && python /auth/test.py"
-    networks:
-      my_lan:
-        ipv4_address: "182.20.1.9"
   
-  
-
   gateway_server:
     image: python:3.10-alpine
     container_name: gateway_server
@@ -79,17 +65,17 @@ services:
     ports:
       - "5002:5002"
 
-  client_gateway:
+  client_auth:
     image: python:3.10-alpine
-    container_name: client_gateway
+    container_name: client_auth
     user: root
     volumes:
-      - ./gateway:/gateway
+      - ./auth:/auth
       - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt && python /gateway/test.py"
+    command: sh -c "pip install -r /requirements.txt && python /auth/test.py"
     networks:
       my_lan:
-        ipv4_address: "182.20.1.10"
+        ipv4_address: "182.20.1.6"
     
 networks:
   my_lan:

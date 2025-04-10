@@ -6,13 +6,14 @@ DATA_SVC_ADDRESS = '182.20.1.4:5001'
 #this is connecting to auth service and getting the token from the server if the client exist
 def login(request, name, email):
     data = {
-    "name": name,
+    "username": name,
     "email": email,
     }
     try:
         response = requests.post(
             f"http://{AUTH_SVC_ADDRESS}/login/", json=data
         )
+        print(response.json()['access_token'])
         return response.json()['access_token']
     except Exception as e:
         print(e)
@@ -20,7 +21,7 @@ def login(request, name, email):
     
 def signup(request, name ,email):
     data = {
-    "name": name,
+    "username": name,
     "email": email,
     }
     try:

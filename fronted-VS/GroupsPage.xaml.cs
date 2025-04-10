@@ -13,32 +13,31 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using password_manager.Models;
+
 
 namespace password_manager
 {
 
     public partial class GroupsPage : Page
     {
-        private Common _apiClient;
-        //private List<GroupItem> _groups;
-        private string _authToken;
+        private Token _authToken;
+        private GroupListResponse _groups;
+        private string _currUser;
 
-        public GroupsPage()
+        public GroupsPage(Token token,string username)
         {
             InitializeComponent();
 
-            // Get the API client
-            _apiClient = new Common();
-
+            _authToken = token;
+            _currUser = username;
             // Get the auth token from session manager
             //_authToken = SessionManager.Instance.AuthToken;
 
             // Load groups
-            //LoadGroupsAsync();
+            LoadGroupsAsync();
         }
 
-        /*private async void LoadGroupsAsync()
+        private async void LoadGroupsAsync()
         {
             try
             {
@@ -46,80 +45,77 @@ namespace password_manager
                 // LoadingIndicator.Visibility = Visibility.Visible;
 
                 // Get groups from the server
-                //_groups = await _apiClient.GetUserGroupsAsync(_authToken);
+                _groups = await Common.GetGroups(Common.baseUrl, _authToken.access_token);
+
                 //_groups = null;
 
-                // Clear existing items
-                var listBox = (ListBox)FindName("GroupsListBox");
-                if (listBox != null)
+                GroupsListBox.Items.Clear();
+
+                // Add items for each group
+                foreach (var group in _groups.Groups)
                 {
-                    listBox.Items.Clear();
+                    GroupResponse requestedGroup = await Common.GetGroup(Common.baseUrl, _authToken.access_token, group);
+                    // Create the grid layout for the group item
+                    Grid grid = new Grid();
 
-                    // Add items for each group
-                    foreach (var group in _groups)
-                    {
-                        // Create the grid layout for the group item
-                        Grid grid = new Grid();
+                    // Define columns
+                    ColumnDefinition col1 = new ColumnDefinition();
+                    col1.Width = GridLength.Auto;
+                    ColumnDefinition col2 = new ColumnDefinition();
+                    col2.Width = new GridLength(1, GridUnitType.Star);
+                    ColumnDefinition col3 = new ColumnDefinition();
+                    col3.Width = GridLength.Auto;
 
-                        // Define columns
-                        ColumnDefinition col1 = new ColumnDefinition();
-                        col1.Width = GridLength.Auto;
-                        ColumnDefinition col2 = new ColumnDefinition();
-                        col2.Width = new GridLength(1, GridUnitType.Star);
-                        ColumnDefinition col3 = new ColumnDefinition();
-                        col3.Width = GridLength.Auto;
+                    grid.ColumnDefinitions.Add(col1);
+                    grid.ColumnDefinitions.Add(col2);
+                    grid.ColumnDefinitions.Add(col3);
 
-                        grid.ColumnDefinitions.Add(col1);
-                        grid.ColumnDefinitions.Add(col2);
-                        grid.ColumnDefinitions.Add(col3);
+                    // Icon
+                    TextBlock iconBlock = new TextBlock();
+                    iconBlock.Text = requestedGroup.Name;
+                    iconBlock.FontSize = 24;
+                    iconBlock.Margin = new Thickness(0, 0, 15, 0);
+                    Grid.SetColumn(iconBlock, 0);
+                    grid.Children.Add(iconBlock);
 
-                        // Icon
-                        TextBlock iconBlock = new TextBlock();
-                        iconBlock.Text = group.Icon;
-                        iconBlock.FontSize = 24;
-                        iconBlock.Margin = new Thickness(0, 0, 15, 0);
-                        Grid.SetColumn(iconBlock, 0);
-                        grid.Children.Add(iconBlock);
+                    // Group info
+                    StackPanel infoPanel = new StackPanel();
 
-                        // Group info
-                        StackPanel infoPanel = new StackPanel();
+                    TextBlock nameBlock = new TextBlock();
+                    nameBlock.Text = requestedGroup.Name;
+                    nameBlock.FontWeight = FontWeights.Bold;
+                    nameBlock.FontSize = 18;
+                    infoPanel.Children.Add(nameBlock);
 
-                        TextBlock nameBlock = new TextBlock();
-                        nameBlock.Text = group.Name;
-                        nameBlock.FontWeight = FontWeights.Bold;
-                        nameBlock.FontSize = 18;
-                        infoPanel.Children.Add(nameBlock);
+                    TextBlock detailsBlock = new TextBlock();
+                    detailsBlock.Text = requestedGroup.Description;
+                    detailsBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    infoPanel.Children.Add(detailsBlock);
 
-                        TextBlock detailsBlock = new TextBlock();
-                        detailsBlock.Text = group.Info;
-                        detailsBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
-                        infoPanel.Children.Add(detailsBlock);
+                    Grid.SetColumn(infoPanel, 1);
+                    grid.Children.Add(infoPanel);
 
-                        Grid.SetColumn(infoPanel, 1);
-                        grid.Children.Add(infoPanel);
+                    // View button
+                    Button viewButton = new Button();
+                    viewButton.Content = "View";
+                    viewButton.Style = (Style)FindResource("ModernButton");
+                    viewButton.Tag = requestedGroup.Name;
+                    viewButton.Click += ViewGroupPasswords_Click;
+                    Grid.SetColumn(viewButton, 2);
+                    grid.Children.Add(viewButton);
 
-                        // View button
-                        Button viewButton = new Button();
-                        viewButton.Content = "View";
-                        viewButton.Style = (Style)FindResource("ModernButton");
-                        viewButton.Tag = group.Id;
-                        viewButton.Click += ViewGroupPasswords_Click;
-                        Grid.SetColumn(viewButton, 2);
-                        grid.Children.Add(viewButton);
+                    // Add the grid to a list box item
+                    ListBoxItem item = new ListBoxItem();
+                    item.Content = grid;
+                    item.Style = (Style)FindResource("GroupListBoxItem");
 
-                        // Add the grid to a list box item
-                        ListBoxItem item = new ListBoxItem();
-                        item.Content = grid;
-                        item.Style = (Style)FindResource("GroupListBoxItem");
-
-                        // Add to the list box
-                        listBox.Items.Add(item);
-                    }
+                    // Add to the list box
+                    GroupsListBox.Items.Add(item);
                 }
 
                 // Check if there are pending requests for any groups where the user is a manager
-                /*bool hasPendingRequests = false;
-                foreach (var group in _groups)
+                bool hasPendingRequests = false;
+                /*foreach (var group in _groups.Groups)
                 {
                     if (group.IsManager)
                     {
@@ -132,45 +128,84 @@ namespace password_manager
                     }
                 }*/
 
-        // Show/hide the requests button
-        //ViewRequestsButton.Visibility = hasPendingRequests ? Visibility.Visible : Visibility.Collapsed;
-        //}
-        //catch (Exception ex)
-        //{
-        //  MessageBox.Show($"Error loading groups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        //}
-        //finally
-        //{
-        // Hide loading indicator if you have one
-        // LoadingIndicator.Visibility = Visibility.Collapsed;
-        //}
-        // }*/
+            // Show/hide the requests button
+                ViewRequestsButton.Visibility = hasPendingRequests ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading groups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                //Hide loading indicator if you have one
+                //LoadingIndicator.Visibility = Visibility.Collapsed;
+            }
+        }
 
         private void ViewGroupPasswords_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService?.Navigate(new PasswordsPage(1, "name", true));
+            Button button = sender as Button;
+            if (button != null && button.Tag != null)
+            {
+                string groupId = button.Tag.ToString();
+
+                // Find the group
+                GroupResponse selectedGroup = new GroupResponse();
+                foreach (var group in _groups.Groups)
+                {
+                    if (group == groupId)
+                    {
+                        selectedGroup.Name = group;
+                        break;
+                    }
+                }
+                NavigationService?.Navigate(new PasswordsPage(_authToken, selectedGroup.Name, true, _currUser));
+
+                /*foreach (var user in selectedGroup.Users)
+                {
+                    if (user.Username == _currUser)
+                    {
+                        NavigationService?.Navigate(new PasswordsPage(_authToken, selectedGroup.Name, true, _currUser));
+                    }
+                }*/
+            }
+                
         }
         private void CreateNewGroup_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to create group page
-            // For now, just show a message
-            MessageBox.Show("Creating a new group.",
-                "Create Group", MessageBoxButton.OK, MessageBoxImage.Information);
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new AddGroupPage());
+            nav.Navigate(new AddGroupPage(_authToken));
         }
 
         // Add a new method to handle joining an existing group
         public void JoinExistingGroup_Click(object sender, RoutedEventArgs e)
         {
             // Navigate to join group request page
-            NavigationService?.Navigate(new JoinGroupRequestPage());
+            NavigationService?.Navigate(new JoinGroupRequestPage(_authToken));
         }
 
-        public void ViewGroupRequests_Click(object sender, RoutedEventArgs e)
+        public async void ViewGroupRequests_Click(object sender, RoutedEventArgs e)
         {
             // Find a group where the user is a manager
-            NavigationService?.Navigate(new GroupRequestsPage(1));
+            Button button = sender as Button;
+            if (button != null && button.Tag != null)
+            {
+                string groupId = button.Tag.ToString();
+
+                // Find the group
+                GroupResponse selectedGroup = null;
+                foreach (var group in _groups.Groups)
+                {
+                    if (group == groupId)
+                    {
+                        selectedGroup = await Common.GetGroup(Common.baseUrl, _authToken.access_token, group);
+                        break;
+                    }
+                }
+
+
+                NavigationService?.Navigate(new GroupRequestsPage(_authToken, selectedGroup));
+            }
         }
     }
 }

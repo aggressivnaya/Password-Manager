@@ -91,4 +91,4 @@ def validate(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(server, host="182.20.1.3", port=5000)
-    
+    #uvicorn.run(server, host="127.0.0.1", port=5000)

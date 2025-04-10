@@ -131,7 +131,7 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
     print('password list: ',passwords)
     db.close()
     # Return a list of password details
-    return {'passwords': [{"id": password.id, "name": password.name, "password": password.password} for password in passwords]} 
+    return {'passwords': [{"id": password.id, "name": password.name, "value": password.password, "shared": password.shared} for password in passwords]} 
     
 @server.get("/history")
 def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -419,7 +419,7 @@ def groupInfo(groupName: str = None):
     #getting the passwords that in the group
     sharedPasswords = getAllSharedPasswordsOfGroup(usersInGroup, group)
 
-    groupInfo = {"name": group.name, "description": group.description, "users": usersInGroup, "shared_passwords": sharedPasswords}
+    groupInfo = {"name": group.name, "description": group.description, "users": usersInGroup, "sharedPasswords": sharedPasswords}
     db.close()
     if not groupInfo:
         return {"error": "error with group info"}
@@ -464,14 +464,24 @@ def getUsersOfGroup(group):
     db = _SessionFactory()
     usersInGroup = []
     # Get all users in the group
-    usersId = db.query(UserGroup.userId).filter(UserGroup.groupId == group.id).all()
-    usersId = [u[0] for u in usersId]  # Extract user IDs
-    for user_id in usersId:
+    userss = db.query(UserGroup).filter(UserGroup.groupId == group.id).all()
+    for i in userss:
+        print('userId: ',i.userId)
+        print('isAdmin: ',i.isAdmin)
+    #userss = [u[0] for u in userss]  # Extract user IDs
+    users = [(u.userId, u.isAdmin) for u in userss]  # Extract user IDs and isAdmin status
+    print(users)
+    '''for user_id in usersId:
         user = (db.query(User).filter(User.id == user_id).all())[0]#getting the user obj
-        usersInGroup.append(user)
+        usersInGroup.append(user)'''
+    for user in users:
+        userFromDb = (db.query(User).filter(User.id == user[0]).all())[0]
+        usersInGroup.append((userFromDb, user[1]))#user[1] is the isAdmin status
     db.close()
-
-    return [{"id":user.id, "username": user.username, "email": user.email} for user in usersInGroup]
+    
+    print('usersInGroup: ',usersInGroup)
+    return [{"id":user[0].id, "username": user[0].username, "email": user[0].email, "isAdmin": user[1]} for user in usersInGroup]
+    #return [{"id":user.id, "username": user.username, "email": user.email} for user in usersInGroup]
 
 def getAllSharedPasswordsOfGroup(users, group):
     db = _SessionFactory()
@@ -497,3 +507,4 @@ def getAllSharedPasswordsOfGroup(users, group):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(server, host="182.20.1.4", port=5001)
+    #uvicorn.run(server, host="127.0.0.1", port=5001)

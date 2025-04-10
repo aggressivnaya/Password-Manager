@@ -32,20 +32,29 @@ class Token(BaseModel):
 @server.post("/login")
 def login(request: Request, user: BodyUser):
     try:
+
         token = access.login(request, user.username, user.email)
+        print('token: ',token)
+        if token == None:
+            return HTTPException(status_code=401, detail="invalid credentials")
         #TODO: send email
         #send.sendAuth(token)
-        return Token(access_token=token, token_type="bearer")
+        #return Token(access_token=token, token_type="bearer")
+        return {"access_token":token, "token_type":"bearer"}
     except Exception as e:
         return e
 
 @server.post("/signup") 
-def signup(request: Request, token: Annotated[str, Depends(oauth2Schema)], user: BodyUser):
+def signup(request: Request, user: BodyUser):
     try:
-        token = access.token(request, user.username, user.email)
+        print('user: ', user.username, user.email)
+        token = access.signup(request, user.username, user.email)
+        print('token: ',token)
+        if token == None:
+            return HTTPException(status_code=401, detail="invalid credentials")
         #TODO: send email
         #send.sendAuth(token)
-        return Token(access_token=token, token_type="bearer")
+        return {"access_token":token, "token_type":"bearer"}
     except Exception as e:
         return e
 
@@ -261,4 +270,5 @@ def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(server, host="182.20.1.2", port=5002)
+    #uvicorn.run(server, host="127.0.0.1", port=5002)
     

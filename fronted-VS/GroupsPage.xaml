@@ -8,23 +8,41 @@
         </LinearGradientBrush>
 
         <!-- ListBox Item Style -->
+        
         <Style x:Key="GroupListBoxItem" TargetType="ListBoxItem">
-            <Setter Property="Background" Value="#FF2a2a4a"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Background" Value="#FFF5F5F5"/>
+            <Setter Property="BorderBrush" Value="#FFE0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            CornerRadius="8">
-                            <ContentPresenter/>
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFEBEBEB"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#FFE3F2FD"/>
+                    <Setter Property="BorderBrush" Value="#FF90CAF9"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
+
+
 
         <Style x:Key="IconButton" TargetType="{x:Type Button}">
             <Setter Property="Background" Value="Transparent"/>
@@ -47,7 +65,7 @@
         </Style>
 
         <!-- Button Style -->
-        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
+         <Style x:Key="ModernButton" TargetType="{x:Type Button}">
             <Setter Property="Background" Value="#FF4a4a8a"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -66,11 +84,43 @@
                     <Setter Property="Background" Value="#FF5a5a9a"/>
                 </Trigger>
             </Style.Triggers>
+        </Style> 
+
+        <Style x:Key="OutlineButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FF2196F3"/>
+            <Setter Property="BorderBrush" Value="#FF2196F3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#10000000"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#20000000"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Page.Resources>
 
     <Grid Background="{StaticResource BackgroundGradient}" Margin="0,0,0,20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -98,61 +148,43 @@
         </Button>
 
         <!-- Groups List -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="20,0,20,20">
-                <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource GroupListBoxItem}">
-                    <ListBoxItem>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="👥" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="Group1" Text="Work Team" FontWeight="Bold" FontSize="18"/>
-                                <TextBlock Text="5 members • 12 passwords" Foreground="#FFaaaaaa"/>
-                            </StackPanel>
-                            <Button x:Name="Btn1" Content="Work Team" Grid.Column="2" Style="{StaticResource ModernButton}" Click="ViewGroupPasswords_Click"/>
-                        </Grid>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="👪" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="Group2" Text="Family" FontWeight="Bold" FontSize="18"/>
-                                <TextBlock Text="4 members • 8 passwords" Foreground="#FFaaaaaa"/>
-                            </StackPanel>
-                            <Button x:Name="Btn2" Content="Family" Grid.Column="2" Style="{StaticResource ModernButton}" Click="ViewGroupPasswords_Click"/>
-                        </Grid>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="🏠" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="Group3" Text="Home Devices" FontWeight="Bold" FontSize="18"/>
-                                <TextBlock Text="2 members • 6 passwords" Foreground="#FFaaaaaa"/>
-                            </StackPanel>
-                            <Button x:Name="Btn3" Content="Home Devices" Grid.Column="2" Style="{StaticResource ModernButton}" Click="ViewGroupPasswords_Click"/>
-                        </Grid>
-                    </ListBoxItem>
-                </ListBox>
+        <ListBox x:Name="GroupsListBox" 
+                    Grid.Row="2"
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Visibility="Visible"
+                    Height="Auto"
+                    MaxHeight="400"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,0,10"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                    ScrollViewer.CanContentScroll="True">
+            <ListBox.Template>
+                <ControlTemplate TargetType="ListBox">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        Background="{TemplateBinding Background}">
+                        <ScrollViewer Padding="{TemplateBinding Padding}"
+                            Focusable="False">
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </ListBox.Template>
+        </ListBox>
+        <!-- Add New Group Button -->
+        <StackPanel Grid.Row="3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="+ Create New Group" Style="{StaticResource ModernButton}" Margin="0,20,0,0" HorizontalAlignment="Left" Click="CreateNewGroup_Click"/>
 
-                <!-- Add New Group Button -->
-                <Button Content="+ Create New Group" Style="{StaticResource ModernButton}" Margin="0,20,0,0" HorizontalAlignment="Left" Click="CreateNewGroup_Click"/>
-
-                <Button Content="Join Existing Group" Style="{StaticResource ModernButton}" Margin="10,20,0,0" HorizontalAlignment="Left" Click="JoinExistingGroup_Click"/>
-            </StackPanel>
-        </ScrollViewer>
+                <Button Grid.Column="1" Content="Join Existing Group" Style="{StaticResource ModernButton}" Margin="10,20,0,0" HorizontalAlignment="Left" Click="JoinExistingGroup_Click"/>
+            </Grid>
+        </StackPanel>
+       
     </Grid>
 </Page>

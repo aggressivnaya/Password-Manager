@@ -37,30 +37,26 @@ namespace password_manager
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            string email = EmailTextBox.Text;
-            string username = UsernameTextBox.Text;
+            //string email = EmailTextBox.Text;
+            //string username = UsernameTextBox.Text;
+            string email = "user1@example.com";
+            string username = "user1";
+            if (email == null || username == null)
+            {
+                MessageBox.Show("username or email are empty",
+                    "Access Denied", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             //User user = new User(username, email);
-            /*string token = await _communicator.LoginAsync(user);
+            Token token = await Common.Login(Common.baseUrl, username, email);
             if (token != null)
             {
-                Console.WriteLine($"Login successful! Token: {token}");
-            }*/
-
-            /*if (_passwordManager.Login(email, password))
-            {
-                MessageBox.Show("Login successful!");
-                //UserDashboardPage dashboard = new UserDashboardPage(_passwordManager);
-                //TODO: go to dashboard page
-                this.myFrame.Navigate(new UserDashboardPage());
-                //this.Close();
+                Console.WriteLine($"Login successful! Token: {token.access_token}");
             }
-            else
-            {
-                MessageBox.Show("Login failed. Please check your credentials.");
-            }*/
 
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserDashboardPage());
+            nav.Navigate(new UserDashboardPage(token, username));
 
         }
 
@@ -69,16 +65,21 @@ namespace password_manager
             // Handle signup logic or show a signup window here.
             string email = EmailTextBox.Text;
             string username = UsernameTextBox.Text;
-            User user = new User(username, email);
-            string token = await _communicator.SignupAsync(user);
+            if (email == null || username == null)
+            {
+                MessageBox.Show("username or email are empty",
+                    "Access Denied", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            Token token = await Common.Signup(Common.baseUrl ,username, email);
             if (token != null)
             {
-                Console.WriteLine($"Signup successful! Token: {token}");
+                Console.WriteLine($"Signup successful! Token: {token.access_token}");
             }
-            //MessageBox.Show("Signup functionality not yet implemented.");
-            //TODO: go to dashboard page
+            
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserDashboardPage());
+            nav.Navigate(new UserDashboardPage(token, username));
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -90,24 +91,6 @@ namespace password_manager
         {
 
         }
-
-        //static async Task Main()
-        //{
-            
-
-            // Sign up
-            
-
-            // Log in
-            
-
-            // Validate token
-            /*if (token != null)
-            {
-                bool isValid = await ValidateToken(token);
-                Console.WriteLine($"Token validation: {isValid}");
-            }*/
-        //}
 
     }
 }

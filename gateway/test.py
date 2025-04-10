@@ -186,6 +186,19 @@ def test_logout():
 
 
 if __name__ == "__main__":
+    payload = {
+        "username": "user1",
+        "email": "user1@example.com"
+    }
+
+    # Send POST request
+    response = requests.post("http://127.0.0.1:5002/login", json=payload)
+
+    # Print the response
+    if response.status_code == 200:
+        print("Login successful:", response.json())
+    else:
+        print("Login failed:", response.status_code, response.text)
     #test_add_password()
     #test_update_password()
     #test_delete_password()
@@ -194,7 +207,7 @@ if __name__ == "__main__":
     #test_history()
     #test_create_group()
     #test_enter_group()
-    test_accept_user()
+    #test_accept_user()
     #test_leave_group()
     #
     #test_create_group()

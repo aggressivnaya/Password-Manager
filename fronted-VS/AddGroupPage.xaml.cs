@@ -7,9 +7,11 @@ namespace password_manager
 {
     public partial class AddGroupPage : Page
     {
-        public AddGroupPage()
+        private Token _authToken;
+        public AddGroupPage(Token authToken)
         {
             InitializeComponent();
+            _authToken = authToken;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -20,9 +22,10 @@ namespace password_manager
             }
         }
 
-        private void AddGroup_Click(object sender, RoutedEventArgs e)
+        private async void AddGroup_Click(object sender, RoutedEventArgs e)
         {
             string groupName = GroupNameTextBox.Text.Trim();
+            string groupDescription = GroupDescriptionTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(groupName))
             {
@@ -31,7 +34,8 @@ namespace password_manager
             }
 
             // TODO: Save group to database or state
-            MessageBox.Show($"Group '{groupName}' added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            ApiResponse response = await Common.CreateGroup(Common.baseUrl, _authToken.access_token, groupName, groupDescription);
+            //MessageBox.Show($"Group '{groupName}' added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
             if (NavigationService.CanGoBack)
             {

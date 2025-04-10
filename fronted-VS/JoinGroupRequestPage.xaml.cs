@@ -9,8 +9,11 @@ namespace password_manager
     /// </summary>
     public partial class JoinGroupRequestPage : Page
     {
-        public JoinGroupRequestPage()
+        
+        private Token _authToken;
+        public JoinGroupRequestPage(Token token)
         {
+            _authToken = token;
             InitializeComponent();
         }
 
@@ -20,7 +23,7 @@ namespace password_manager
             NavigationService?.GoBack();
         }
 
-        private void SendJoinRequest_Click(object sender, RoutedEventArgs e)
+        private async void SendJoinRequest_Click(object sender, RoutedEventArgs e)
         {
             // Validate input
             if (string.IsNullOrWhiteSpace(GroupNameTextBox.Text))
@@ -31,11 +34,14 @@ namespace password_manager
 
             try
             {
-                // TODO: Implement actual database logic to send join request
-                // This would include:
-                // 1. Check if group exists
-                // 2. Check if user is already a member or has a pending request
-                // 3. Create a new request record
+                
+                ApiResponse res = await Common.EnterGroup(Common.baseUrl,_authToken.access_token , GroupNameTextBox.Text.ToString());
+                if (res.Success != 200)
+                {
+                    MessageBox.Show("Error sending join request",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 // For now, just show a success message
                 MessageBox.Show($"Join request for group '{GroupNameTextBox.Text}' has been sent successfully.", 
