@@ -110,6 +110,12 @@ namespace password_manager
             this.myFrame.Navigate(new GroupsPage(_authToken, _currUser));
         }
 
+        private void GetHistoryPage(object sender, RoutedEventArgs e)
+        {
+            BackgroundImage.Visibility = Visibility.Collapsed;
+            this.myFrame.Navigate(new HistoryPage(_authToken));
+        }
+
 
         // Add a method to handle group requests navigation
         private void ViewGroupRequests_Click(object sender, RoutedEventArgs e)

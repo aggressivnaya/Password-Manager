@@ -4,19 +4,12 @@ sys.path.append(os.path.abspath('..'))
 from common.base import _SessionFactory, session_factory
 from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt
 from sqlalchemy import insert
-'''sys.path.append(os.path.abspath('/dal'))
-from classes.groupsDb import Group
-from classes.requestDb import Request
-from classes.usersDb import User
-from classes.passwordDb import Password
-from classes.usersGroupsDb import UserGroup
-from classes.usersPasswordsDb import UserPassword'''
 
 # Create a new session
 
 db = _SessionFactory()
 session_factory()
-
+'''
 # Insert some users
 insert_stmt = insert(User).values(username="user1", email="user1@example.com")
 db.execute(insert_stmt)
@@ -55,7 +48,7 @@ insert_stmt = insert(Requestt).values(sender_id=1, group_id=1, request_command="
 db.execute(insert_stmt)
 insert_stmt = insert(Requestt).values(sender_id=2, group_id=2, request_command="Leave group")
 db.execute(insert_stmt)
-
+'''
 # Commit the changes
 db.commit()
 

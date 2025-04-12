@@ -48,49 +48,47 @@ namespace password_manager
                 {
                     Grid grid = new Grid();
 
-                    ColumnDefinition col1 = new ColumnDefinition { Width = GridLength.Auto };
-                    ColumnDefinition col2 = new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) };
-                    ColumnDefinition col3 = new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) };
-                    ColumnDefinition col4 = new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) };
-                    ColumnDefinition col5 = new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) };
+                    RowDefinition col1 = new RowDefinition { Height = GridLength.Auto };
+                    RowDefinition col2 = new RowDefinition { Height = new GridLength(2, GridUnitType.Star) };
+                    RowDefinition col3 = new RowDefinition { Height = new GridLength(1, GridUnitType.Star) };
+                    RowDefinition col4 = new RowDefinition { Height = new GridLength(1, GridUnitType.Star) };
 
-                    grid.ColumnDefinitions.Add(col1);
-                    grid.ColumnDefinitions.Add(col2);
-                    grid.ColumnDefinitions.Add(col3);
-                    grid.ColumnDefinitions.Add(col4);
-                    grid.ColumnDefinitions.Add(col5);
-
-                    // ID
-                    TextBlock idBlock = new TextBlock
-                    {
-                        Text = historyItem.Id.ToString(),
-                        Margin = new Thickness(0, 0, 15, 0)
-                    };
-                    Grid.SetColumn(idBlock, 0);
-                    grid.Children.Add(idBlock);
+                    grid.RowDefinitions.Add(col1);
+                    grid.RowDefinitions.Add(col2);
+                    grid.RowDefinitions.Add(col3);
+                    grid.RowDefinitions.Add(col4);
 
                     // Password Name
                     TextBlock nameBlock = new TextBlock
                     {
-                        Text = historyItem.Name,
+                        Text = $"Name of Password: {historyItem.Name}",
                         FontWeight = FontWeights.SemiBold
                     };
-                    Grid.SetColumn(nameBlock, 1);
+                    nameBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    nameBlock.FontWeight = FontWeights.Bold;
+                    nameBlock.FontSize = 18;
+                    Grid.SetRow(nameBlock, 0);
                     grid.Children.Add(nameBlock);
 
                     // Version
                     TextBlock versionBlock = new TextBlock
                     {
-                        Text = historyItem.VersionId.ToString()
+                        Text = $"Version: {historyItem.VersionId.ToString()}"
                     };
-                    Grid.SetColumn(versionBlock, 2);
+                    versionBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    versionBlock.FontWeight = FontWeights.Bold;
+                    versionBlock.FontSize = 18;
+                    Grid.SetRow(versionBlock, 1);
                     grid.Children.Add(versionBlock);
 
                     // Method (Action)
                     TextBlock methodBlock = new TextBlock
                     {
-                        Text = historyItem.Method
+                        Text = $"Method: {historyItem.Method }"
                     };
+                    versionBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    versionBlock.FontWeight = FontWeights.Bold;
+                    versionBlock.FontSize = 18;
 
                     // Set color based on method
                     switch (historyItem.Method.ToLower())
@@ -105,16 +103,22 @@ namespace password_manager
                             methodBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFdc3545"));
                             break;
                     }
+                    methodBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    methodBlock.FontWeight = FontWeights.Bold;
+                    methodBlock.FontSize = 18;
 
-                    Grid.SetColumn(methodBlock, 3);
+                    Grid.SetRow(methodBlock, 2);
                     grid.Children.Add(methodBlock);
 
                     // Date
                     TextBlock dateBlock = new TextBlock
                     {
-                        Text = historyItem.Date
+                        Text = $"Date: {historyItem.Date}"
                     };
-                    Grid.SetColumn(dateBlock, 4);
+                    dateBlock.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#FFaaaaaa"));
+                    dateBlock.FontWeight = FontWeights.Bold;
+                    dateBlock.FontSize = 18;
+                    Grid.SetRow(dateBlock, 3);
                     grid.Children.Add(dateBlock);
 
                     // Add the grid to a list box item
@@ -122,6 +126,7 @@ namespace password_manager
                     {
                         Content = grid
                     };
+                    item.Style = (Style)FindResource("GroupListBoxItem");
 
                     // Add to the list box
                     HistoryBox.Items.Add(item);

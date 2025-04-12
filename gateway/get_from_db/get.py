@@ -42,16 +42,11 @@ def getPasswordById(token, id):
         raise HTTPException(status_code=400, detail="Password not found")
     
     
-def getHistory(token, passwordId=-1):
+def getHistory(token):
     header={"Authorization": f"Bearer {token}"}
-    if passwordId != -1:
-        data = { "passwordId" : passwordId}
-    else:
-        data = {}
-
     try:
         response = requests.get(
-            f"http://{DATA_SVC_ADDRESS}/history",headers=header , params=data
+            f"http://{DATA_SVC_ADDRESS}/history",headers=header 
         )
         return {'history': response.json()['history']}
     except:

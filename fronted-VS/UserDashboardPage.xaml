@@ -130,25 +130,13 @@
                         Margin="0,0,0,10"
                         Click="GetUserGroupsPage"/>
 
-                    <Button Content="📋 Group Requests" 
+                    <Button Content="📜 Passwords History" 
                         Foreground="White"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Left"
                         Margin="0,0,0,10"
-                        Click="ViewGroupRequests_Click">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <!-- This trigger would be controlled by your code-behind based on if the user is a manager -->
-                                    <DataTrigger Binding="{Binding HasPendingRequests}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                        Click="GetHistoryPage"/>
                 </StackPanel>
 
                 <!-- Main Content Area -->

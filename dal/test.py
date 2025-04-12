@@ -8,29 +8,42 @@ def test_add_password():
         headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
         params={"password": "testpassword", "name": "testname", "shared": "False"}
     )
-    #assert response.status_code == 200
-    #assert response.json() == {"success", 200}
+    response = requests.post(
+        "http://"+ DAL_SVC_ADDRESS + "/changes/add/",
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
+        params={"password": "ert", "name": "123", "shared": "False"}
+    )
+    response = requests.post(
+        "http://"+ DAL_SVC_ADDRESS + "/changes/add/",
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
+        params={"password": "errrrrt", "name": "456", "shared": "False"}
+    )
+    response = requests.post(
+        "http://"+ DAL_SVC_ADDRESS + "/changes/add/",
+        headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
+        params={"password": "fgh", "name": "678", "shared": "False"}
+    )
     print(response.json()["success"])
 
 def test_update_password():
     response = requests.post(
         "http://"+ DAL_SVC_ADDRESS + "/changes/update/",
         headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
-        json={"currPasswordId": 1, "newPassword": "newpassword", "newName": "newname", "shared": "False"}
+        params={"currPasswordId": 4, "newPassword": "newpassword", "newName": "newname", "shared": "False"}
     )
     #assert response.status_code == 200
     #assert response.json() == {"success", 200}
-    print(response.json()["success"])
+    print(response.json())
 
 def test_delete_password():
     response = requests.delete(
         "http://"+ DAL_SVC_ADDRESS + "/changes/delete/",
         headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"},
-        json={"currPasswordId": 1}
+        params={"currPasswordId": 2}
     )
     #assert response.status_code == 200
     #assert response.json() == {"success", 200}
-    print(response.json()["success"])
+    print(response.json())
 
 def test_get_required_password():
     response = requests.get("http://"+ DAL_SVC_ADDRESS + "/getPassword",headers={"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NDU2MDk1MH0.Gc9w4xvIib6or-sjWJIJOamWAMBoqQ4N_WbU-_GNqAQ"}, params={"passwordId": 3})
@@ -195,13 +208,13 @@ if __name__ == "__main__":
     #test_add_password()
     #test_update_password()
     #test_delete_password()
-    #test_get_user_passwords()
+    test_get_user_passwords()
     #test_get_required_password()
-    #test_history()
+    test_history()
     #test_create_group()
     #test_enter_group()
     #insertRequest("ent{}")
-    test_requests()
+    #test_requests()
     #test_accept_user()
     #test_leave_group()
     #test_remove_group()
@@ -216,9 +229,9 @@ if __name__ == "__main__":
     #test_requests()
     #insertRequest("ent{}")
     #insertRequest("add{'password': 'testpassword', 'name': 'testname', 'shared': 'True'}")    
-    insertRequest("add{'password': 'testpassword3', 'name': 'testname3', 'shared': 'True'}")    
+    #insertRequest("add{'password': 'testpassword3', 'name': 'testname3', 'shared': 'True'}")    
     #insertRequest("del{'passwordId': 1}")
-    print("deny request")
+    #print("deny request")
     #denyRequest()
     #acceptRequest()
     #test_requests()

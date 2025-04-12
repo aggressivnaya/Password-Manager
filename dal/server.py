@@ -65,7 +65,10 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
 @server.post("/changes/update/")
 def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
     db = _SessionFactory()
-    
+    if shared == "True":
+        shared = True
+    else:
+        shared = False
     #query that updates the password by id
     stmt = (
             update(Password)
