@@ -116,18 +116,18 @@
         </Grid>
 
         <!-- Tabs -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,0,20,20">
+        <!-- <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="20,0,20,20">
             <Button x:Name="JoinRequestsTab" Content="Join Requests" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="JoinRequestsTab_Click"/>
             <Button x:Name="EditRequestsTab" Content="Edit Requests" Style="{StaticResource ModernButton}" Click="EditRequestsTab_Click"/>
-        </StackPanel>
+        </StackPanel>-->
 
         <!-- Requests List -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,0,20,20">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="20,0,20,20">
             <StackPanel>
                 <!-- Join Requests Section -->
                 <Grid x:Name="JoinRequestsPanel" Visibility="Visible">
-                    <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
-                        <ListBoxItem>
+                    <ListBox x:Name="JoinRequestsListBox" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
+                        <!-- <ListBoxItem>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -168,7 +168,7 @@
                                     <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectJoinRequest_Click"/>
                                 </StackPanel>
                             </Grid>
-                        </ListBoxItem>
+                        </ListBoxItem>-->
                     </ListBox>
                 </Grid>
 

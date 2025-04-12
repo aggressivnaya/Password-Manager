@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Http.Formatting;
 using Newtonsoft.Json.Linq;
+using System.Linq.Expressions;
 
 namespace password_manager
 {
@@ -78,6 +79,19 @@ namespace password_manager
     public class HistoryResponse
     {
         public List<HistoryItem> History { get; set; }
+    }
+
+    public class Requestt
+    {
+        public int Id { get; set; }
+        public int Sender_id { get; set; }
+        public int Group_id { get; set; }
+        public string Request_command { get; set; }
+    }
+
+    public class Requestts
+    {
+        public List<Requestt> Requests { get; set; }
     }
 
     public class ApiResponse
@@ -167,6 +181,23 @@ namespace password_manager
 
             throw new HttpRequestException($"Code verification failed: {response.StatusCode}, {responseContent}");
         }
+
+        public static async Task<User> GetUser(string baseUrl, string token)
+        {
+            var client = CreateHttpClient(baseUrl, token);
+            var response = await client.GetAsync(baseUrl + "/user");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var user = JsonSerializer.Deserialize<User>(responseContent, options);
+                return user;
+            }
+
+            throw new HttpRequestException($"Failed to get passwords: {response.StatusCode}, {responseContent}");
+        }
+
 
         // Password Management Functions
 
@@ -272,12 +303,41 @@ namespace password_manager
             throw new HttpRequestException($"Failed to get group info: {response.StatusCode}, {responseContent}");
         }
 
+        public static async Task<Requestts> GetGroupRequests(string baseUrl, string token, string groupName) {
+            var client = CreateHttpClient(baseUrl, token);
+            var response = await client.GetAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/requests?groupName={groupName}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+
+                /*if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var passwords = JsonSerializer.Deserialize<PasswordListResponse>(responseContent, options);
+                    return passwords;
+                }*/
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var jsonDoc = JsonDocument.Parse(responseContent);
+                var groupInfoJson = jsonDoc.RootElement.GetProperty("requests").GetRawText();
+                if(groupInfoJson == "[]")
+                {
+                    return null;
+                }
+                //JsonSerializer.Deserialize<GroupRequestsResponse>(responseContent, options);
+                return JsonSerializer.Deserialize<Requestts>(responseContent, options);
+            }
+
+            throw new HttpRequestException($"Failed to get group info: {response.StatusCode}, {responseContent}");
+        }
+
         // Add a password to a group
         public static async Task<ApiResponse> AddPasswordToGroup(string baseUrl, string token, string groupName, string password, string name, bool shared)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var queryParams = $"password={Uri.EscapeDataString(password)}&name={Uri.EscapeDataString(name)}&shared={shared}";
-            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/add?{queryParams}", null);
+            var queryParams = $"'password':{Uri.EscapeDataString(password)},'name':{Uri.EscapeDataString(name)},'shared':{shared}";
+            var command = "add{" + queryParams + "}";
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -293,8 +353,9 @@ namespace password_manager
         public static async Task<ApiResponse> DeletePasswordFromGroup(string baseUrl, string token, string groupName, int passwordId)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var queryParams = $"passwordId={passwordId}";
-            var response = await client.DeleteAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/delete?{queryParams}");
+            var queryParams = $"'passwordId':{passwordId}";
+            var command = "del{" + queryParams + "}";
+            var response = await client.DeleteAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -310,8 +371,9 @@ namespace password_manager
         public static async Task<ApiResponse> UpdatePasswordInGroup(string baseUrl, string token, string groupName, int passwordId, string newPassword, string newName, bool shared)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var queryParams = $"passwordId={passwordId}&newPassword={Uri.EscapeDataString(newPassword)}&newName={Uri.EscapeDataString(newName)}&shared={shared}";
-            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/update?{queryParams}", null);
+            var queryParams = $"'passwordId':{passwordId},'newPassword':{Uri.EscapeDataString(newPassword)},'name':{Uri.EscapeDataString(newName)},'shared':{shared}";
+            var command = "upd{" + queryParams + "}";
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -344,7 +406,8 @@ namespace password_manager
         public static async Task<ApiResponse> EnterGroup(string baseUrl, string token, string groupName)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/enterGroup", null);
+            var command = "ent{}";
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -357,11 +420,25 @@ namespace password_manager
         }
 
         // Accept a user's request to join a group
-        public static async Task<ApiResponse> AcceptUser(string baseUrl, string token, string groupName, string username)
+        public static async Task<ApiResponse> AcceptRequest(string baseUrl, string token, string groupName, int requestId)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var queryParams = $"username={Uri.EscapeDataString(username)}";
-            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/acceptUser?{queryParams}", null);
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/approveRequest?groupName={groupName}&requestId={requestId}", null);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+            }
+
+            throw new HttpRequestException($"Failed to accept user: {response.StatusCode}, {responseContent}");
+        }
+
+        public static async Task<ApiResponse> DeclineRequest(string baseUrl, string token, string groupName, int requestId)
+        {
+            var client = CreateHttpClient(baseUrl, token);
+            var response = await client.DeleteAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/declineRequest?groupName={groupName}&requestId={requestId}");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)

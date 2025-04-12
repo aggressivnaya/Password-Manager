@@ -7,16 +7,10 @@ from typing import Annotated
 import jwt
 import os
 import sys
+import json
 sys.path.append(os.path.abspath('..'))
 from common.base import session_factory, engine, Base, _SessionFactory
 from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt, History
-'''from classes.groupsDb import Group
-from classes.historyDb import History
-from classes.requestDb import Request
-from classes.usersDb import User
-from classes.passwordDb import Password
-from classes.usersGroupsDb import UserGroup
-from classes.usersPasswordsDb import UserPassword'''
 
 server = FastAPI()
 #db = _SessionFactory()
@@ -30,6 +24,14 @@ server.add_middleware(
 )
 oauth2Schema = OAuth2PasswordBearer(tokenUrl="placeholder")
     
+@server.get("/user")
+def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+    print('currUser: ',currUser.username)
+
+    return {'user': {"id": currUser.id, "username": currUser.username, "email": currUser.email}}
+
 @server.post("/changes/add/")
 def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
     db = _SessionFactory()
@@ -228,7 +230,7 @@ def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     except Exception as e:
         print('exception in enterGroup:', e)
         raise e
-
+'''
 @server.post("/group/accept_user")
 def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, username: str = None):
     db = _SessionFactory()
@@ -276,6 +278,7 @@ def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     except Exception as e:
         print('exception in acceptUser:', e)
         raise e
+        '''
 
 @server.delete("/group/leave_group")
 def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
@@ -321,7 +324,7 @@ def removeGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     except Exception as e:
         print('exception in removeGroup:', e)
         raise e
-    
+'''   
 @server.get("/group/addPassword")
 def addPasswordToGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, password: str = None, name: str = None, shared: str = None):
     db = _SessionFactory()
@@ -407,7 +410,7 @@ def updatePasswordInGroup(request: Request, token: Annotated[str, Depends(oauth2
         return {"success": 200}
     except Exception as e:
         print('exception in updatePasswordInGroup:', e)
-        raise e
+        raise e'''
 
 @server.get("/group")
 def groupInfo(groupName: str = None):
@@ -424,6 +427,133 @@ def groupInfo(groupName: str = None):
     if not groupInfo:
         return {"error": "error with group info"}
     return {'groupinfo':groupInfo}
+
+@server.get("/group/requests")
+def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+    currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
+    if userGroup.isAdmin == False:
+        return {"error": "You are not the admin of this group"}
+    
+    #getting the requests of the group
+    requests = (db.query(Requestt).filter(Requestt.group_id == currGroup.id).all())
+    print('requests: ',requests)
+    db.close()
+    if not requests:
+        return {"error": "error with group info"}
+    return {'requests':requests}
+
+@server.post("/group/approve_request")
+def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+    currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
+    if userGroup.isAdmin == False:
+        return {"error": "You are not the admin of this group"}
+    
+    #finding the request by id
+    request = (db.query(Requestt).filter(Requestt.id == requestId).all())[0]
+
+    if request.request_command[0:3] == "ent":
+        parsed = json.loads(request.request_command[3:])
+        insert_stmt = insert(UserGroup).values(userId=request.sender_id, groupId=request.group_id, isAdmin=False)
+        db.execute(insert_stmt)
+        db.commit()
+    elif request.request_command[0:3] == "add":
+        #adding the password to the group
+        parsed = json.loads(request.request_command[3:])
+        shared = parsed["shared"]
+        if parsed["shared"] == "True":
+            shared = True
+        else:
+            shared = False
+        insert_stmt = insert(Password).values(password=parsed["password"], name=parsed["name"], shared=shared)
+        db.execute(insert_stmt)
+        db.commit()
+        print('added password')
+        password = (db.query(Password).filter(Password.password == parsed["password"] and Password.name == parsed["name"] and Password.shared == shared).all())[0]
+        insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
+        db.execute(insert_stmt)
+        db.execute(insert_stmt)
+        db.commit()
+    elif request.request_command[0:3] == "del":
+        #deleting the password from the group
+        parsed = json.loads(request.request_command[3:])
+        password = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
+        delete_stmt = delete(UserPassword).where((UserPassword.passwordId == password.id) & (UserPassword.userId == request.sender_id))
+        db.execute(delete_stmt)
+        db.commit()
+    elif request.request_command[0:3] == "upd":
+        #updating the password in the group
+        parsed = json.loads(request.request_command[3:])
+        stmt = (
+            update(Password)
+            .where(Password.id == parsed["id"])
+            .values(password=parsed["newPassword"], name=parsed["name"], shared=shared)
+        )
+        db.execute(stmt)
+        db.commit()
+    
+    #deleting the request
+    delete_stmt = delete(Requestt).where(Requestt.id == requestId)
+    db.execute(delete_stmt)
+
+    try:
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in approveRequest:', e)
+        raise e
+    
+@server.delete("/group/deny_request")
+def denyRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+    currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
+    if userGroup.isAdmin == False:
+        return {"error": "You are not the admin of this group"}
+    
+    #finding the request by id
+    request = (db.query(Requestt).filter(Requestt.id == int(requestId)).all())[0]
+
+    #deleting the request
+    delete_stmt = delete(Requestt).where(Requestt.id == int(requestId))
+    db.execute(delete_stmt)
+
+    try:
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in denyRequest:', e)
+        raise e
+
+@server.post("/group/insert_request")
+def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestCommand: str = None):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+    currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    #userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
+    #if userGroup.isAdmin == True:
+     #   return {"error": "Why are you making a request you stupid, you have all the power"}
+    
+    #creating the request
+    insert_stmt = insert(Requestt).values(sender_id=currUser.id, group_id=currGroup.id, request_command=requestCommand)
+    db.execute(insert_stmt)
+
+    try:
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in insertRequest:', e)
+        raise e
+
 
 @server.delete("/logout/")
 def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):

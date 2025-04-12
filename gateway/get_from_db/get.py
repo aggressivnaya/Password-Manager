@@ -3,6 +3,18 @@ from fastapi import HTTPException, Request
 
 DATA_SVC_ADDRESS = '182.20.1.4:5001'
 
+def getUser(token):
+    header={"Authorization": f"Bearer {token}"}
+    
+    try:
+        print('getting user')
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/user",headers=header 
+        )
+        return {'user': response.json()['user']}
+    except:
+        raise HTTPException(status_code=400, detail="User not found")
+
 def getPasswords(token):
     header={"Authorization": f"Bearer {token}"}
 
@@ -13,7 +25,8 @@ def getPasswords(token):
         )
         return {'passwords': response.json()['passwords']}
     except:
-        raise HTTPException(status_code=400, detail="Passwords not found")
+        #raise HTTPException(status_code=400, detail="Passwords not found")
+        return {'passwords': []}
 
 def getPasswordById(token, id):
     header={"Authorization": f"Bearer {token}"}
@@ -42,7 +55,8 @@ def getHistory(token, passwordId=-1):
         )
         return {'history': response.json()['history']}
     except:
-        raise HTTPException(status_code=400, detail="History not found")
+        #raise HTTPException(status_code=400, detail="History not found")
+        return {'history': []}
     
 def getGroups(token):
     header={"Authorization": f"Bearer {token}"}
@@ -53,7 +67,8 @@ def getGroups(token):
         )
         return {'groups': response.json()['groups']}
     except:
-        raise HTTPException(status_code=400, detail="Groups not found")
+        #raise HTTPException(status_code=400, detail="Groups not found")
+        return {'groups': []}
 
 def getRequestedGroup(token, group):
     header={"Authorization": f"Bearer {token}"}
@@ -66,3 +81,17 @@ def getRequestedGroup(token, group):
         return {'group': response.json()['groupinfo']}
     except:
         raise HTTPException(status_code=400, detail="Group not found")
+    
+def getGroupRequests(token, group):
+    header={"Authorization": f"Bearer {token}"}
+    data = { "groupName" : group}
+
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/group/requests",headers=header , params=data
+        )
+        print(response.json()["requests"])
+        return {'requests': response.json()['requests']}
+    except:
+        #raise HTTPException(status_code=400, detail="Group not found")
+        return {'requests': []}

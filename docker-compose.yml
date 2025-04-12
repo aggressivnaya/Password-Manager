@@ -65,14 +65,14 @@ services:
     ports:
       - "5002:5002"
 
-  client_auth:
+  client_db:
     image: python:3.10-alpine
-    container_name: client_auth
+    container_name: client_adb
     user: root
     volumes:
-      - ./auth:/auth
+      - ./dal:/dal
       - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt && python /auth/test.py"
+    command: sh -c "pip install -r /requirements.txt && python /dal/test.py"
     networks:
       my_lan:
         ipv4_address: "182.20.1.6"

@@ -62,6 +62,18 @@ def signup(request: Request, user: BodyUser):
 def check(request: Request, token: Annotated[str, Depends(oauth2Schema)], code: str):
     return send.checkGeneratedCode(code)
 
+@server.get("/user")
+def user(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return get.getUser(token)
+    except Exception as e:
+        return e
+
 @server.get("/passwords")
 def passwords(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
@@ -217,6 +229,54 @@ def removeUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     try:
         return updating_data.removeUserFromGroup(token, groupName, user)
     except  Exception as e:
+        return e
+    
+@server.post("/groups/{groupName}/approveRequest")
+def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.acceptRequest(token, groupName, requestId)
+    except  Exception as e:
+        return e
+
+@server.post("/groups/{groupName}/insertRequest")
+def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, command: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.insertRequest(token, groupName, command)
+    except  Exception as e:
+        return e 
+
+@server.delete("/groups/{groupName}/declineRequest")
+def declineRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return updating_data.denyRequest(token, groupName, requestId)
+    except  Exception as e:
+        return e
+    
+@server.get("/groups/{groupName}/requests")
+def requests(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return get.getGroupRequests(token, groupName)
+    except Exception as e:
         return e
     
 @server.delete("/groups/{groupName}/leaveGroup")

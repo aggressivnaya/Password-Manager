@@ -49,7 +49,7 @@ def deletePassword(token, passwordId):
     except:
         #raise HTTPException(status_code=400, detail="Password not deleted")
         return False
-
+'''
 def addPasswordGroup(token, group, password, shared, name):
     header={"Authorization": f"Bearer {token}"}
 
@@ -91,7 +91,7 @@ def deletePasswordGroup(token, group, password):
         return response.json()
     except:
         raise HTTPException(status_code=400, detail="Group not deleted")
-    
+    '''
 def createGroup(token, name, description):
     header={"Authorization": f"Bearer {token}"}
 
@@ -161,7 +161,7 @@ def leaveGroup(token, group):
         return response.json()
     except:
         raise HTTPException(status_code=400, detail="Group not left")
-    
+'''   
 def enterGroup(token, group):
     header={"Authorization": f"Bearer {token}"}
 
@@ -174,8 +174,49 @@ def enterGroup(token, group):
 
         return response.json()
     except:
-        raise HTTPException(status_code=400, detail="Group not entered")
+        raise HTTPException(status_code=400, detail="Group not entered")'''
+
+def insertRequest(token, group, requestCommand):
+    header={"Authorization": f"Bearer {token}"}
+
+    data = { "groupName" : group, "requestCommand": requestCommand}
+
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/group/insert_request",headers=header , params=data
+        )
+
+        return response.json()
+    except:
+        raise HTTPException(status_code=400, detail="Request not sent")
     
+def acceptRequest(token, group, requestId):
+    header={"Authorization": f"Bearer {token}"}
+
+    data = { "groupName" : group, "requestId": requestId}
+
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/group/accept_request",headers=header , params=data
+        )
+
+        return response.json()
+    except:
+        raise HTTPException(status_code=400, detail="Request not accepted")
+    
+def denyRequest(token, group, requestId):
+    header={"Authorization": f"Bearer {token}"}
+
+    data = { "groupName" : group, "requestId": requestId}
+
+    try:
+        response = requests.post(
+            f"http://{DATA_SVC_ADDRESS}/group/deny_request",headers=header , params=data
+        )
+
+        return response.json()
+    except:
+        raise HTTPException(status_code=400, detail="Request not rejected")
 
 #if __name__ == "__main__":
    # addPassword( "password", "name", False)

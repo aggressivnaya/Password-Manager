@@ -316,10 +316,7 @@ namespace password_manager
 
                 if (selectedPassword != null)
                 {
-                    // TODO: Navigate to password edit page
-                    // For now, just show a message
-                    MessageBox.Show($"Editing password for {selectedPassword.Name}.",
-                        "Edit Password", MessageBoxButton.OK, MessageBoxImage.Information);
+                    NavigationService?.Navigate(new AddPasswordPage(_authToken, _groupName, "upd", selectedPassword));
                 }
             }
         }
@@ -400,7 +397,7 @@ namespace password_manager
                 return;
             }
 
-            NavigationService?.Navigate(new AddPasswordPage());
+            NavigationService?.Navigate(new AddPasswordPage(_authToken, _groupName, "add", null));
         }
 
         public void ViewGroupRequests_Click(object sender, RoutedEventArgs e)

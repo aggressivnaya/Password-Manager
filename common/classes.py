@@ -80,6 +80,7 @@ class Requestt(Base):
     sender_id = Column(Integer, ForeignKey("user.id"))
     group_id = Column(Integer, ForeignKey("group.id"))
     request_command = Column(String)
+    #request commands: "ent", "add", "del", "upd"
 
     sender = relationship("User",foreign_keys=[sender_id] , back_populates="request1")
     group = relationship("Group",foreign_keys=[group_id], back_populates="request2")
