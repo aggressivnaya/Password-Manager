@@ -71,9 +71,11 @@ namespace password_manager
     public class HistoryItem
     {
         public int Id { get; set; }
-        public string Action { get; set; }
-        public DateTime Timestamp { get; set; }
+        public int VersionId { get; set; }
+        public string Name { get; set; }
         public int PasswordId { get; set; }
+        public string Method { get; set; }
+        public string Date { get; set; }
     }
 
     public class HistoryResponse
@@ -310,13 +312,6 @@ namespace password_manager
 
             if (response.IsSuccessStatusCode)
             {
-
-                /*if (response.IsSuccessStatusCode)
-                {
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var passwords = JsonSerializer.Deserialize<PasswordListResponse>(responseContent, options);
-                    return passwords;
-                }*/
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var jsonDoc = JsonDocument.Parse(responseContent);
                 var groupInfoJson = jsonDoc.RootElement.GetProperty("requests").GetRawText();
@@ -324,7 +319,6 @@ namespace password_manager
                 {
                     return null;
                 }
-                //JsonSerializer.Deserialize<GroupRequestsResponse>(responseContent, options);
                 return JsonSerializer.Deserialize<Requestts>(responseContent, options);
             }
 

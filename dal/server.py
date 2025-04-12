@@ -3,6 +3,7 @@ from fastapi import FastAPI, Header, Request, Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import update, insert, delete
+from datetime import datetime
 from typing import Annotated
 import jwt
 import os
@@ -37,19 +38,20 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     print('adding password')
-    #password = Password(name, password, shared)
     if shared == "True":
         shared = True
     else:
         shared = False
     insert_stmt = insert(Password).values(name=name, password=password, shared=shared)
-    #db.add(password)
     db.execute(insert_stmt)
     db.commit()
 
     password = (db.query(Password).filter(Password.name == name and Password.password == password and Password.shared == shared).all())[0]
-    #userPassword = UserPassword(currUser.id, password.id)
     insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
+    db.execute(insert_stmt)
+    db.commit()
+
+    insert_stmt = insert(History).values(versionId=1, name=name, passwordId=password.id, method="add", date=datetime.utcnow().strftime("%Y-%m-%d"))
     db.execute(insert_stmt)
 
     try: 
@@ -63,8 +65,7 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
 @server.post("/changes/update/")
 def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
     db = _SessionFactory()
-    #currUser = getCurrentUser(token)
-
+    
     #query that updates the password by id
     stmt = (
             update(Password)
@@ -73,6 +74,10 @@ def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)
         )
 
     db.execute(stmt)
+    db.commit()
+
+    insert_stmt = insert(History).values(versionId=1, name=newName, passwordId=currPasswordId, method="upd", date=datetime.utcnow().strftime("%Y-%m-%d"))
+    db.execute(insert_stmt)
 
     try:
         db.commit()
@@ -86,17 +91,17 @@ def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)
 def deletePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None):
     db = _SessionFactory()
     currUser = getCurrentUser(token)
+    password = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
 
-    #password = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
-    
-    #passwordFromUsrPass = (db.query(UserPassword).filter(UserPassword.passwordId == password.id and UserPassword.user_id == currUser.id).all())[0]
-    #db.delete(passwordFromUsrPass)
     delete_stmt = delete(Password).where(Password.id == currPasswordId)
     db.execute(delete_stmt)
     db.commit()
     delete_stmt = delete(UserPassword).where((UserPassword.passwordId == currPasswordId) & (UserPassword.userId == currUser.id))
     db.execute(delete_stmt)
-    #db.delete(password)
+    db.commit()
+
+    insert_stmt = insert(History).values(versionId=1, name=password.name, passwordId=currPasswordId, method="del", date=datetime.utcnow().strftime("%Y-%m-%d"))
+    db.execute(insert_stmt)
 
     try:
         db.commit()
@@ -137,9 +142,6 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
     
 @server.get("/history")
 def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
-    #tokenData = authorization.split(' ')[1]
-    #username = request.args.get('username', type = str)
-    #user = (db.query(User).filter(User.username == username).all())[0]
     db = _SessionFactory()
     currUser = getCurrentUser(token)
 
@@ -178,9 +180,7 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     insert_stmt = insert(UserGroup).values(userId=currUser.id, groupId=3, isAdmin=True)
     db.execute(insert_stmt)
     db.commit()
-    #userGroup = (db.query(UserGroup).filter(UserGroup.groupId == 3 and UserGroup.isAdmin).all())[0]
-    #print('userGroup: ',userGroup.userId)
-        
+    
     isGroup = (db.query(Group).filter(Group.name == name).all())
     if isGroup:
         return {"error": "Group already exists"}
@@ -189,15 +189,11 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     link = name + str(random.randint(100000, 999999))
     insert_stmt = insert(Group).values(name=name, description=description, link=link)
     db.execute(insert_stmt)
-    #group = Group(name, description, "link")
-    #db.add(group)
     db.commit()
     #adding the user to the group
     group = (db.query(Group).filter(Group.name == name and Group.description == description).all())[0]
     print('group: ',group.id)
     insert_stmt = insert(UserGroup).values(userId=currUser.id, groupId=group.id, isAdmin=True)
-    #userGroup = UserGroup(currUser.id, group.id, True)
-    #db.add(userGroup)
     db.execute(insert_stmt)
     
     try:
@@ -287,9 +283,6 @@ def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
 
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
 
-    #userGroup = UserGroup(currUser.id, group.id)
-    #db.delete(userGroup)
-
     delete_stmt = delete(UserGroup).where(UserGroup.userId == currUser.id and UserGroup.groupId == group.id)
     db.execute(delete_stmt)
     
@@ -307,13 +300,11 @@ def removeGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
 
     # Delete references to the group in the UserGroup table
-    #db.query(UserGroup).filter(UserGroup.groupId == group.id).delete()
     delete_stmt = delete(UserGroup).where(UserGroup.groupId == group.id)
     db.execute(delete_stmt)
     db.commit()
     
     # Delete the group itself
-    #db.query(Group).filter(Group.id == group.id).delete()
     delete_stmt = delete(Group).where(Group.id == group.id)
     db.execute(delete_stmt)
     
@@ -458,8 +449,6 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
     request = (db.query(Requestt).filter(Requestt.id == requestId).all())[0]
 
     if request.request_command[0:3] == "ent":
-        #print(request.request_command[3:])
-        #parsed = json.loads(request.request_command[3:])
         insert_stmt = insert(UserGroup).values(userId=request.sender_id, groupId=request.group_id, isAdmin=False)
         db.execute(insert_stmt)
         db.commit()
@@ -485,16 +474,16 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
         db.commit()
     elif request.request_command[0:3] == "del":
         #deleting the password from the group
-        print(request.request_command[3:])
-        parsed = json.loads(request.request_command[3:])
+        valid_json_str = request.request_command[3:].replace("'", '"')
+        parsed = json.loads(valid_json_str)
         password = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
         delete_stmt = delete(UserPassword).where((UserPassword.passwordId == password.id) & (UserPassword.userId == request.sender_id))
         db.execute(delete_stmt)
         db.commit()
     elif request.request_command[0:3] == "upd":
         #updating the password in the group
-        print(request.request_command[3:])
-        parsed = json.loads(request.request_command[3:])
+        valid_json_str = request.request_command[3:].replace("'", '"')
+        parsed = json.loads(valid_json_str)
         stmt = (
             update(Password)
             .where(Password.id == parsed["id"])
@@ -544,9 +533,6 @@ def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)]
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
-    #userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
-    #if userGroup.isAdmin == True:
-     #   return {"error": "Why are you making a request you stupid, you have all the power"}
     
     #creating the request
     insert_stmt = insert(Requestt).values(sender_id=currUser.id, group_id=currGroup.id, request_command=requestCommand)
@@ -559,7 +545,6 @@ def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)]
     except Exception as e:
         print('exception in insertRequest:', e)
         raise e
-
 
 @server.delete("/logout/")
 def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -588,7 +573,6 @@ def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 
 def getCurrentUser(token):
     # Get the username from the token
-    #token = token.split(" ")[1]
     db = _SessionFactory()
     print('token: ',token)
     username = jwt.decode(token, "SARCASM", algorithms=["HS256"])["username"]
@@ -604,12 +588,8 @@ def getUsersOfGroup(group):
     for i in userss:
         print('userId: ',i.userId)
         print('isAdmin: ',i.isAdmin)
-    #userss = [u[0] for u in userss]  # Extract user IDs
     users = [(u.userId, u.isAdmin) for u in userss]  # Extract user IDs and isAdmin status
     print(users)
-    '''for user_id in usersId:
-        user = (db.query(User).filter(User.id == user_id).all())[0]#getting the user obj
-        usersInGroup.append(user)'''
     for user in users:
         userFromDb = (db.query(User).filter(User.id == user[0]).all())[0]
         usersInGroup.append((userFromDb, user[1]))#user[1] is the isAdmin status
@@ -617,18 +597,9 @@ def getUsersOfGroup(group):
     
     print('usersInGroup: ',usersInGroup)
     return [{"id":user[0].id, "username": user[0].username, "email": user[0].email, "isAdmin": user[1]} for user in usersInGroup]
-    #return [{"id":user.id, "username": user.username, "email": user.email} for user in usersInGroup]
 
 def getAllSharedPasswordsOfGroup(users, group):
     db = _SessionFactory()
-    #usersId = [u["id"]for u in users]
-
-    # Get all shared passwords for these users
-    #shared_passwords = (db.query(Password).join(UserPassword, Password.id == UserPassword.passwordId).filter(UserPassword.userId.in_(usersId), Password.shared == True).all())
-    #db.close()
-    # Return the dict in list of shared passwords
-    #return [{"id": pw.id, "name": pw.name, "password": pw.password} for pw in shared_passwords]
-
     shared_passwords = (
         db.query(Password)
         .join(UserPassword, Password.id == UserPassword.passwordId)
