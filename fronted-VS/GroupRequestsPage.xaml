@@ -126,7 +126,17 @@
             <StackPanel>
                 <!-- Join Requests Section -->
                 <Grid x:Name="JoinRequestsPanel" Visibility="Visible">
-                    <ListBox x:Name="JoinRequestsListBox" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
+                    <ListBox x:Name="JoinRequestsListBox" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}"
+                         Visibility="Visible"
+                         Height="Auto"
+                         MaxHeight="400"
+                         VerticalAlignment="Stretch"
+                         HorizontalAlignment="Stretch"
+                         Margin="0,0,0,10"
+                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                         ScrollViewer.CanContentScroll="True">
+                                   
+                                </ListBox> 
                         <!-- <ListBoxItem>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -169,58 +179,7 @@
                                 </StackPanel>
                             </Grid>
                         </ListBoxItem>-->
-                    </ListBox>
-                </Grid>
-
-                <!-- Edit Requests Section -->
-                <Grid x:Name="EditRequestsPanel" Visibility="Collapsed">
-                    <ListBox Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource RequestListBoxItem}">
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="🔑" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Password Edit Request" FontWeight="Bold" FontSize="16"/>
-                                    <TextBlock Text="From: Mike Johnson (Work Team)" Foreground="#FFaaaaaa"/>
-                                    <TextBlock Text="Password: Work Portal" Foreground="#FFaaaaaa"/>
-                                    <TextBlock Text="Reason: Password has been changed by admin" 
-                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Requested: 3 hours ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                    <Button Content="Review" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="ReviewEditRequest_Click"/>
-                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectEditRequest_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListBoxItem>
-                        <ListBoxItem>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="🔑" FontSize="24" Grid.Column="0" Margin="0,0,15,0"/>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Password Edit Request" FontWeight="Bold" FontSize="16"/>
-                                    <TextBlock Text="From: Sarah Williams (Home Devices)" Foreground="#FFaaaaaa"/>
-                                    <TextBlock Text="Password: WiFi Router" Foreground="#FFaaaaaa"/>
-                                    <TextBlock Text="Reason: Updated after router reset" 
-                                               Foreground="#FFaaaaaa" TextWrapping="Wrap" Margin="0,5,0,0"/>
-                                    <TextBlock Text="Requested: 1 day ago" Foreground="#FF8a8a9a" FontSize="12" Margin="0,5,0,0"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                    <Button Content="Review" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Click="ReviewEditRequest_Click"/>
-                                    <Button Content="Reject" Style="{StaticResource RejectButton}" Click="RejectEditRequest_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </ListBoxItem>
-                    </ListBox>
-                </Grid>
+                    </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

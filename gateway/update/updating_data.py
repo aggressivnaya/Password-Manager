@@ -197,7 +197,7 @@ def acceptRequest(token, group, requestId):
 
     try:
         response = requests.post(
-            f"http://{DATA_SVC_ADDRESS}/group/accept_request",headers=header , params=data
+            f"http://{DATA_SVC_ADDRESS}/group/approve_request",headers=header , params=data
         )
 
         return response.json()

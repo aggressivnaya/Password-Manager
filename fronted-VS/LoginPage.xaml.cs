@@ -39,10 +39,10 @@ namespace password_manager
         {
             //string email = EmailTextBox.Text;
             //string username = UsernameTextBox.Text;
-            //string email = "user1@example.com";
-            //string username = "user1";
-            string email = "q1@";
-            string username = "q1";
+            string email = "user1@example.com";
+            string username = "user1";
+            //string email = "q1@";
+            //string username = "q1";
 
             if (email == null || username == null)
             {

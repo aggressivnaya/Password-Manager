@@ -458,13 +458,17 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
     request = (db.query(Requestt).filter(Requestt.id == requestId).all())[0]
 
     if request.request_command[0:3] == "ent":
-        parsed = json.loads(request.request_command[3:])
+        #print(request.request_command[3:])
+        #parsed = json.loads(request.request_command[3:])
         insert_stmt = insert(UserGroup).values(userId=request.sender_id, groupId=request.group_id, isAdmin=False)
         db.execute(insert_stmt)
         db.commit()
     elif request.request_command[0:3] == "add":
         #adding the password to the group
-        parsed = json.loads(request.request_command[3:])
+        print("in add function")
+        print(request.request_command[3:])
+        valid_json_str = request.request_command[3:].replace("'", '"')
+        parsed = json.loads(valid_json_str)
         shared = parsed["shared"]
         if parsed["shared"] == "True":
             shared = True
@@ -481,6 +485,7 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
         db.commit()
     elif request.request_command[0:3] == "del":
         #deleting the password from the group
+        print(request.request_command[3:])
         parsed = json.loads(request.request_command[3:])
         password = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
         delete_stmt = delete(UserPassword).where((UserPassword.passwordId == password.id) & (UserPassword.userId == request.sender_id))
@@ -488,6 +493,7 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
         db.commit()
     elif request.request_command[0:3] == "upd":
         #updating the password in the group
+        print(request.request_command[3:])
         parsed = json.loads(request.request_command[3:])
         stmt = (
             update(Password)

@@ -216,7 +216,7 @@ if __name__ == "__main__":
     #test_requests()
     #insertRequest("ent{}")
     #insertRequest("add{'password': 'testpassword', 'name': 'testname', 'shared': 'True'}")    
-    #insertRequest("add{'password': 'testpassword1', 'name': 'testname1', 'shared': 'True'}")    
+    insertRequest("add{'password': 'testpassword3', 'name': 'testname3', 'shared': 'True'}")    
     #insertRequest("del{'passwordId': 1}")
     print("deny request")
     #denyRequest()
