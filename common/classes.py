@@ -31,6 +31,7 @@ class Password(Base):
     shared = Column(Boolean, default=False)
     users = relationship('UserPassword', back_populates='password')
     history = relationship('History', back_populates='password')
+    keys = relationship('PasswordKey', back_populates='password')
 
 class History(Base):
     __tablename__ = 'history'
@@ -58,6 +59,13 @@ class UserPassword(Base):
     passwordId = Column(Integer, ForeignKey('password.id'), nullable=False)
     user = relationship('User', back_populates='passwords')
     password = relationship('Password', back_populates='users')
+
+class PasswordKey(Base):
+    __tablename__ = 'password_key'
+    id = Column(Integer, primary_key=True)
+    passwordId = Column(Integer, ForeignKey('password.id'), nullable=False)
+    key = Column(String, nullable=False)
+    password = relationship('Password', back_populates='keys')
 
 class Notification(Base):
     __tablename__ = "notifications"

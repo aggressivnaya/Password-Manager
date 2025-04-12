@@ -9,9 +9,10 @@ import jwt
 import os
 import sys
 import json
+from cryptography.fernet import Fernet
 sys.path.append(os.path.abspath('..'))
 from common.base import session_factory, engine, Base, _SessionFactory
-from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt, History
+from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt, History, PasswordKey
 
 server = FastAPI()
 #db = _SessionFactory()
@@ -35,6 +36,8 @@ def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 
 @server.post("/changes/add/")
 def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
+    key = Fernet.generate_key()
+    cipher = Fernet(key)
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     print('adding password')
@@ -42,7 +45,7 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         shared = True
     else:
         shared = False
-    insert_stmt = insert(Password).values(name=name, password=password, shared=shared)
+    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=shared)
     db.execute(insert_stmt)
     db.commit()
 
@@ -52,6 +55,10 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db.commit()
 
     insert_stmt = insert(History).values(versionId=1, name=name, passwordId=password.id, method="add", date=datetime.utcnow().strftime("%Y-%m-%d"))
+    db.execute(insert_stmt)
+    db.commit()
+
+    insert_stmt = insert(PasswordKey).values(passwordId=password.id, key=key)
     db.execute(insert_stmt)
 
     try: 
@@ -69,11 +76,15 @@ def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)
         shared = True
     else:
         shared = False
+
+    currPassword = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
+    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPasswordId).all())[0]
+    cipher = Fernet(key.key)
     #query that updates the password by id
     stmt = (
             update(Password)
             .where(Password.id == currPasswordId)
-            .values(password=newPassword, name=newName, shared=shared)
+            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=shared)
         )
 
     db.execute(stmt)
@@ -121,6 +132,9 @@ def getRequiredPassword(passwordId: int = None):
     print('passwordId: ',passwordId)
     print(db.query(Password).all())
     password = (db.query(Password).filter(Password.id == passwordId).all())[0]
+    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == passwordId).all())[0]
+    cipher = Fernet(key.key)
+    password.password = cipher.decrypt(password.password).decode()
     db.close()
     return {"password": password}
 
@@ -138,6 +152,11 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
         .filter(UserPassword.userId == currUser.id)
         .all()
     )
+    # Decrypt the passwords
+    for password in passwords:
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == password.id).all())[0]
+        cipher = Fernet(key.key)
+        password.password = cipher.decrypt(password.password).decode()
     print('password list: ',passwords)
     db.close()
     # Return a list of password details
@@ -158,7 +177,12 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     db.close()
     if result:
         {"error":"faild to get history"}
-
+    # Decrypt the passwords
+    for history in result:
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == history.passwordId).all())[0]
+        cipher = Fernet(key.key)
+        history.password = cipher.decrypt(history.password).decode()
+    # Return a list of password details
     return {'history':result}
 
 @server.get("/groups")
@@ -457,6 +481,8 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
         db.commit()
     elif request.request_command[0:3] == "add":
         #adding the password to the group
+        key = Fernet.generate_key()
+        cipher = Fernet(key)
         print("in add function")
         print(request.request_command[3:])
         valid_json_str = request.request_command[3:].replace("'", '"')
@@ -466,13 +492,15 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
             shared = True
         else:
             shared = False
-        insert_stmt = insert(Password).values(password=parsed["password"], name=parsed["name"], shared=shared)
+        insert_stmt = insert(Password).values(password=cipher.encrypt(parsed["password"].encode()), name=parsed["name"], shared=shared)
+        db.execute(insert_stmt)
+        db.commit()
+        insert_stmt = insert(PasswordKey).values(passwordId=parsed["id"], key=key)
         db.execute(insert_stmt)
         db.commit()
         print('added password')
         password = (db.query(Password).filter(Password.password == parsed["password"] and Password.name == parsed["name"] and Password.shared == shared).all())[0]
         insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
-        db.execute(insert_stmt)
         db.execute(insert_stmt)
         db.commit()
     elif request.request_command[0:3] == "del":
@@ -487,10 +515,17 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
         #updating the password in the group
         valid_json_str = request.request_command[3:].replace("'", '"')
         parsed = json.loads(valid_json_str)
+        if parsed["shared"] == "True":
+            shared = True
+        else:
+            shared = False
+        currPassword = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPassword.id).all())[0]
+        cipher = Fernet(key.key)
         stmt = (
             update(Password)
             .where(Password.id == parsed["id"])
-            .values(password=parsed["newPassword"], name=parsed["name"], shared=shared)
+            .values(password=cipher.encrypt(parsed["newPassword"].encode()), name=parsed["name"], shared=shared)
         )
         db.execute(stmt)
         db.commit()
@@ -611,6 +646,12 @@ def getAllSharedPasswordsOfGroup(users, group):
         .distinct()
         .all()
     )
+    # Decrypt the passwords
+    for password in shared_passwords:
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == password.id).all())[0]
+        cipher = Fernet(key.key)
+        password.password = cipher.decrypt(password.password).decode()
+    db.close()
 
     return [{"name": p.name, "password": p.password} for p in shared_passwords]
 
