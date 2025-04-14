@@ -1,27 +1,17 @@
 version: "3.8"
 
 services:
-  router:
-    image: python:3.10-alpine
-    container_name: router
-    volumes:
-      - ./requirements.txt:/requirements.txt
-    command: sh -c "pip install -r /requirements.txt"
-    networks:
-      my_lan:
-        ipv4_address: "182.20.1.5"
-
   auth_server:
     image: python:3.10-alpine
     container_name: auth_server
     user: root
     environment:
-      DATABASE_URL: sqlite:///projectdb1.db
+      DATABASE_URL: sqlite:///projectdb2.db
     volumes:
       - ./auth:/auth
       - ./dal:/dal
       - ./common:/common
-      - ./projectdb1.db:/projectdb1.db
+      - ./projectdb2.db:/projectdb2.db
       - ./requirements.txt:/requirements.txt
     command: sh -c "pip install -r /requirements.txt && python /auth/server.py"
     networks:
@@ -36,12 +26,12 @@ services:
     container_name: db_server
     user: root
     environment:
-      DATABASE_URL: sqlite:///projectdb1.db
+      DATABASE_URL: sqlite:///projectdb2.db
     volumes:
       - ./dal:/dal
       - ./common:/common
       - ./requirements.txt:/requirements.txt
-      - ./projectdb1.db:/projectdb1.db
+      - ./projectdb2.db:/projectdb2.db
     command: sh -c "pip install -r /requirements.txt && python /dal/server.py"
     networks:
       my_lan:
@@ -71,6 +61,7 @@ services:
     user: root
     volumes:
       - ./dal:/dal
+      - ./common:/common
       - ./requirements.txt:/requirements.txt
     command: sh -c "pip install -r /requirements.txt && python /dal/test.py"
     networks:

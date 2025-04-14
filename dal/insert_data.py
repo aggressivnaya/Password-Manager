@@ -9,7 +9,7 @@ from sqlalchemy import insert
 
 db = _SessionFactory()
 session_factory()
-'''
+
 # Insert some users
 insert_stmt = insert(User).values(username="user1", email="user1@example.com")
 db.execute(insert_stmt)
@@ -48,7 +48,7 @@ insert_stmt = insert(Requestt).values(sender_id=1, group_id=1, request_command="
 db.execute(insert_stmt)
 insert_stmt = insert(Requestt).values(sender_id=2, group_id=2, request_command="Leave group")
 db.execute(insert_stmt)
-'''
+
 # Commit the changes
 db.commit()
 

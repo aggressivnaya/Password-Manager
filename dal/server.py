@@ -49,7 +49,8 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db.execute(insert_stmt)
     db.commit()
 
-    password = (db.query(Password).filter(Password.name == name and Password.password == password and Password.shared == shared).all())[0]
+    password = (db.query(Password).filter(Password.name == name and Password.password == cipher.encrypt(password.encode()) and Password.shared == shared).all())[0]
+    print(password.password)
     insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
     db.execute(insert_stmt)
     db.commit()
@@ -105,12 +106,18 @@ def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)
 def deletePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None):
     db = _SessionFactory()
     currUser = getCurrentUser(token)
-    password = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
+    password = (db.query(Password).filter(Password.id == currPasswordId).all())
+    if len(password) == 0:
+        return {"error": "Password not found"}
+    password = password[0]
 
     delete_stmt = delete(Password).where(Password.id == currPasswordId)
     db.execute(delete_stmt)
     db.commit()
     delete_stmt = delete(UserPassword).where((UserPassword.passwordId == currPasswordId) & (UserPassword.userId == currUser.id))
+    db.execute(delete_stmt)
+    db.commit()
+    delete_stmt = delete(PasswordKey).where(PasswordKey.passwordId == currPasswordId)
     db.execute(delete_stmt)
     db.commit()
 
@@ -132,8 +139,10 @@ def getRequiredPassword(passwordId: int = None):
     print('passwordId: ',passwordId)
     print(db.query(Password).all())
     password = (db.query(Password).filter(Password.id == passwordId).all())[0]
-    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == passwordId).all())[0]
-    cipher = Fernet(key.key)
+    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == passwordId).all())
+    if len(key) == 0:
+        return {"password": password}
+    cipher = Fernet(key[0].key)
     password.password = cipher.decrypt(password.password).decode()
     db.close()
     return {"password": password}
@@ -152,10 +161,15 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
         .filter(UserPassword.userId == currUser.id)
         .all()
     )
+    print("passwords: ",passwords)
     # Decrypt the passwords
     for password in passwords:
-        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == password.id).all())[0]
-        cipher = Fernet(key.key)
+        print("password: ",password.password, "id: ",password.id)
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == int(password.id)).all())
+        print(key)
+        if len(key) == 0:
+            continue
+        cipher = Fernet(key[0].key)
         password.password = cipher.decrypt(password.password).decode()
     print('password list: ',passwords)
     db.close()
@@ -178,10 +192,12 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     if result:
         {"error":"faild to get history"}
     # Decrypt the passwords
-    for history in result:
-        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == history.passwordId).all())[0]
-        cipher = Fernet(key.key)
-        history.password = cipher.decrypt(history.password).decode()
+    '''for history in result:
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == history.passwordId).all())
+        if len(key) == 0:
+            continue
+        cipher = Fernet(key[0].key)
+        history.password = cipher.decrypt(history.password).decode()'''
     # Return a list of password details
     return {'history':result}
 

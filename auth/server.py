@@ -33,7 +33,10 @@ class BodyUser(BaseModel):
 def login(user: BodyUser):
     db = _SessionFactory()
     print(user.email+ " "+ user.username)
-    findingUser = (db.query(User).filter(User.username == user.username ).all())[0]
+    try:
+        findingUser = (db.query(User).filter(User.username == user.username ).all())[0]
+    except:
+        raise HTTPException(status_code=401, detail="invalid credentials")
     #findingUser = check.isExist(user.username, user.email)
     if findingUser != None :
         return {"access_token": createToken(user.username ,user.email)}
@@ -43,7 +46,10 @@ def login(user: BodyUser):
 @server.post('/signup/')
 def signup(user: BodyUser):
     db = _SessionFactory()
-    findingUser = (db.query(User).filter(User.username == user.username and User.email == user.email).all())
+    try:
+        findingUser = (db.query(User).filter(User.username == user.username and User.email == user.email).all())
+    except:
+        raise HTTPException(status_code=401, detail="invalid credentials")
     if findingUser == None or len(findingUser) == 0:
         insert_stmt = insert(User).values(username=user.username, email=user.email)
         db.execute(insert_stmt)
