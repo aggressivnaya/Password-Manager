@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Details - SecurePass</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div class="app-container bg-gradient-purple">
+        <header id="navbar-container"></header>
+        
+        <main class="container">
+            <div id="group-header" class="group-header">
+                <!-- Group header will be loaded here -->
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tabs-list">
+                    <button class="tab-trigger active" data-tab="passwords">Passwords</button>
+                    <button class="tab-trigger" data-tab="members">Members</button>
+                    <button class="tab-trigger" data-tab="requests" id="requests-tab">Requests</button>
+                </div>
+                
+                <div class="tab-content active" id="passwords-tab">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Group Passwords</h2>
+                        <button id="add-group-password-btn" class="btn btn-primary btn-gradient-pink">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14" />
+                                <path d="M5 12l14 0" />
+                            </svg>
+                            Add Password
+                        </button>
+                    </div>
+                    <div id="group-passwords-container" class="cards-grid">
+                        <!-- Group passwords will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="members-tab">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Group Members</h2>
+                    </div>
+                    <div id="group-members-container" class="cards-grid">
+                        <!-- Group members will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="requests-tab-content">
+                    <div class="tab-header">
+                        <h2 class="tab-title">Pending Requests</h2>
+                    </div>
+                    <div id="group-requests-container" class="requests-list">
+                        <!-- Group requests will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Password Modal -->
+    <div id="add-group-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Password</h2>
+                <p id="add-password-description">Enter the details for the new password.</p>
+            </div>
+            <div class="modal-body">
+                <form id="add-group-password-form">
+                    <div class="form-group">
+                        <label for="new-group-password-name">Name</label>
+                        <input type="text" id="new-group-password-name" placeholder="e.g., Gmail, Facebook" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-group-password-value">Password</label>
+                        <input type="password" id="new-group-password-value" placeholder="Enter password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-add-group-password" class="btn btn-outline">Cancel</button>
+                <button id="save-group-password" class="btn btn-primary">Save Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Password Modal -->
+    <div id="edit-group-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Password</h2>
+                <p id="edit-password-description">Update the password details.</p>
+            </div>
+            <div class="modal-body">
+                <form id="edit-group-password-form">
+                    <input type="hidden" id="edit-group-password-id">
+                    <div class="form-group">
+                        <label for="edit-group-password-name">Name</label>
+                        <input type="text" id="edit-group-password-name" placeholder="e.g., Gmail, Facebook" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-group-password-value">Password</label>
+                        <input type="text" id="edit-group-password-value" placeholder="Enter password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-edit-group-password" class="btn btn-outline">Cancel</button>
+                <button id="update-group-password" class="btn btn-primary">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Request Modal -->
+    <div id="send-request-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Request to Admin</h2>
+                <p>Describe your request for the group admin.</p>
+            </div>
+            <div class="modal-body">
+                <form id="send-request-form">
+                    <div class="form-group">
+                        <label for="request-command">Request</label>
+                        <input type="text" id="request-command" placeholder="e.g., Please add me as admin" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-send-request" class="btn btn-outline">Cancel</button>
+                <button id="submit-request" class="btn btn-primary">Send Request</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/group-details.js"></script>
+</body>
+</html>

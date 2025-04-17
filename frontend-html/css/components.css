@@ -1,0 +1,450 @@
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+    background-color: var(--purple-dark);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.btn-outline:hover {
+    background-color: var(--secondary);
+}
+
+.btn-destructive {
+    background-color: var(--destructive);
+    color: var(--destructive-foreground);
+}
+
+.btn-destructive:hover {
+    background-color: #b91c1c;
+}
+
+.btn-gradient-pink {
+    background: linear-gradient(to right, var(--pink-light), var(--purple));
+    color: white;
+}
+
+.btn-gradient-pink:hover {
+    background: linear-gradient(to right, var(--pink), var(--purple-dark));
+}
+
+.btn-gradient-blue {
+    background: linear-gradient(to right, var(--blue-light), var(--blue));
+    color: white;
+}
+
+.btn-gradient-blue:hover {
+    background: linear-gradient(to right, var(--blue), var(--blue-dark));
+}
+
+.btn-gradient-green {
+    background: linear-gradient(to right, var(--green-light), var(--green));
+    color: white;
+}
+
+.btn-gradient-green:hover {
+    background: linear-gradient(to right, var(--green), var(--green-dark));
+}
+
+/* Cards */
+.card {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid rgba(179, 157, 219, 0.2);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 1.25rem 1.25rem 0.5rem;
+    background: linear-gradient(to right, rgba(179, 157, 219, 0.1), rgba(129, 212, 250, 0.1));
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--purple-dark);
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-top: 0.25rem;
+}
+
+.card-content {
+    padding: 1rem 1.25rem;
+}
+
+.card-footer {
+    padding: 0 1.25rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Auth card */
+.auth-card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius);
+    border: 2px solid rgba(179, 157, 219, 0.2);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(8px);
+}
+
+.dark .auth-card {
+    background-color: rgba(15, 15, 15, 0.9);
+}
+
+.auth-form {
+    padding: 1rem;
+}
+
+/* Inputs */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--input);
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted-foreground);
+}
+
+.input-with-icon input {
+    padding-left: 2.5rem;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .search-container {
+        width: 16rem;
+    }
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted-foreground);
+}
+
+.search-input {
+    padding-left: 2.5rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+}
+
+/* Tabs */
+.tabs {
+    margin-top: 1.5rem;
+}
+
+.tabs-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-trigger {
+    padding: 0.5rem;
+    text-align: center;
+    background-color: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.tab-trigger.active {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Navbar */
+.navbar {
+    background: linear-gradient(to right, var(--pink-light), var(--purple), var(--blue));
+    color: white;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.navbar-brand svg {
+    margin-right: 0.5rem;
+}
+
+.navbar-menu {
+    display: none;
+}
+
+.navbar-menu.open {
+    display: block;
+    position: absolute;
+    top: 4rem;
+    left: 0;
+    right: 0;
+    background-color: var(--purple-dark);
+    padding: 0.5rem;
+    z-index: 50;
+}
+
+.navbar-menu-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color 0.2s ease;
+}
+
+.navbar-menu-item:hover {
+    background-color: var(--purple);
+}
+
+.navbar-menu-button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .navbar-menu-button {
+        display: none;
+    }
+    
+    .navbar-menu {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .navbar-menu.open {
+        position: static;
+        background-color: transparent;
+        padding: 0;
+    }
+    
+    .navbar-menu-item {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.modal-header p {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+}
+
+.modal-body {
+    padding: 1.25rem;
+}
+
+.modal-footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-green {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--green);
+}
+
+.badge-purple {
+    background-color: rgba(126, 87, 194, 0.1);
+    color: var(--purple);
+}
+
+/* Password item */
+.password-value-container {
+    position: relative;
+}
+
+.password-actions {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+}
+
+.password-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--muted-foreground);
+}
+
+.password-action-btn:hover {
+    color: var(--foreground);
+}
+
+/* Icon */
+.icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.icon-lock {
+    color: var(--primary);
+}

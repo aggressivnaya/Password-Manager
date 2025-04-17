@@ -315,7 +315,7 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     except Exception as e:
         return e
  
-@server.route('/logout')
+@server.delete('/logout')
 def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
         access = validate.token(token)

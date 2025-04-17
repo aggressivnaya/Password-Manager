@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups - SecurePass</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div class="app-container bg-gradient-light">
+        <header id="navbar-container"></header>
+        
+        <main class="container">
+            <div class="page-header">
+                <h1 class="page-title">Password Groups</h1>
+                <div class="page-actions">
+                    <div class="search-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                            <path d="M21 21l-6 -6" />
+                        </svg>
+                        <input type="text" id="search-groups" placeholder="Search groups..." class="search-input">
+                    </div>
+                    <button id="refresh-btn" class="btn btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                        </svg>
+                        Refresh
+                    </button>
+                    <button id="join-group-btn" class="btn btn-outline btn-gradient-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            <path d="M16 11l2 2l4 -4" />
+                        </svg>
+                        Join Group
+                    </button>
+                    <button id="create-group-btn" class="btn btn-primary btn-gradient-green">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        Create Group
+                    </button>
+                </div>
+            </div>
+
+            <div id="groups-container" class="cards-grid">
+                <!-- Groups will be loaded here -->
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Group</h2>
+                <p>Create a new group to share passwords with others.</p>
+            </div>
+            <div class="modal-body">
+                <form id="create-group-form">
+                    <div class="form-group">
+                        <label for="new-group-name">Group Name</label>
+                        <input type="text" id="new-group-name" placeholder="e.g., Family, Work Team" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-group-description">Description</label>
+                        <textarea id="new-group-description" placeholder="Describe the purpose of this group" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-create-group" class="btn btn-outline">Cancel</button>
+                <button id="save-group" class="btn btn-primary">Create Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Group Modal -->
+    <div id="join-group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Join Existing Group</h2>
+                <p>Enter the name of the group you want to join.</p>
+            </div>
+            <div class="modal-body">
+                <form id="join-group-form">
+                    <div class="form-group">
+                        <label for="join-group-name">Group Name</label>
+                        <input type="text" id="join-group-name" placeholder="Enter group name" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-join-group" class="btn btn-outline">Cancel</button>
+                <button id="send-join-request" class="btn btn-primary">Send Join Request</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/groups.js"></script>
+</body>
+</html>

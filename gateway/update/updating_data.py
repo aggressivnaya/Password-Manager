@@ -41,7 +41,7 @@ def deletePassword(token, passwordId):
     data = { "currPasswordId" : passwordId}
 
     try:
-        response = requests.post(
+        response = requests.delete(
             f"http://{DATA_SVC_ADDRESS}/changes/delete/",headers=header , params=data
         )
         

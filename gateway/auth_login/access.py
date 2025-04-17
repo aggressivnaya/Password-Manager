@@ -49,8 +49,7 @@ def logout(request):
         response = requests.post(
             f"http://{DATA_SVC_ADDRESS}/logout/", headers=headers)
         
-        if response.json()['success']:
-            return True
+        return response.json()['success']
     except Exception as e:
         print(e)
         return False
