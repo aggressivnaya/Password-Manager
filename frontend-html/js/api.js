@@ -61,6 +61,8 @@ const apiRequest = async (endpoint, method = "GET", data = null) => {
 
 // Auth API functions
 const login = async (username, email) => {
+    localStorage.setItem("username", username);
+    localStorage.setItem("email", email);
     const response = await apiRequest("/login", "POST", { username, email });
     if (response.access_token) {
         setToken(response.access_token);
@@ -69,6 +71,8 @@ const login = async (username, email) => {
 };
 
 const signup = async (username, email) => {
+    localStorage.setItem("username", username);
+    localStorage.setItem("email", email);
     const response = await apiRequest("/signup", "POST", { username, email });
     if (response.access_token) {
         setToken(response.access_token);
@@ -118,7 +122,8 @@ const getGroups = async () => {
 };
 
 const getGroup = async (groupName) => {
-    return await apiRequest(`/groups/${groupName}`);
+    const queryParams = new URLSearchParams({ groupName: groupName }).toString();
+    return await apiRequest(`/groups/${groupName}?${queryParams}`);
 };
 
 const createGroup = async (groupName, description) => {

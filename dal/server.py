@@ -452,7 +452,6 @@ def groupInfo(groupName: str = None):
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
     #getting the users that in the group
     usersInGroup = getUsersOfGroup(group)
-
     #getting the passwords that in the group
     sharedPasswords = getAllSharedPasswordsOfGroup(usersInGroup, group)
 

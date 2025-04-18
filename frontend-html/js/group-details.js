@@ -63,10 +63,12 @@ document.addEventListener('DOMContentLoaded', function() {
         groupRequestsContainer.innerHTML = '';
         
         try {
-            groupDetails = await getGroup(groupName);
+            const response = await getGroup(groupName);
+            groupDetails = response.group;
             
-            isAdmin = groupDetails.role === 'admin';
-            isMember = groupDetails.role === 'member' || isAdmin;
+            //localStorage.getItem("username")
+            isAdmin = groupDetails.users.find(u => u.username === "user1")?.isAdmin;
+            //isMember = !(group.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin);
             
             // Hide requests tab if not admin
             if (!isAdmin) {
@@ -103,11 +105,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Error fetching group details:', error);
-            groupHeader.innerHTML = `
+            /*groupHeader.innerHTML = `
                 <div class="text-center p-8 bg-muted rounded-lg">
                     <p class="text-lg text-muted-foreground">Failed to load group details. Please try again.</p>
                 </div>
-            `;
+            `;*/
         }
     };
     
@@ -116,9 +118,9 @@ document.addEventListener('DOMContentLoaded', function() {
         groupHeader.innerHTML = `
             <h1 class="page-title">${groupDetails.name}</h1>
             <p class="group-description">${groupDetails.description || 'No description'}</p>
-            ${groupDetails.role ? `
+            ${isAdmin ? `
                 <div class="group-role">
-                    Your role: ${groupDetails.role}
+                    Your role: ${isAdmin ? 'Admin' : 'Member'}
                 </div>
             ` : ''}
             
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Refresh
                 </button>
                 
-                ${!isAdmin && isMember ? `
+                ${!isAdmin ? `
                     <button id="send-request-btn" class="btn btn-outline">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -144,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 ` : ''}
                 
-                ${isMember ? `
+                ${!isAdmin ? `
                     <button id="leave-group-btn" class="btn btn-outline text-destructive">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -175,14 +177,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add event listeners
         document.getElementById('refresh-group-btn').addEventListener('click', fetchGroupData);
         
-        if (!isAdmin && isMember) {
+        if (!isAdmin) {
             document.getElementById('send-request-btn').addEventListener('click', () => {
                 requestCommand.value = '';
                 sendRequestModal.classList.add('open');
             });
         }
         
-        if (isMember) {
+        if (!isAdmin) {
             document.getElementById('leave-group-btn').addEventListener('click', handleLeaveGroup);
         }
         
@@ -193,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Render group passwords
     const renderGroupPasswords = () => {
-        if (!groupDetails.passwords || groupDetails.passwords.length === 0) {
+        if (!groupDetails.sharedPasswords || groupDetails.sharedPasswords.length === 0) {
             groupPasswordsContainer.innerHTML = `
                 <div class="text-center p-8 bg-muted rounded-lg">
                     <p class="text-lg text-muted-foreground">No passwords found in this group.</p>
@@ -202,17 +204,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        groupPasswordsContainer.innerHTML = groupDetails.passwords.map(password => `
-            <div class="card" data-id="${password.id}">
+        groupPasswordsContainer.innerHTML = groupDetails.sharedPasswords.map(password => `
+            <div class="card" data-id="${password.name}">
                 <div class="card-header">
                     <h3 class="card-title">${password.name}</h3>
-                    ${password.created_at ? `<p class="card-description">Created: ${new Date(password.created_at).toLocaleDateString()}</p>` : ''}
                 </div>
                 <div class="card-content">
                     <div class="password-value-container">
-                        <input type="password" value="${password.password}" readonly class="password-value" data-id="${password.id}">
+                        <input type="password" value="${password.password}" readonly class="password-value" data-id="${password.name}">
                         <div class="password-actions">
-                            <button class="password-action-btn toggle-group-password" data-id="${password.id}">
+                            <button class="password-action-btn toggle-group-password" data-id="${password.name}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
@@ -230,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-outline edit-group-password" data-id="${password.id}">
+                    <button class="btn btn-outline edit-group-password" data-id="${password.name}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                             <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -239,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                         Edit
                     </button>
-                    <button class="btn btn-outline delete-group-password" data-id="${password.id}" data-name="${password.name}">
+                    <button class="btn btn-outline delete-group-password" data-id="${password.name}" data-name="${password.name}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                             <path d="M4 7l16 0" />
@@ -287,9 +288,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">${user.username}</h3>
-                    <p class="card-description">Role: ${user.role}</p>
+                    <p class="card-description">Role: ${user.isAdmin ? "Admin" : "Member"}</p>
                 </div>
-                ${isAdmin && user.role !== 'admin' ? `
+                ${isAdmin && user.isAdmin ? `
                     <div class="card-footer">
                         <button class="btn btn-destructive w-full remove-user" data-username="${user.username}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">

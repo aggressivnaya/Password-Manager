@@ -39,10 +39,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const response = await getGroups() || [];
-            groups = (response && response.groups) ? response.groups : [];
+            const groupNames = (response && response.groups) ? response.groups : [];
         
             // Map the data to the expected format if needed
-            groups = groups.map( name => ({ name }));
+            const fullGroupData = groupNames.map(name => ({name}))
+            console.log("Full group data:", fullGroupData);
+            for (const name of fullGroupData) {
+                const res = await getGroup(name.name);
+                const groupInfo = res?.group;
+                groups.push(groupInfo);
+            }
+            console.log("Groups:", groups);
 
             filteredGroups = [...groups];
             renderGroups();
@@ -73,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">${group.name}</h3>
-                    ${group.created_at ? `<p class="card-description">Created: ${new Date(group.created_at).toLocaleDateString()}</p>` : ''}
+                    
                 </div>
                 <div class="card-content">
                     <p class="text-muted-foreground mb-4">${group.description || 'No description'}</p>
@@ -86,11 +93,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
                             </svg>
-                            <span class="text-sm text-muted-foreground">${group.member_count || 0} members</span>
+                            <span class="text-sm text-muted-foreground">${group.users.length || 0} members</span>
                         </div>
-                        ${group.role ? `
-                            <span class="badge badge-purple">${group.role}</span>
-                        ` : ''}
+                        <!--localStorage.getItem("username")-->
+                        ${(group.users.find(u => u.username === "user1")?.isAdmin) ? 
+                            `<span class="badge badge-purple">Admin</span>` : `<span class="badge badge-purple">Member</span>`}
                     </div>
                 </div>
                 <div class="card-footer">
