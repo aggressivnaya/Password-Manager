@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const groupPasswordsContainer = document.getElementById('group-passwords-container');
     const groupMembersContainer = document.getElementById('group-members-container');
     const groupRequestsContainer = document.getElementById('group-requests-container');
-    const requestsTab = document.getElementById('requests-tab');
+    const requestsTab = document.getElementById('requests-tab-content');
     const addGroupPasswordBtn = document.getElementById('add-group-password-btn');
     const addGroupPasswordModal = document.getElementById('add-group-password-modal');
     const editGroupPasswordModal = document.getElementById('edit-group-password-modal');
@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await getGroup(groupName);
             groupDetails = response.group;
             
-            //l
             isAdmin = groupDetails.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin;
             //isMember = !(group.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin);
             
@@ -79,15 +78,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const resp = await getGroupRequests(groupName) || [];
                 
                 const requestts = (resp && resp.requests) ? resp.requests : [];
-                
                 // Map the data to the expected format if needed
-                const rrequests = requestts.map(request => ({
+                requests = requestts.map(request => ({
                     id: request.id,
                     sender_id: request.sender_id,
-                    request_command: request.request_command,
+                    request_command: request.request_command
                 }));
-                requests = [...rrequests];
-                renderGroupRequests();
+                requests = [...requests];
             }
             
             
@@ -96,9 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
             renderGroupMembers();
             
             
-            /*if (isAdmin) {
+            if (isAdmin) {
                 renderGroupRequests();
-            }*/
+            }
             
             // Update modal descriptions based on role
             const addPasswordDescription = document.getElementById('add-password-description');
@@ -118,11 +115,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Error fetching group details:', error);
-            /*groupHeader.innerHTML = `
+            groupHeader.innerHTML = `
                 <div class="text-center p-8 bg-muted rounded-lg">
                     <p class="text-lg text-muted-foreground">Failed to load group details. Please try again.</p>
                 </div>
-            `;*/
+            `;
         }
     };
     
@@ -336,7 +333,11 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+        groupRequestsContainer.innerHTML = `
+                <div class="text-center p-8 bg-muted rounded-lg">
+                    <p class="text-lg text-muted-foreground">No pending requests.</p>
+                </div>
+            `;
         groupRequestsContainer.innerHTML = requests.map(request => `
             <div class="card">
                 <div class="card-header">
