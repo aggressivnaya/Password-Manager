@@ -48,6 +48,8 @@ def getHistory(token):
         response = requests.get(
             f"http://{DATA_SVC_ADDRESS}/history",headers=header 
         )
+        print('getting history')
+        print(response.json()['history'])
         return {'history': response.json()['history']}
     except:
         #raise HTTPException(status_code=400, detail="History not found")

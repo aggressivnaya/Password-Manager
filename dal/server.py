@@ -191,15 +191,24 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     db.close()
     if result:
         {"error":"faild to get history"}
-    # Decrypt the passwords
-    '''for history in result:
-        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == history.passwordId).all())
+
+    historyMsg = []
+    for history in result:
+        # Decrypt the passwords
+        password = (db.query(Password).filter(Password.name == history.name).all())[0]
+        print("password: ",password.password, "id: ",password.id)
+        key = (db.query(PasswordKey).filter(PasswordKey.passwordId == int(password.id)).all())
         if len(key) == 0:
             continue
         cipher = Fernet(key[0].key)
-        history.password = cipher.decrypt(history.password).decode()'''
+        try:
+            password.password = cipher.decrypt(password.password).decode()
+        except Exception as e:
+            continue
+        historyMsg.append({"id": history.id, "name": history.name,"password": password.password, "method": history.method, "date": history.date})
+    print('historyMsg: ',historyMsg)
     # Return a list of password details
-    return {'history':result}
+    return {'history': historyMsg}
 
 @server.get("/groups")
 def getGroups(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -473,10 +482,13 @@ def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     #getting the requests of the group
     requests = (db.query(Requestt).filter(Requestt.group_id == currGroup.id).all())
     print('requests: ',requests)
+    requestsMsg = []
+    for r in requests:
+        requestsMsg.append({"id": r.id, "sender_id": r.sender_id, "request_command": r.request_command})
     db.close()
-    if not requests:
+    if not requestsMsg:
         return {"error": "error with group info"}
-    return {'requests':requests}
+    return {'requests':requestsMsg}
 
 @server.post("/group/approve_request")
 def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):

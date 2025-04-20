@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="text-sm text-muted-foreground">${group.users.length || 0} members</span>
                         </div>
                         <!--localStorage.getItem("username")-->
-                        ${(group.users.find(u => u.username === "user1")?.isAdmin) ? 
+                        ${(group.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin) ? 
                             `<span class="badge badge-purple">Admin</span>` : `<span class="badge badge-purple">Member</span>`}
                     </div>
                 </div>
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            await enterGroup(joinGroupName.value);
+            await insertRequest(joinGroupName.value, "ent");
             joinGroupModal.classList.remove('open');
             showToast('Join request sent successfully');
             fetchGroups();

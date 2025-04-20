@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check authentication
-    if (!isAuthenticated()) return;
+    //if (!isAuthenticated()) return;
     
     // Load navbar
     loadNavbar();

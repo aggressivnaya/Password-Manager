@@ -203,7 +203,7 @@ def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
         return e
     
     try:
-        return updating_data.enterGroup(token, groupName)
+        return updating_data.insertRequest(token, groupName, "ent")
     except  Exception as e:
         return e
 

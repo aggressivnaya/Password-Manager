@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await getGroup(groupName);
             groupDetails = response.group;
             
-            //localStorage.getItem("username")
-            isAdmin = groupDetails.users.find(u => u.username === "user1")?.isAdmin;
+            //l
+            isAdmin = groupDetails.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin;
             //isMember = !(group.users.find(u => u.username === localStorage.getItem("username"))?.isAdmin);
             
             // Hide requests tab if not admin
@@ -76,16 +76,29 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 requestsTab.style.display = 'block';
                 // Fetch requests if admin
-                requests = await getGroupRequests(groupName) || [];
+                const resp = await getGroupRequests(groupName) || [];
+                
+                const requestts = (resp && resp.requests) ? resp.requests : [];
+                
+                // Map the data to the expected format if needed
+                const rrequests = requestts.map(request => ({
+                    id: request.id,
+                    sender_id: request.sender_id,
+                    request_command: request.request_command,
+                }));
+                requests = [...rrequests];
+                renderGroupRequests();
             }
+            
             
             renderGroupHeader();
             renderGroupPasswords();
             renderGroupMembers();
             
-            if (isAdmin) {
+            
+            /*if (isAdmin) {
                 renderGroupRequests();
-            }
+            }*/
             
             // Update modal descriptions based on role
             const addPasswordDescription = document.getElementById('add-password-description');
@@ -118,11 +131,9 @@ document.addEventListener('DOMContentLoaded', function() {
         groupHeader.innerHTML = `
             <h1 class="page-title">${groupDetails.name}</h1>
             <p class="group-description">${groupDetails.description || 'No description'}</p>
-            ${isAdmin ? `
-                <div class="group-role">
+            <div class="group-role">
                     Your role: ${isAdmin ? 'Admin' : 'Member'}
-                </div>
-            ` : ''}
+            </div>
             
             <div class="group-actions">
                 <button id="refresh-group-btn" class="btn btn-outline">
@@ -330,12 +341,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card">
                 <div class="card-header">
                     <div class="flex justify-between">
-                        <h3 class="card-title">Request from ${request.username}</h3>
-                        <p class="card-description">${formatDate(request.timestamp)}</p>
+                        <h3 class="card-title">Request from ${request.sender_id}</h3>
+                        <p class="card-description">${request.sender_id}</p>
                     </div>
                 </div>
                 <div class="card-content">
-                    <p class="text-foreground mb-4">${request.command}</p>
+                    <p class="text-foreground mb-4">${request.request_command}</p>
                 </div>
                 <div class="card-footer">
                     <button class="btn btn-outline approve-request" data-id="${request.id}">
@@ -427,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await deletePasswordFromGroup(groupName, id);
                     showToast('Password deleted successfully');
                 } else {
-                    await insertRequest(groupName, `Delete password: ${name} (ID: ${id})`);
+                    await insertRequest(groupName, `del`);
                     showToast('Password delete request sent to admin');
                 }
                 fetchGroupData();
@@ -538,7 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `Add password: ${newGroupPasswordName.value}`
+                    `add`
                 );
                 showToast('Password add request sent to admin');
             }
@@ -573,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `Update password: ${editGroupPasswordName.value} (ID: ${editGroupPasswordId.value})`
+                    `upd`
                 );
                 showToast('Password update request sent to admin');
             }

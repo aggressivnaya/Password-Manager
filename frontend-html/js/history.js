@@ -25,10 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await getHistory();
 
-            historyItems = (response && response.length > 0) ? response.history : [];
+            historyItems = (response && response.history) ? response.history : [];
             historyItems = historyItems.map(item => ({
                 id: item.id,
                 name: item.name,
+                password: item.password,
                 method: item.method,
                 date: item.date,
             }));
@@ -68,16 +69,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <path d="M12 12l3 2" />
                                 <path d="M12 7v5" />
                             </svg>
-                            ${item.action}
+                            ${item.method}
                         </h3>
-                        <p class="card-description">${formatDate(item.timestamp)}</p>
+                        <p class="card-description">${formatDate(item.date)}</p>
                     </div>
                 </div>
-                ${item.details ? `
-                    <div class="card-content">
-                        <p class="text-muted-foreground">${item.details}</p>
-                    </div>
-                ` : ''}
+                <div class="card-content">
+                        <p class="text-muted-foreground">${item.name}: ${item.password}</p>
+                </div>
             </div>
         `).join('');
     };
@@ -86,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const handleSearch = (e) => {
         const searchTerm = e.target.value.toLowerCase();
         filteredItems = filterItems(historyItems, searchTerm, (item, term) => 
-            item.action.toLowerCase().includes(term) || 
-            (item.details && item.details.toLowerCase().includes(term))
+            item.method.toLowerCase().includes(term) || 
+            (item.method && item.method.toLowerCase().includes(term))
         );
         renderHistory();
     };

@@ -81,9 +81,9 @@ const signup = async (username, email) => {
 };
 
 const logout = async () => {
-    const response = await apiRequest("/logout", "DELETE");
+    //const response = await apiRequest("/logout", "DELETE");
     clearToken();
-    return response;
+    return;
 };
 
 // User API functions
@@ -168,7 +168,7 @@ const getGroupRequests = async (groupName) => {
 };
 
 const insertRequest = async (groupName, command) => {
-    const queryParams = new URLSearchParams({ command }).toString();
+    const queryParams = new URLSearchParams({ groupName: groupName ,command: command }).toString();
     return await apiRequest(`/groups/${groupName}/insertRequest?${queryParams}`, "POST");
 };
 
