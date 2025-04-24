@@ -81,7 +81,7 @@ const signup = async (username, email) => {
 };
 
 const verifyAuthCode = async (authCode) => {
-    return await apiRequest("/check", "GET", { code: authCode });
+    return await apiRequest(`/check?code=${authCode}`, "GET", { code: authCode });
 }
 
 const logout = async () => {
@@ -199,4 +199,8 @@ const removeUser = async (groupName, user) => {
 // History API functions
 const getHistory = async () => {
     return await apiRequest("/history");
+};
+
+const getNotifications = async () => {
+    return await apiRequest("/notifications");
 };

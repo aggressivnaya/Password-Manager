@@ -52,8 +52,19 @@ def getHistory(token):
         print(response.json()['history'])
         return {'history': response.json()['history']}
     except:
-        #raise HTTPException(status_code=400, detail="History not found")
         return {'history': []}
+    
+def getNotifications(token):
+    header={"Authorization": f"Bearer {token}"}
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/notifications",headers=header 
+        )
+        print('getting notifications')
+        print(response.json()['notifications'])
+        return {'notifications': response.json()['notifications']}
+    except:
+        return {'notifications': []}
     
 def getGroups(token):
     header={"Authorization": f"Bearer {token}"}
@@ -64,7 +75,6 @@ def getGroups(token):
         )
         return {'groups': response.json()['groups']}
     except:
-        #raise HTTPException(status_code=400, detail="Groups not found")
         return {'groups': []}
 
 def getRequestedGroup(token, group):
@@ -90,5 +100,4 @@ def getGroupRequests(token, group):
         print(response.json()["requests"])
         return {'requests': response.json()['requests']}
     except:
-        #raise HTTPException(status_code=400, detail="Group not found")
         return {'requests': []}

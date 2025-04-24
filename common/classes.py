@@ -78,9 +78,6 @@ class Notification(Base):
     sender = relationship("User", foreign_keys=[sender_id], back_populates="notifiaction1")
     reciever = relationship("User", foreign_keys=[reciever_id], back_populates="notifiaction2")
 
-    def __init__(self, sender_id, receiver_id, data=""): 
-        print("Notification created")
-
 class Requestt(Base):
     __tablename__ = "requests"
 
@@ -92,8 +89,5 @@ class Requestt(Base):
 
     sender = relationship("User",foreign_keys=[sender_id] , back_populates="request1")
     group = relationship("Group",foreign_keys=[group_id], back_populates="request2")
-
-    def __init__(self, sender_id, group_id, request_command=""):
-        print("Request created")
 
 session_factory()

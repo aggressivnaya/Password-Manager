@@ -7,12 +7,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // DOM elements
     const historyContainer = document.getElementById('history-container');
+    const historyNotification = document.getElementById('history-noti-container');
     const searchInput = document.getElementById('search-history');
     const refreshBtn = document.getElementById('refresh-btn');
     
     // State
+    let historyNotificationItmes = [];
     let historyItems = [];
     let filteredItems = [];
+    let filteredNotiItems = [];
     
     // Fetch history
     const fetchHistory = async () => {
@@ -34,7 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 date: item.date,
             }));
             filteredItems = [...historyItems];
+            
+            const response1 = await getNotifications();
+            historyNotificationItmes = (response1 && response1.history) ? response1.history : [];
+            historyNotificationItmes = historyNotificationItmes.map(item => ({
+                parsed : item.data.split('-'),
+                id: item.id,
+                subject: parsed[0],
+                sender: item.sender,
+                reciever: item.reciever,
+                data: parsed[1],
+            }));
+            delete historyNotificationItmes.parsed;
+            filteredNotiItems = [...historyNotificationItmes];
+
             renderHistory();
+            renderNotiHistory();
         } catch (error) {
             console.error('Error fetching history:', error);
             historyContainer.innerHTML = `
@@ -76,6 +94,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="card-content">
                         <p class="text-muted-foreground">${item.name}: ${item.password}</p>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    const renderNotiHistory = () => {
+        if (filteredNotiItems.length === 0) {
+            historyNotification.innerHTML = `
+                <div class="text-center p-8 bg-muted rounded-lg">
+                    <p class="text-lg text-muted-foreground">
+                        ${searchInput.value ? 'No history items match your search' : 'No history found.'}
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        historyNotification.innerHTML = filteredNotiItems.map(item => `
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h3 class="card-title flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon mr-2" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                                <path d="M12 12l3 2" />
+                                <path d="M12 7v5" />
+                            </svg>
+                            ${item.subject}
+                        </h3>
+                    </div>
+                </div>
+                <div class="card-content">
+                        <p class="text-muted-foreground">sender: ${item.sender}</p>
+                        <p class="text-muted-foreground">reciever: ${item.reciever}</p>
+                        <p class="text-muted-foreground">data: ${item.data}</p>
                 </div>
             </div>
         `).join('');

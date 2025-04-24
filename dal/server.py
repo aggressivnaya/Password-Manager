@@ -12,7 +12,7 @@ import json
 from cryptography.fernet import Fernet
 sys.path.append(os.path.abspath('..'))
 from common.base import session_factory, engine, Base, _SessionFactory
-from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt, History, PasswordKey
+from common.classes import User, Password, UserPassword, Group, UserGroup, Requestt, History, PasswordKey, Notification
 
 server = FastAPI()
 #db = _SessionFactory()
@@ -30,7 +30,6 @@ oauth2Schema = OAuth2PasswordBearer(tokenUrl="placeholder")
 def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     db = _SessionFactory()
     currUser = getCurrentUser(token)
-    print('currUser: ',currUser.username)
 
     return {'user': {"id": currUser.id, "username": currUser.username, "email": currUser.email}}
 
@@ -140,8 +139,6 @@ def deletePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)
 def getRequiredPassword(passwordId: int = None):
     db = _SessionFactory()
     #finding the password by id
-    print('passwordId: ',passwordId)
-    print(db.query(Password).all())
     password = (db.query(Password).filter(Password.id == passwordId).all())[0]
     key = (db.query(PasswordKey).filter(PasswordKey.passwordId == passwordId).all())
     if len(key) == 0:
@@ -155,9 +152,7 @@ def getRequiredPassword(passwordId: int = None):
 def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     db = _SessionFactory()
     #finding by the user all his passwords
-    print('token: ',token)
     currUser = getCurrentUser(token)
-    print('currUser: ',currUser.username)
 
     passwords = (
         db.query(Password)
@@ -165,7 +160,7 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
         .filter(UserPassword.userId == currUser.id)
         .all()
     )
-    print("passwords: ",passwords)
+
     # Decrypt the passwords
     for password in passwords:
         print("password: ",password.password, "id: ",password.id)
@@ -175,7 +170,6 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
             continue
         cipher = Fernet(key[0].key)
         password.password = cipher.decrypt(password.password).decode()
-    print('password list: ',passwords)
     db.close()
     # Return a list of password details
     return {'passwords': [{"id": password.id, "name": password.name, "value": password.password, "shared": password.shared} for password in passwords]} 
@@ -200,7 +194,6 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     for history in result:
         # Decrypt the passwords
         password = (db.query(Password).filter(Password.name == history.name).all())[0]
-        print("password: ",password.password, "id: ",password.id)
         key = (db.query(PasswordKey).filter(PasswordKey.passwordId == int(password.id)).all())
         if len(key) == 0:
             continue
@@ -210,9 +203,27 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
         except Exception as e:
             continue
         historyMsg.append({"id": history.id, "name": history.name,"password": password.password, "method": history.method, "date": history.date})
-    print('historyMsg: ',historyMsg)
     # Return a list of password details
     return {'history': historyMsg}
+
+@server.get("/notifications")
+def getNotifications(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+    db = _SessionFactory()
+    currUser = getCurrentUser(token)
+
+    # Get all notifications for the current user
+    notifications = (
+        db.query(Notification)
+        .filter(Notification.sender_id == currUser.id or Notification.reciever_id == currUser.id)
+        .all()
+    )
+    db.close()
+
+    notificationsMsg = []
+    for notification in notifications:
+        notificationsMsg.append({"id": notification.id, "sender_id": notification.sender_id, "reciever_id": notification.reciever_id, "data": notification.data})
+    
+    return {'notifications': notificationsMsg}
 
 @server.get("/groups")
 def getGroups(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -249,7 +260,6 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
 
     #adding the user to the group
     group = (db.query(Group).filter(Group.name == name and Group.description == description).all())[0]
-    print('group: ',group.id)
     insert_stmt = insert(UserGroup).values(userId=currUser.id, groupId=group.id, isAdmin=True)
     db.execute(insert_stmt)
     
@@ -268,10 +278,8 @@ def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     currUser = getCurrentUser(token)
 
     group = (db.query(Group).filter(Group.name == groupLink).all())[0]
-    print('group: ',group.id)
     #finding the admin of the group
     userGroup = (db.query(UserGroup).filter((UserGroup.groupId == group.id) & (UserGroup.isAdmin == True)).all())[0]
-    print('userGroup: ',userGroup)
     #sending request to the admin of the group(inserting to the Request table)
     insert_stmt = insert(Requestt).values(sender_id=currUser.id, group_id=group.id,request_command="Join group")
     
@@ -351,7 +359,6 @@ def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     
     #getting the requests of the group
     requests = (db.query(Requestt).filter(Requestt.group_id == currGroup.id).all())
-    print('requests: ',requests)
     requestsMsg = []
     for r in requests:
         requestsMsg.append({"id": r.id, "sender_id": r.sender_id, "request_command": r.request_command})
@@ -403,9 +410,6 @@ def denyRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     if userGroup.isAdmin == False:
         return {"error": "You are not the admin of this group"}
     
-    #finding the request by id
-    #request = (db.query(Requestt).filter(Requestt.id == int(requestId)).all())[0]
-
     #deleting the request(from the Request table)
     delete_stmt = delete(Requestt).where(Requestt.id == int(requestId))
     db.execute(delete_stmt)
@@ -464,9 +468,7 @@ def logout(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 def getCurrentUser(token):
     # Get the username from the token
     db = _SessionFactory()
-    print('token: ',token)
     username = jwt.decode(token, "SARCASM", algorithms=["HS256"])["username"]
-    print('username: ',username)
 
     return (db.query(User).filter(User.username == username).all())[0]
 
@@ -476,7 +478,6 @@ def getUsersOfGroup(group):
     # Get all users in the group
     userss = db.query(UserGroup).filter(UserGroup.groupId == group.id).all()
     users = [(u.userId, u.isAdmin) for u in userss]  # Extract user IDs and isAdmin status
-    print(users)
     for user in users:
         userFromDb = (db.query(User).filter(User.id == user[0]).all())[0]
         usersInGroup.append((userFromDb, user[1]))#user[1] is the isAdmin status
@@ -516,7 +517,6 @@ def addPasswordToGroup(jsonOfPassword, userId):
     #adding the password to the group
     key = Fernet.generate_key()
     cipher = Fernet(key)
-    print("in add function")
     valid_json_str = jsonOfPassword.replace("'", '"')
     parsed = json.loads(valid_json_str)
     shared = parsed["shared"]
@@ -530,7 +530,6 @@ def addPasswordToGroup(jsonOfPassword, userId):
     insert_stmt = insert(PasswordKey).values(passwordId=parsed["id"], key=key)
     db.execute(insert_stmt)
     db.commit()
-    print('added password')
 
     password = (db.query(Password).filter(Password.password == parsed["password"] and Password.name == parsed["name"] and Password.shared == shared).all())[0]
     insert_stmt = insert(UserPassword).values(userId=userId, passwordId=password.id)

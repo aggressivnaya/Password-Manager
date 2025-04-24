@@ -64,7 +64,8 @@ def check(request: Request, token: Annotated[str, Depends(oauth2Schema)], code: 
         access = validate.token(token)
     except Exception as e:
         return e
-    return {"success": send.checkGeneratedCode(code)}
+    print("here")
+    return {"success": (200 if send.checkGeneratedCode(code) else 403)}
 
 @server.get("/user")
 def user(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -316,6 +317,18 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     
     try:
         return get.getHistory(token)
+    except Exception as e:
+        return e
+    
+@server.get("/notifications")
+def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    
+    try:
+        return get.getNotifications(token)
     except Exception as e:
         return e
  
