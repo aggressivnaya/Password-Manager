@@ -1,11 +1,11 @@
 import requests
 
 username = "princessaaaa96@gmail.com"
-url = "http://127.0.0.1:2343"
+url = "http://182.20.1.6:5003"
 
 
-data = {"from_doctor" : username, "to_doctor" : "alice.agrest@gmail.com", "data":"hello guys, how r u,im under the water ,pls help me"}
+data = {"sender": username, "receiver": "alice.agrest@gmail.com", "data": "Hello Alice!"}
 response = requests.post(
-    f"{url}/send_msg", data=data
+    f"{url}/sendUpdate/", params=data
 )
 print(response.text)

@@ -38,9 +38,8 @@ def login(request: Request, user: BodyUser):
         if token == None:
             return HTTPException(status_code=401, detail="invalid credentials")
         #TODO: send email
-        #send.sendAuth(token)
-        #return Token(access_token=token, token_type="bearer")
-        return {"access_token":token, "token_type":"bearer"}
+        if send.sendAuth(token):
+            return {"access_token":token, "token_type":"bearer"}
     except Exception as e:
         return e
 
@@ -53,14 +52,19 @@ def signup(request: Request, user: BodyUser):
         if token == None:
             return HTTPException(status_code=401, detail="invalid credentials")
         #TODO: send email
-        #send.sendAuth(token)
-        return {"access_token":token, "token_type":"bearer"}
+        if send.sendAuth(token):
+            return {"access_token":token, "token_type":"bearer"}
     except Exception as e:
         return e
 
 @server.get('/check')
 def check(request: Request, token: Annotated[str, Depends(oauth2Schema)], code: str):
-    return send.checkGeneratedCode(code)
+    '''This func is checking the authentication code that was sent to the user email'''
+    try:
+        access = validate.token(token)
+    except Exception as e:
+        return e
+    return {"success": send.checkGeneratedCode(code)}
 
 @server.get("/user")
 def user(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
@@ -92,7 +96,7 @@ def passwordAdd(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         validate.token(token)
     except Exception as e:
         return e
-    print('aaaaaaaaaaaaaa')
+    
     try:
         print('token', token)
         return updating_data.addPassword(token, password, name, shared)

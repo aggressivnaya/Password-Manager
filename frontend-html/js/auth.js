@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loginButton.disabled = true;
             
             await login(username, email);
-            window.location.href = 'dashboard.html';
+            window.location.href = 'auth-check.html';//window.location.href = 'dashboard.html';
         } catch (error) {
             console.error('Login error:', error);
             errorElement.textContent = 'Login failed. Please check your credentials.';
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
             signupButton.disabled = true;
             
             await signup(username, email);
-            window.location.href = 'dashboard.html';
+            window.location.href = 'auth-check.html';//window.location.href = 'dashboard.html';
         } catch (error) {
             console.error('Signup error:', error);
             errorElement.textContent = 'Signup failed. Please try again.';

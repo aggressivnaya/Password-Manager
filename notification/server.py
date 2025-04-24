@@ -1,20 +1,32 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Annotated
 import os, sys, jwt, random
 sys.path.append(os.path.abspath('..'))
 from common.classes import Request as r
 from common.base import session_factory
 
 server = FastAPI()
+server.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+oauth2Schema = OAuth2PasswordBearer(tokenUrl="placeholder")
+
 HOST = 'smtp.gmail.com'
 PORT = 587
 fromEmail = 'princessaaaa96@gmail.com'
 password = 'bdin qfib scdq kwzn'
 
 @server.post("/sendAuthentication/")
-def sendNotification(request: Request):
+def sendNotification(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     user = jwt.decode(request.headers.get("Authorization").split(' ')[1], "SARCASM", algorithms=["HS256"])['name']
     generatedCode = str(random.randint(100000, 999999))
     sended = send(fromEmail, user, "Authentication code", generatedCode)
@@ -24,7 +36,7 @@ def sendNotification(request: Request):
        raise HTTPException(status_code=500, detail="Failed to send email")
     
 @server.post("/sendUpdate/")
-def sendUpdate(request: Request, sender: str, receiver: str, data: str):
+def sendUpdate(request: Request, token: Annotated[str, Depends(oauth2Schema)], sender: str, receiver: str, data: str):
     sended = send(sender, receiver, "Update", data)
     if sended:
         return {"status": "Email sent successfully"}

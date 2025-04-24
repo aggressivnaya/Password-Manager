@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - SecurePass</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div class="gradient-bg min-h-screen flex items-center justify-center p-4">
+        <div class="auth-card">
+            <div class="card-header text-center">
+                <h2 class="card-title">Enter Authentication Code</h2>
+                <p class="card-description">Please enter the code sent to your email.</p>
+            </div>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="form-group">
+                    <input type="text" id="auth-code" placeholder="Authentication Code" required>
+                </div>
+                <div id="auth-error" class="error-message"></div>
+                <button type="submit" class="btn btn-primary btn-gradient-pink w-full">Verify Code</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-check.js"></script>
+</body>
+</html>

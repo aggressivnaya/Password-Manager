@@ -80,6 +80,10 @@ const signup = async (username, email) => {
     return response;
 };
 
+const verifyAuthCode = async (authCode) => {
+    return await apiRequest("/check", "GET", { code: authCode });
+}
+
 const logout = async () => {
     //const response = await apiRequest("/logout", "DELETE");
     clearToken();
