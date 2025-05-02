@@ -213,15 +213,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         groupPasswordsContainer.innerHTML = groupDetails.sharedPasswords.map(password => `
-            <div class="card" data-id="${password.name}">
+            <div class="card" data-id="${password.id}">
                 <div class="card-header">
                     <h3 class="card-title">${password.name}</h3>
                 </div>
                 <div class="card-content">
                     <div class="password-value-container">
-                        <input type="password" value="${password.password}" readonly class="password-value" data-id="${password.name}">
+                        <input type="password" value="${password.password}" readonly class="password-value" data-id="${password.id}">
                         <div class="password-actions">
-                            <button class="password-action-btn toggle-group-password" data-id="${password.name}">
+                            <button class="password-action-btn toggle-group-password" data-id="${password.id}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-outline edit-group-password" data-id="${password.name}">
+                    <button class="btn btn-outline edit-group-password" data-id="${password.id}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                             <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                         Edit
                     </button>
-                    <button class="btn btn-outline delete-group-password" data-id="${password.name}" data-name="${password.name}">
+                    <button class="btn btn-outline delete-group-password" data-id="${password.id}" data-name="${password.name}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                             <path d="M4 7l16 0" />
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3 class="card-title">${user.username}</h3>
                     <p class="card-description">Role: ${user.isAdmin ? "Admin" : "Member"}</p>
                 </div>
-                ${isAdmin && user.isAdmin ? `
+                ${isAdmin && !user.isAdmin ? `
                     <div class="card-footer">
                         <button class="btn btn-destructive w-full remove-user" data-username="${user.username}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open edit password modal
     const openEditGroupPasswordModal = (e) => {
         const id = parseInt(e.currentTarget.getAttribute('data-id'));
-        const password = groupDetails.passwords.find(p => p.id === id);
+        const password = groupDetails.sharedPasswords.find(p => p.id === id);
         
         if (password) {
             editGroupPasswordId.value = password.id;
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await deletePasswordFromGroup(groupName, id);
                     showToast('Password deleted successfully');
                 } else {
-                    await insertRequest(groupName, `del`);
+                    await insertRequest(groupName, `del{id:${id}}`);
                     showToast('Password delete request sent to admin');
                 }
                 fetchGroupData();
@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `add`
+                    `add{'name':'${newGroupPasswordName.value}','password':'${newGroupPasswordValue.value}','shared':True}`
                 );
                 showToast('Password add request sent to admin');
             }
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `upd`
+                    `upd{'id':${parseInt(editGroupPasswordId.value)},'name':'${editGroupPasswordName.value}','newPassword':'${editGroupPasswordValue.value}','shared':True}`
                 );
                 showToast('Password update request sent to admin');
             }

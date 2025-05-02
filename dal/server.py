@@ -171,6 +171,8 @@ def getUserPasswords(request: Request, token: Annotated[str, Depends(oauth2Schem
         cipher = Fernet(key[0].key)
         password.password = cipher.decrypt(password.password).decode()
     db.close()
+    for p in passwords:
+        print("password: ",p.password, "shared: ",p.shared)
     # Return a list of password details
     return {'passwords': [{"id": password.id, "name": password.name, "value": password.password, "shared": password.shared} for password in passwords]} 
     
@@ -341,6 +343,7 @@ def groupInfo(groupName: str = None):
     usersInGroup = getUsersOfGroup(group)
     #getting the passwords that in the group
     sharedPasswords = getAllSharedPasswordsOfGroup(usersInGroup, group)
+    print('sharedPasswords: ',sharedPasswords)
 
     groupInfo = {"name": group.name, "description": group.description, "users": usersInGroup, "sharedPasswords": sharedPasswords}
     db.close()
@@ -503,7 +506,7 @@ def getAllSharedPasswordsOfGroup(users, group):
         password.password = cipher.decrypt(password.password).decode()
     db.close()
 
-    return [{"name": p.name, "password": p.password} for p in shared_passwords]
+    return [{"id": p.id,"name": p.name, "password": p.password} for p in shared_passwords]
 
 def addUserToGroup(userId, groupId):
     db = _SessionFactory()

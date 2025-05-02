@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Use 'value' property as 'password' if that's how backend returns it
             password: p.value,
             shared: p.shared,
-            created_at: p.created_at
         }));
         
         filteredPasswords = [...passwords];
@@ -87,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card" data-id="${password.id}">
                 <div class="card-header">
                     <h3 class="card-title">${password.name}</h3>
-                    ${password.created_at ? `<p class="card-description">Created: ${new Date(password.created_at).toLocaleDateString()}</p>` : ''}
                 </div>
                 <div class="card-content">
                     <div class="password-value-container">
@@ -114,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="badge badge-green">Shared</span>
                         </div>
                     ` : ''}
+                    
                 </div>
                 <div class="card-footer">
                     <button class="btn btn-outline edit-password" data-id="${password.id}">
