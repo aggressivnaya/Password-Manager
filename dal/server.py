@@ -42,8 +42,8 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     currUser = getCurrentUser(token)
 
     #inserting the password to the db(Password table)
-    shared = "True" if shared else "False"
-    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=shared)
+    sharedd = True if shared == "True" else False
+    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=sharedd)
     db.execute(insert_stmt)
     db.commit()
 
@@ -74,14 +74,14 @@ def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
 def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
     db = _SessionFactory()
     #updating the password in the db
-    shared = "True" if shared else "False"
+    sharedd = True if shared == "True" else False
     #currPassword = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
     key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPasswordId).all())[0]
     cipher = Fernet(key.key)
     stmt = (
             update(Password)
             .where(Password.id == currPasswordId)#query that updates the password by id
-            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=shared)
+            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=sharedd)
         )
 
     db.execute(stmt)
