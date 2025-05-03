@@ -64,6 +64,7 @@ namespace password_manager
 
     public class SharedPassword
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Password { get; set; }
     }
@@ -87,7 +88,6 @@ namespace password_manager
     {
         public int Id { get; set; }
         public int Sender_id { get; set; }
-        public int Group_id { get; set; }
         public string Request_command { get; set; }
     }
 
@@ -365,7 +365,7 @@ namespace password_manager
         public static async Task<ApiResponse> UpdatePasswordInGroup(string baseUrl, string token, string groupName, int passwordId, string newPassword, string newName, bool shared)
         {
             var client = CreateHttpClient(baseUrl, token);
-            var queryParams = $"'passwordId':{passwordId},'newPassword':{Uri.EscapeDataString(newPassword)},'name':{Uri.EscapeDataString(newName)},'shared':{shared}";
+            var queryParams = $"'id':{passwordId},'newPassword':{Uri.EscapeDataString(newPassword)},'name':{Uri.EscapeDataString(newName)},'shared':{shared}";
             var command = "upd{" + queryParams + "}";
             var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
