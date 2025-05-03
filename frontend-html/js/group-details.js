@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `add{'name':'${newGroupPasswordName.value}','password':'${newGroupPasswordValue.value}','shared':True}`
+                    `add{'name':'${newGroupPasswordName.value}','password':'${newGroupPasswordValue.value}','shared':'True'}`
                 );
                 showToast('Password add request sent to admin');
             }
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 await insertRequest(
                     groupName,
-                    `upd{'id':${parseInt(editGroupPasswordId.value)},'name':'${editGroupPasswordName.value}','newPassword':'${editGroupPasswordValue.value}','shared':True}`
+                    `upd{'id':${parseInt(editGroupPasswordId.value)},'name':'${editGroupPasswordName.value}','newPassword':'${editGroupPasswordValue.value}','shared':'True'}`
                 );
                 showToast('Password update request sent to admin');
             }

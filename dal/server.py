@@ -555,6 +555,7 @@ def updatePasswordInGroup(jsonOfPassword):
     db = _SessionFactory()
     #updating the password in the group
     valid_json_str = jsonOfPassword.replace("'", '"')
+    print('valid_json_str: ',valid_json_str)
     parsed = json.loads(valid_json_str)
     if parsed["shared"] == "True":
         shared = True
