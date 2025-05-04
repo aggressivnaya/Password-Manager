@@ -225,7 +225,7 @@ namespace password_manager
         {
             var client = CreateHttpClient(baseUrl, token);
             var queryParams = $"password={Uri.EscapeDataString(password)}&name={Uri.EscapeDataString(name)}&shared={shared}";
-            var response = await client.PostAsync($"/passwords/add?{queryParams}", null);
+            var response = await client.PostAsync($"/PrivatePasswords/add?{queryParams}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -241,7 +241,7 @@ namespace password_manager
         {
             var client = CreateHttpClient(baseUrl, token);
             var queryParams = $"currPasswordId={passwordId}&newPassword={Uri.EscapeDataString(newPassword)}&newName={Uri.EscapeDataString(newName)}&shared={shared}";
-            var response = await client.PostAsync(baseUrl + $"/passwords/update?{queryParams}", null);
+            var response = await client.PostAsync(baseUrl + $"/PrivatePasswords/update?{queryParams}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -257,7 +257,7 @@ namespace password_manager
         {
             var client = CreateHttpClient(baseUrl, token);
             var queryParams = $"currPasswordId={passwordId}";
-            var response = await client.DeleteAsync(baseUrl + $"/passwords/delete?{queryParams}");
+            var response = await client.DeleteAsync(baseUrl + $"/PrivatePasswords/delete?{queryParams}");
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
@@ -343,6 +343,21 @@ namespace password_manager
             throw new HttpRequestException($"Failed to add password to group: {response.StatusCode}, {responseContent}");
         }
 
+        public static async Task<ApiResponse> AddPasswordToGroupAdmin(string baseUrl, string token, string groupName, string password, string name, bool shared)
+        {
+            var client = CreateHttpClient(baseUrl, token);
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/add?groupName={groupName}&password={password}&name={name}&shared={shared}", null);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+            }
+
+            throw new HttpRequestException($"Failed to add password to group: {response.StatusCode}, {responseContent}");
+        }
+
         // Delete a password from a group
         public static async Task<ApiResponse> DeletePasswordFromGroup(string baseUrl, string token, string groupName, int passwordId)
         {
@@ -361,6 +376,21 @@ namespace password_manager
             throw new HttpRequestException($"Failed to delete password from group: {response.StatusCode}, {responseContent}");
         }
 
+        public static async Task<ApiResponse> DeletePasswordFromGroupAdmin(string baseUrl, string token, string groupName, int passwordId)
+        {
+            var client = CreateHttpClient(baseUrl, token);
+            var response = await client.DeleteAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/delete?groupName={groupName}&passwordId={passwordId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+            }
+
+            throw new HttpRequestException($"Failed to delete password from group: {response.StatusCode}, {responseContent}");
+        }
+
         // Update a password in a group
         public static async Task<ApiResponse> UpdatePasswordInGroup(string baseUrl, string token, string groupName, int passwordId, string newPassword, string newName, bool shared)
         {
@@ -368,6 +398,22 @@ namespace password_manager
             var queryParams = $"'id':{passwordId},'newPassword':{Uri.EscapeDataString(newPassword)},'name':{Uri.EscapeDataString(newName)},'shared':{shared}";
             var command = "upd{" + queryParams + "}";
             var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/insertRequest?groupName={groupName}&command={command}", null);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+            }
+
+            throw new HttpRequestException($"Failed to update password in group: {response.StatusCode}, {responseContent}");
+        }
+
+        public static async Task<ApiResponse> UpdatePasswordInGroupAdmin(string baseUrl, string token, string groupName, int passwordId, string newPassword, string newName, bool shared)
+        {
+            var client = CreateHttpClient(baseUrl, token);
+
+            var response = await client.PostAsync(baseUrl + $"/groups/{Uri.EscapeDataString(groupName)}/passwords/update?groupName={groupName}&passwordId={passwordId}&newPassword={newPassword}&newName={newName}&shared={shared}", null);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
