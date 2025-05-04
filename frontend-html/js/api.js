@@ -163,7 +163,7 @@ const updatePasswordInGroup = async (groupName, passwordId, newPassword, newName
 };
 
 const deletePasswordFromGroup = async (groupName, passwordId) => {
-    const queryParams = new URLSearchParams({ passwordId: passwordId.toString() }).toString();
+    const queryParams = new URLSearchParams({ id: passwordId }).toString();
     return await apiRequest(`/groups/${groupName}/passwords/delete?${queryParams}`, "DELETE");
 };
 

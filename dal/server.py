@@ -33,107 +33,37 @@ def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 
     return {'user': {"id": currUser.id, "username": currUser.username, "email": currUser.email}}
 
-@server.post("/changes/add/")
-def addPassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
-    #generating the key and encrypting the password
-    key = Fernet.generate_key()
-    cipher = Fernet(key)
+@server.post("/PrivatePasswords/add/")
+def addPrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
+    addPassword(token, password, name, shared)
+
     db = _SessionFactory()
-    currUser = getCurrentUser(token)
-
-    #inserting the password to the db(Password table)
-    sharedd = True if shared == "True" else False
-    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=sharedd)
-    db.execute(insert_stmt)
-    db.commit()
-
-    #inserting the password to the db(UserPassword table)
-    password = (db.query(Password).filter(Password.name == name and Password.password == cipher.encrypt(password.encode()) and Password.shared == shared).all())[0]
-    insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
-    db.execute(insert_stmt)
-    db.commit()
-
     #inserting the password to the db(History table)
     insert_stmt = insert(History).values(versionId=1, name=name, passwordId=password.id, method="add", date=datetime.utcnow().strftime("%Y-%m-%d"))
     db.execute(insert_stmt)
     db.commit()
+    db.close()
 
-    #inserting the password to the db(PasswordKey table)
-    insert_stmt = insert(PasswordKey).values(passwordId=password.id, key=key)
-    db.execute(insert_stmt)
-
-    try: 
-        db.commit()
-        db.close()
-        return {"success": 200}
-    except Exception as e:
-        print('exception in addPassword:', e)
-        raise e
-
-@server.post("/changes/update/")
-def updatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+@server.post("/PrivatePasswords/update/")
+def updatePrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+    updatePassword(token, currPasswordId, newPassword, newName, shared)
     db = _SessionFactory()
-    #updating the password in the db
-    sharedd = True if shared == "True" else False
-    #currPassword = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
-    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPasswordId).all())[0]
-    cipher = Fernet(key.key)
-    stmt = (
-            update(Password)
-            .where(Password.id == currPasswordId)#query that updates the password by id
-            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=sharedd)
-        )
-
-    db.execute(stmt)
-    db.commit()
-
     #inserting the password to the db(History table)
     insert_stmt = insert(History).values(versionId=1, name=newName, passwordId=currPasswordId, method="upd", date=datetime.utcnow().strftime("%Y-%m-%d"))
     db.execute(insert_stmt)
+    db.commit()
+    db.close()
 
-    try:
-        db.commit()
-        db.close()
-        return {"success": 200}
-    except Exception as e:
-        print('exception in updatePassword:', e)
-        raise e
-
-@server.delete("/changes/delete/")
-def deletePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None):
+@server.delete("/PrivatePasswords/delete/")
+def deletePrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None):
     db = _SessionFactory()
-    currUser = getCurrentUser(token)
     password = (db.query(Password).filter(Password.id == currPasswordId).all())
-    if len(password) == 0:
-        return {"error": "Password not found"}
-    password = password[0]
-
-    #deleting the password from the db(Password table)
-    delete_stmt = delete(Password).where(Password.id == currPasswordId)
-    db.execute(delete_stmt)
-    db.commit()
-
-    #deleting the password from the db(UserPassword table)
-    delete_stmt = delete(UserPassword).where((UserPassword.passwordId == currPasswordId) & (UserPassword.userId == currUser.id))
-    db.execute(delete_stmt)
-    db.commit()
-
-    #deleting the password from the db(PasswordKey table)
-    delete_stmt = delete(PasswordKey).where(PasswordKey.passwordId == currPasswordId)
-    db.execute(delete_stmt)
-    db.commit()
-
+    deletePassword(token, currPasswordId)
     #inserting the password to the db(History table)
     insert_stmt = insert(History).values(versionId=1, name=password.name, passwordId=currPasswordId, method="del", date=datetime.utcnow().strftime("%Y-%m-%d"))
     db.execute(insert_stmt)
-
-    try:
-        db.commit()
-        db.close()
-        return {"success": 200}
-    except Exception as e:
-        print('exception in deletePassword:', e)
-        raise e
+    db.commit()
+    db.close()
     
 @server.get("/getPassword")
 def getRequiredPassword(passwordId: int = None):
@@ -371,6 +301,18 @@ def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         return {"error": "error with group info"}
     return {'requests':requestsMsg}
 
+@server.post("/group/addPassword")
+def addPasswordToGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, password: str = None, name: str = None, shared: str = None):
+    addPassword(token, password, name, shared)
+    
+@server.post("/group/removePassword")
+def removePasswordFromGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None):
+    deletePassword(token, passwordId)
+    
+@server.post("/group/updPassword")
+def updatePasswordInGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
+    updatePassword(token, passwordId, newPassword, newName, shared)
+
 @server.post("/group/approve_request")
 def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):
     db = _SessionFactory()
@@ -516,62 +458,111 @@ def addUserToGroup(userId, groupId):
     db.close()
 
 def addPasswordToGroup(jsonOfPassword, userId):
-    db = _SessionFactory()
-    #adding the password to the group
-    key = Fernet.generate_key()
-    cipher = Fernet(key)
+    valid_json_str = jsonOfPassword.replace("'", '"')
+    print('valid_json_str: ',valid_json_str)
+    parsed = json.loads(valid_json_str)
+    shared = True if parsed["shared"] == "True" else False
+    addPassword("", parsed["password"], parsed["name"], shared, userId)
+
+def deletePasswordFromGroup(jsonOfPassword, userId):
     valid_json_str = jsonOfPassword.replace("'", '"')
     parsed = json.loads(valid_json_str)
-    shared = parsed["shared"]
+    deletePassword("", parsed["id"], userId)
+
+def updatePasswordInGroup(jsonOfPassword):
+    valid_json_str = jsonOfPassword.replace("'", '"')
+    print('valid_json_str: ',valid_json_str)
+    parsed = json.loads(valid_json_str)
+    shared = True if parsed["shared"] == "True" else False
+    updatePassword("", parsed["id"], parsed["newPassword"], parsed["name"], shared)
+
+def addPassword(token, password, name, shared, userId=-1):
+    key = Fernet.generate_key()
+    cipher = Fernet(key)
+    db = _SessionFactory()
+    if userId == -1 and token != "":
+        currUser = getCurrentUser(token)
+    else:
+        currUser = db.query(User).filter(User.id == userId).all()[0]
+
     #inserting the password to the db(Password table)
-    shared = "True" if shared else "False"
-    insert_stmt = insert(Password).values(password=cipher.encrypt(parsed["password"].encode()), name=parsed["name"], shared=shared)
+    sharedd = True if shared == "True" else False
+    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=sharedd)
+    db.execute(insert_stmt)
+    db.commit()
+
+    #inserting the password to the db(UserPassword table)
+    password = (db.query(Password).filter(Password.name == name and Password.password == cipher.encrypt(password.encode()) and Password.shared == shared).all())[0]
+    insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
     db.execute(insert_stmt)
     db.commit()
 
     #inserting the password to the db(PasswordKey table)
-    insert_stmt = insert(PasswordKey).values(passwordId=parsed["id"], key=key)
+    insert_stmt = insert(PasswordKey).values(passwordId=password.id, key=key)
     db.execute(insert_stmt)
-    db.commit()
 
-    password = (db.query(Password).filter(Password.password == parsed["password"] and Password.name == parsed["name"] and Password.shared == shared).all())[0]
-    insert_stmt = insert(UserPassword).values(userId=userId, passwordId=password.id)
-    db.execute(insert_stmt)
-    db.commit()
-    db.close()
+    try: 
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in addPassword:', e)
+        raise e
 
-def deletePasswordFromGroup(jsonOfPassword, userId):
+def deletePassword(token, currPasswordId, userId=-1):
     db = _SessionFactory()
-    #deleting the password from the group
-    valid_json_str = jsonOfPassword.replace("'", '"')
-    parsed = json.loads(valid_json_str)
-    password = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
-    delete_stmt = delete(UserPassword).where((UserPassword.passwordId == password.id) & (UserPassword.userId == userId))
+    if userId == -1 and token != "":
+        currUser = getCurrentUser(token)
+    else:
+        currUser = db.query(User).filter(User.id == userId).all()[0]
+    password = (db.query(Password).filter(Password.id == currPasswordId).all())
+    if len(password) == 0:
+        return {"error": "Password not found"}
+    password = password[0]
+
+    #deleting the password from the db(Password table)
+    delete_stmt = delete(Password).where(Password.id == currPasswordId)
     db.execute(delete_stmt)
     db.commit()
-    db.close()
 
-def updatePasswordInGroup(jsonOfPassword):
+    #deleting the password from the db(UserPassword table)
+    delete_stmt = delete(UserPassword).where((UserPassword.passwordId == currPasswordId) & (UserPassword.userId == currUser.id))
+    db.execute(delete_stmt)
+    db.commit()
+
+    #deleting the password from the db(PasswordKey table)
+    delete_stmt = delete(PasswordKey).where(PasswordKey.passwordId == currPasswordId)
+    db.execute(delete_stmt)
+    
+    try:
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in deletePassword:', e)
+        raise e
+
+def updatePassword(currPasswordId, newPassword, newName, shared):
     db = _SessionFactory()
-    #updating the password in the group
-    valid_json_str = jsonOfPassword.replace("'", '"')
-    print('valid_json_str: ',valid_json_str)
-    parsed = json.loads(valid_json_str)
-    if parsed["shared"] == "True":
-        shared = True
-    else:
-        shared = False
-    currPassword = (db.query(Password).filter(Password.id == parsed["id"]).all())[0]
-    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPassword.id).all())[0]
+    #updating the password in the db
+    sharedd = True if shared == "True" else False
+    #currPassword = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
+    key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPasswordId).all())[0]
     cipher = Fernet(key.key)
     stmt = (
-        update(Password)
-        .where(Password.id == parsed["id"])
-        .values(password=cipher.encrypt(parsed["newPassword"].encode()), name=parsed["name"], shared=shared)
-    )
+            update(Password)
+            .where(Password.id == currPasswordId)#query that updates the password by id
+            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=sharedd)
+        )
     db.execute(stmt)
-    db.commit()
-    db.close()
+
+    try:
+        db.commit()
+        db.close()
+        return {"success": 200}
+    except Exception as e:
+        print('exception in updatePassword:', e)
+        raise e
 
 if __name__ == "__main__":
     import uvicorn

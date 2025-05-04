@@ -11,7 +11,7 @@ def addPassword(token, password, name, shared):
     try:
         print('adding password')
         response = requests.post(
-            f"http://{DATA_SVC_ADDRESS}/changes/add/",headers=header , params=params
+            f"http://{DATA_SVC_ADDRESS}/PrivatePasswords/add/",headers=header , params=params
         )
         print(response.json())
         return response.json()
@@ -27,7 +27,7 @@ def updatePassword(token, currPasswordID, newPassword, newName, shared):
 
     try:
         response = requests.post(
-            f"http://{DATA_SVC_ADDRESS}/changes/update/",headers=header , params=data
+            f"http://{DATA_SVC_ADDRESS}/PrivatePasswords/update/",headers=header , params=data
         )
 
         return response.json()
@@ -42,14 +42,14 @@ def deletePassword(token, passwordId):
 
     try:
         response = requests.delete(
-            f"http://{DATA_SVC_ADDRESS}/changes/delete/",headers=header , params=data
+            f"http://{DATA_SVC_ADDRESS}/PrivatePasswords/delete/",headers=header , params=data
         )
         
         return response.json()
     except:
         #raise HTTPException(status_code=400, detail="Password not deleted")
         return False
-'''
+
 def addPasswordGroup(token, group, password, shared, name):
     header={"Authorization": f"Bearer {token}"}
 
@@ -91,7 +91,7 @@ def deletePasswordGroup(token, group, password):
         return response.json()
     except:
         raise HTTPException(status_code=400, detail="Group not deleted")
-    '''
+    
 def createGroup(token, name, description):
     header={"Authorization": f"Bearer {token}"}
 

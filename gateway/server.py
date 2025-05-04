@@ -160,7 +160,7 @@ def addPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)],
         return e
     
     try:
-        return updating_data.addPasswordToGroup(token, groupName, password,shared, name)
+        return updating_data.addPasswordGroup(token, groupName, password,shared, name)
     except  Exception as e:
         return e
     
@@ -172,7 +172,7 @@ def delPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)],
         return e
     
     try:
-        return updating_data.deletePasswordFromGroup(token, groupName, passwordId)
+        return updating_data.deletePasswordGroup(token, groupName, passwordId)
     except  Exception as e:
         return e
     
@@ -184,7 +184,7 @@ def updPassGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)],
         return e
     
     try:
-        return updating_data.updatePasswordInGroup(token, groupName, passwordId, newPassword, newName, shared)
+        return updating_data.updatePasswordGroup(token, groupName, passwordId, newPassword, newName, shared)
     except  Exception as e:
         return e
     

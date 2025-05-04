@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await deletePasswordFromGroup(groupName, id);
                     showToast('Password deleted successfully');
                 } else {
-                    await insertRequest(groupName, `del{id:${id}}`);
+                    await insertRequest(groupName, `del{'id':${parseInt(id)}}`);
                     showToast('Password delete request sent to admin');
                 }
                 fetchGroupData();
