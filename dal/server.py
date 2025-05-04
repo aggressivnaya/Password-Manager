@@ -28,7 +28,6 @@ oauth2Schema = OAuth2PasswordBearer(tokenUrl="placeholder")
     
 @server.get("/user")
 def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
-    db = _SessionFactory()
     currUser = getCurrentUser(token)
 
     return {'user': {"id": currUser.id, "username": currUser.username, "email": currUser.email}}
@@ -36,8 +35,9 @@ def getUser(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
 @server.post("/PrivatePasswords/add/")
 def addPrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], password: str = None, name: str = None, shared: str = None):
     addPassword(token, password, name, shared)
-
     db = _SessionFactory()
+    password = (db.query(Password).filter(Password.name == name and Password.password == password and Password.shared == shared).all())[0]
+
     #inserting the password to the db(History table)
     insert_stmt = insert(History).values(versionId=1, name=name, passwordId=password.id, method="add", date=datetime.utcnow().strftime("%Y-%m-%d"))
     db.execute(insert_stmt)
@@ -46,7 +46,7 @@ def addPrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Sch
 
 @server.post("/PrivatePasswords/update/")
 def updatePrivatePassword(request: Request, token: Annotated[str, Depends(oauth2Schema)], currPasswordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
-    updatePassword(token, currPasswordId, newPassword, newName, shared)
+    updatePassword(currPasswordId, newPassword, newName, shared)
     db = _SessionFactory()
     #inserting the password to the db(History table)
     insert_stmt = insert(History).values(versionId=1, name=newName, passwordId=currPasswordId, method="upd", date=datetime.utcnow().strftime("%Y-%m-%d"))
@@ -118,7 +118,7 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
         .filter(UserPassword.userId == currUser.id)
         .all()
     )#lst of history objects
-    db.close()
+    
     if result:
         {"error":"faild to get history"}
 
@@ -136,6 +136,7 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
             continue
         historyMsg.append({"id": history.id, "name": history.name,"password": password.password, "method": history.method, "date": history.date})
     # Return a list of password details
+    db.close()
     return {'history': historyMsg}
 
 @server.get("/notifications")
@@ -311,7 +312,7 @@ def removePasswordFromGroup(request: Request, token: Annotated[str, Depends(oaut
     
 @server.post("/group/updPassword")
 def updatePasswordInGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
-    updatePassword(token, passwordId, newPassword, newName, shared)
+    updatePassword(passwordId, newPassword, newName, shared)
 
 @server.post("/group/approve_request")
 def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):
@@ -414,8 +415,9 @@ def getCurrentUser(token):
     # Get the username from the token
     db = _SessionFactory()
     username = jwt.decode(token, "SARCASM", algorithms=["HS256"])["username"]
-
-    return (db.query(User).filter(User.username == username).all())[0]
+    user = (db.query(User).filter(User.username == username).all())[0]
+    db.close()
+    return user
 
 def getUsersOfGroup(group):
     db = _SessionFactory()
@@ -474,7 +476,7 @@ def updatePasswordInGroup(jsonOfPassword):
     print('valid_json_str: ',valid_json_str)
     parsed = json.loads(valid_json_str)
     shared = True if parsed["shared"] == "True" else False
-    updatePassword("", parsed["id"], parsed["newPassword"], parsed["name"], shared)
+    updatePassword(parsed["id"], parsed["newPassword"], parsed["name"], shared)
 
 def addPassword(token, password, name, shared, userId=-1):
     key = Fernet.generate_key()
@@ -484,15 +486,17 @@ def addPassword(token, password, name, shared, userId=-1):
         currUser = getCurrentUser(token)
     else:
         currUser = db.query(User).filter(User.id == userId).all()[0]
-
+    print("currUser: ",currUser.username)
     #inserting the password to the db(Password table)
-    sharedd = True if shared == "True" else False
-    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=sharedd)
+    if type(shared) == str:
+        shared = True if shared.capitalize() == "True" else False
+    insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=shared)
     db.execute(insert_stmt)
     db.commit()
 
     #inserting the password to the db(UserPassword table)
     password = (db.query(Password).filter(Password.name == name and Password.password == cipher.encrypt(password.encode()) and Password.shared == shared).all())[0]
+    print('password: ',password.password)
     insert_stmt = insert(UserPassword).values(userId=currUser.id, passwordId=password.id)
     db.execute(insert_stmt)
     db.commit()
@@ -545,14 +549,15 @@ def deletePassword(token, currPasswordId, userId=-1):
 def updatePassword(currPasswordId, newPassword, newName, shared):
     db = _SessionFactory()
     #updating the password in the db
-    sharedd = True if shared == "True" else False
+    if type(shared) == str:
+        shared = True if shared.capitalize() == "True" else False
     #currPassword = (db.query(Password).filter(Password.id == currPasswordId).all())[0]
     key = (db.query(PasswordKey).filter(PasswordKey.passwordId == currPasswordId).all())[0]
     cipher = Fernet(key.key)
     stmt = (
             update(Password)
             .where(Password.id == currPasswordId)#query that updates the password by id
-            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=sharedd)
+            .values(password=cipher.encrypt(newPassword.encode()), name=newName, shared=shared)
         )
     db.execute(stmt)
 
