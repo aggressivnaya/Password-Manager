@@ -17,8 +17,6 @@ namespace password_manager
             _authToken = token;
             _groupResponse = group;
             _requestts = new Requestts();
-            //_requestts.UpComingRequestts = new List<Requestt>();
-            //_requestts.UpComingRequestts = new Requestt[];
             InitializeComponent();
 
             // Load requests
@@ -27,15 +25,15 @@ namespace password_manager
 
         private async void LoadRequestsAsync()
         {
-            Requestts requestts = await Common.GetGroupRequests(Common.baseUrl, _authToken.access_token, _groupResponse.Name);
-            if (requestts.Requests == null || requestts == null)
+            _requestts = await Common.GetGroupRequests(Common.baseUrl, _authToken.access_token, _groupResponse.Name);
+            if (_requestts == null || _requestts.Requests == null)
                 return;    
             
             // Clear existing items
             JoinRequestsListBox.Items.Clear();
 
             // Add items for each join request
-            foreach (var request in requestts.Requests)
+            foreach (var request in _requestts.Requests)
             {
                 // Create the grid layout for the request item
                 Grid grid = new Grid();
@@ -94,14 +92,14 @@ namespace password_manager
                 acceptButton.Style = (Style)FindResource("AcceptButton");
                 acceptButton.Margin = new Thickness(0, 0, 10, 0);
                 acceptButton.Tag = request.Id;
-                acceptButton.Click += AcceptJoinRequest_Click;
+                acceptButton.Click += AcceptRequest_Click;
                 buttonPanel.Children.Add(acceptButton);
 
                 Button rejectButton = new Button();
                 rejectButton.Content = "Reject";
                 rejectButton.Style = (Style)FindResource("RejectButton");
                 rejectButton.Tag = request.Id;
-                rejectButton.Click += RejectJoinRequest_Click;
+                rejectButton.Click += RejectRequest_Click;
                 buttonPanel.Children.Add(rejectButton);
 
                 Grid.SetColumn(buttonPanel, 2);
@@ -117,33 +115,13 @@ namespace password_manager
             }
         }
 
-        private void ShowJoinRequests()
-        {
-            
-        }
-
-        private void ShowEditRequests()
-        {
-            
-        }
-
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             // Navigate back
             NavigationService?.GoBack();
         }
 
-        private void JoinRequestsTab_Click(object sender, RoutedEventArgs e)
-        {
-            ShowJoinRequests();
-        }
-
-        private void EditRequestsTab_Click(object sender, RoutedEventArgs e)
-        {
-            ShowEditRequests();
-        }
-
-        private async void AcceptJoinRequest_Click(object sender, RoutedEventArgs e)
+        private async void AcceptRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
             Button button = sender as Button;
@@ -175,7 +153,7 @@ namespace password_manager
             }
         }
 
-        private async void RejectJoinRequest_Click(object sender, RoutedEventArgs e)
+        private async void RejectRequest_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
             Button button = sender as Button;
@@ -205,75 +183,6 @@ namespace password_manager
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-        }
-
-        private void ReviewEditRequest_Click(object sender, RoutedEventArgs e)
-        {
-            // Get the button that was clicked
-            /*Button button = sender as Button;
-            if (button != null && button.Tag != null)
-            {
-                int requestId = Convert.ToInt32(button.Tag);
-
-                // Find the request
-                PasswordEditRequestItem selectedRequest = null;
-                foreach (var request in _editRequests)
-                {
-                    if (request.Id == requestId)
-                    {
-                        selectedRequest = request;
-                        break;
-                    }
-                }
-
-                if (selectedRequest != null)
-                {
-                    // TODO: Navigate to password edit review page
-                    // For now, just show a message
-                    MessageBox.Show($"Reviewing edit request for {selectedRequest.PasswordName}.",
-                        "Review Request", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }*/
-        }
-
-        private async void RejectEditRequest_Click(object sender, RoutedEventArgs e)
-        {
-            // Get the button that was clicked
-            /*Button button = sender as Button;
-            if (button != null && button.Tag != null)
-            {
-                int requestId = Convert.ToInt32(button.Tag);
-
-                // Find the request
-                PasswordEditRequestItem selectedRequest = null;
-                foreach (var request in _editRequests)
-                {
-                    if (request.Id == requestId)
-                    {
-                        selectedRequest = request;
-                        break;
-                    }
-                }
-
-                if (selectedRequest != null)
-                {
-                    try
-                    {
-                        // TODO: Implement actual API call to reject edit request
-                        // For now, just show a message
-                        MessageBox.Show($"Edit request for {selectedRequest.PasswordName} has been rejected.",
-                            "Request Rejected", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                        // Reload requests
-                        LoadRequestsAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error rejecting request: {ex.Message}",
-                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }*/
         }
     }
 }

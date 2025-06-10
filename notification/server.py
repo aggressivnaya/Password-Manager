@@ -39,8 +39,9 @@ def sendNotification(request: Request, token: Annotated[str, Depends(oauth2Schem
        raise HTTPException(status_code=500, detail="Failed to send email")
     
 @server.post("/sendUpdate/")
-def sendUpdate(request: Request, token: Annotated[str, Depends(oauth2Schema)], sender: str, receiver: str, data: str):
-    sended = send(sender, receiver, "Update", data)
+def sendUpdate(request: Request, token: Annotated[str, Depends(oauth2Schema)], receiver: str, subj: str, data: str):
+    user = jwt.decode(token, "SARCASM", algorithms=["HS256"])["email"]
+    sended = send(user, receiver, subj, data)
     if sended:
         return {"status": 200}
     else:

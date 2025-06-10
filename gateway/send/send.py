@@ -5,10 +5,15 @@ NOTIFICATION_SVC_ADDRESS = '182.20.1.6:5003'
 
 generatedCode = ''
 
-def sendUpdate(request: Request ,token , sender: str, receiver: str, data: str) -> bool:
+def sendUpdate(request: Request ,token , receiver: str, subj: str, data: str) -> bool:
     try:
-        response = requests.post(f'http://{NOTIFICATION_SVC_ADDRESS}/sendUpdate/', headers={'Authorization': 'Bearer ' + token}, params={'sender': sender, 'receiver': receiver, 'data': data})
-        return True
+        response = requests.post(f'http://{NOTIFICATION_SVC_ADDRESS}/sendUpdate/', headers={'Authorization': 'Bearer ' + token}, params={ 'receiver': receiver,'subj': subj, 'data': data})
+        if response.json()['status'] == 200:
+            print("Update sent successfully")
+            return True
+        else: 
+            print("Failed to send update")
+            return False
     except Exception as e:
         return False
     

@@ -23,13 +23,11 @@ namespace password_manager
 {
     public partial class LoginPage : Page
     {
-        //private PasswordManager _passwordManager;
         private Common _communicator;
 
         public LoginPage()
         {
             InitializeComponent();
-           // _passwordManager = new PasswordManager();
             _communicator = new Common();
         }
 
@@ -37,12 +35,8 @@ namespace password_manager
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            //string email = EmailTextBox.Text;
-            //string username = UsernameTextBox.Text;
-            string email = "user1@example.com";
-            string username = "user1";
-            //string email = "q1@";
-            //string username = "q1";
+            string email = EmailTextBox.Text;
+            string username = UsernameTextBox.Text;
 
             if (email == null || username == null)
             {
@@ -51,7 +45,6 @@ namespace password_manager
                 return;
             }
 
-            //User user = new User(username, email);
             Token token = await Common.Login(Common.baseUrl, username, email);
             if (token != null)
             {
@@ -59,17 +52,14 @@ namespace password_manager
             }
 
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserDashboardPage(token, username));
+            nav.Navigate(new AuthenticationPage(token, username));
 
         }
 
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
-            // Handle signup logic or show a signup window here.  {'username': 'q1', 'email': 'q1@', 'exp': 1744561312}
-            //string email = EmailTextBox.Text;
-            //string username = UsernameTextBox.Text;
-            string email = "q1@";
-            string username = "q1";
+            string email = EmailTextBox.Text;
+            string username = UsernameTextBox.Text;
             if (email == null || username == null)
             {
                 MessageBox.Show("username or email are empty",
@@ -84,7 +74,7 @@ namespace password_manager
             }
             
             NavigationService nav = NavigationService.GetNavigationService(this);
-            nav.Navigate(new UserDashboardPage(token, username));
+            nav.Navigate(new AuthenticationPage(token, username));
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

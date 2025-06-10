@@ -170,7 +170,7 @@ namespace password_manager
         }
 
         // Check verification code
-        public static async Task<bool> CheckVerificationCode(string baseUrl, string token, string code)
+        public static async Task<ApiResponse> CheckVerificationCode(string baseUrl, string token, string code)
         {
             var client = CreateHttpClient(baseUrl, token);
             var response = await client.GetAsync(baseUrl + $"/check?code={Uri.EscapeDataString(code)}");
@@ -178,7 +178,7 @@ namespace password_manager
 
             if (response.IsSuccessStatusCode)
             {
-                return bool.Parse(responseContent);
+                return JsonSerializer.Deserialize<ApiResponse>(responseContent);
             }
 
             throw new HttpRequestException($"Code verification failed: {response.StatusCode}, {responseContent}");

@@ -282,6 +282,21 @@ def groupInfo(groupName: str = None):
         return {"error": "error with group info"}
     return {'groupinfo':groupInfo}
 
+@server.get("/group/admin_user")
+def getAdminUserOfGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
+    db = _SessionFactory()
+    #currUser = getCurrentUser(token)
+    currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    userGroup = (db.query(UserGroup).filter(UserGroup.isAdmin == True and UserGroup.groupId == currGroup.id).all())[0]
+    
+    #getting the admin user of the group
+    adminUser = (db.query(User).filter(User.id == userGroup.userId).all())[0]
+    db.close()
+
+    if not adminUser:
+        return {"error": "error with group info"}
+    return {'admin':{"id":adminUser.id, "username": adminUser.username, "email": adminUser.email}}
+
 @server.get("/group/requests")
 def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
     db = _SessionFactory()
@@ -313,6 +328,8 @@ def removePasswordFromGroup(request: Request, token: Annotated[str, Depends(oaut
 @server.post("/group/updPassword")
 def updatePasswordInGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, passwordId: int = None, newPassword: str = None, newName: str = None, shared: str = None):
     updatePassword(passwordId, newPassword, newName, shared)
+
+#requestCommand built: command{'':..,'..':..,}
 
 @server.post("/group/approve_request")
 def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, requestId: int = None):

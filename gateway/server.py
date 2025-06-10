@@ -199,7 +199,7 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         return updating_data.createGroup(token, groupName, description)
     except  Exception as e:
         return e
-    
+'''   
 @server.post('/groups/{groupName}/enterGroup')
 def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
     try:
@@ -222,7 +222,7 @@ def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     try:
         return updating_data.addUserToGroup(token, groupName, username)
     except  Exception as e:
-        return e
+        return e'''
     
 @server.delete("/groups/{groupName}/removeUser")
 def removeUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, user: str = None):
@@ -256,7 +256,11 @@ def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)]
         return e
     
     try:
-        return updating_data.insertRequest(token, groupName, command)
+        res = updating_data.insertRequest(token, groupName, command)
+        if send.sendUpdate(request ,token, get.getAdminGroup(token, groupName)['admin']['email'],command[0:3], command[3:]):
+            return {'status': 'success', 'message': 'Request sent successfully'}
+        else:
+            return {'status': 'error', 'message': 'Failed to send request'}
     except  Exception as e:
         return e 
 

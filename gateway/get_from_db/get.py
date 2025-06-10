@@ -89,6 +89,18 @@ def getRequestedGroup(token, group):
     except:
         raise HTTPException(status_code=400, detail="Group not found")
     
+def getAdminGroup(token, group):
+    header={"Authorization": f"Bearer {token}"}
+    data = { "groupName" : group}
+
+    try:
+        response = requests.get(
+            f"http://{DATA_SVC_ADDRESS}/group/admin_user",headers=header , params=data
+        )
+        return {'admin': response.json()['admin']}
+    except:
+        raise HTTPException(status_code=400, detail="Group not found")
+    
 def getGroupRequests(token, group):
     header={"Authorization": f"Bearer {token}"}
     data = { "groupName" : group}

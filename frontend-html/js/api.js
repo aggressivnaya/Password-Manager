@@ -135,9 +135,9 @@ const createGroup = async (groupName, description) => {
     return await apiRequest(`/groups/${groupName}/createGroup?${queryParams}`, "POST");
 };
 
-const enterGroup = async (groupName) => {
+/*const enterGroup = async (groupName) => {
     return await apiRequest(`/groups/${groupName}/enterGroup`, "POST");
-};
+};*/
 
 const leaveGroup = async (groupName) => {
     return await apiRequest(`/groups/${groupName}/leaveGroup`, "DELETE");
@@ -186,10 +186,10 @@ const declineRequest = async (groupName, requestId) => {
     return await apiRequest(`/groups/${groupName}/declineRequest?${queryParams}`, "DELETE");
 };
 
-const acceptUser = async (groupName, username) => {
+/*const acceptUser = async (groupName, username) => {
     const queryParams = new URLSearchParams({ username }).toString();
     return await apiRequest(`/groups/${groupName}/acceptUser?${queryParams}`, "POST");
-};
+};*/
 
 const removeUser = async (groupName, user) => {
     const queryParams = new URLSearchParams({ user }).toString();
