@@ -199,30 +199,6 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         return updating_data.createGroup(token, groupName, description)
     except  Exception as e:
         return e
-'''   
-@server.post('/groups/{groupName}/enterGroup')
-def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
-    try:
-        access = validate.token(token)
-    except Exception as e:
-        return e
-    
-    try:
-        return updating_data.insertRequest(token, groupName, "ent")
-    except  Exception as e:
-        return e
-
-@server.post("/groups/{groupName}/acceptUser")
-def acceptUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, username: str = None):
-    try:
-        access = validate.token(token)
-    except Exception as e:
-        return e
-    
-    try:
-        return updating_data.addUserToGroup(token, groupName, username)
-    except  Exception as e:
-        return e'''
     
 @server.delete("/groups/{groupName}/removeUser")
 def removeUser(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None, user: str = None):
@@ -258,9 +234,9 @@ def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)]
     try:
         res = updating_data.insertRequest(token, groupName, command)
         if send.sendUpdate(request ,token, get.getAdminGroup(token, groupName)['admin']['email'],command[0:3], command[3:]):
-            return {'status': 'success', 'message': 'Request sent successfully'}
+            return {'success': 200}
         else:
-            return {'status': 'error', 'message': 'Failed to send request'}
+            return {'success': 400}
     except  Exception as e:
         return e 
 
@@ -325,7 +301,7 @@ def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
         return e
     
 @server.get("/notifications")
-def history(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
+def notifications(request: Request, token: Annotated[str, Depends(oauth2Schema)]):
     try:
         access = validate.token(token)
     except Exception as e:

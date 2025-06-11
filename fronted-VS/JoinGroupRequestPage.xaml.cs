@@ -42,11 +42,6 @@ namespace password_manager
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-
-                // For now, just show a success message
-                MessageBox.Show($"Join request for group '{GroupNameTextBox.Text}' has been sent successfully.", 
-                    "Request Sent", MessageBoxButton.OK, MessageBoxImage.Information);
-
                 // Clear the form
                 GroupNameTextBox.Text = string.Empty;
                 MessageTextBox.Text = string.Empty;

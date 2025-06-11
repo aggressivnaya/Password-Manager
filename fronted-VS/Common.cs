@@ -178,7 +178,11 @@ namespace password_manager
 
             if (response.IsSuccessStatusCode)
             {
-                return JsonSerializer.Deserialize<ApiResponse>(responseContent);
+                //var s = JsonSerializer.Deserialize<ApiResponse>(responseContent);
+                //return s;
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var s = JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+                return s;
             }
 
             throw new HttpRequestException($"Code verification failed: {response.StatusCode}, {responseContent}");
@@ -453,7 +457,8 @@ namespace password_manager
             if (response.IsSuccessStatusCode)
             {
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+                var s = JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+                return s;
             }
 
             throw new HttpRequestException($"Failed to request joining group: {response.StatusCode}, {responseContent}");

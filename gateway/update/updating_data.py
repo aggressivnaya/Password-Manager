@@ -120,19 +120,6 @@ def deleteGroup(token, group):
     except:
         raise HTTPException(status_code=400, detail="Group not deleted")
     
-def addUserToGroup(token, group, user):
-    header={"Authorization": f"Bearer {token}"}
-
-    data = { "groupName" : group, "username": user}
-
-    try:
-        response = requests.post(
-            f"http://{DATA_SVC_ADDRESS}/group/accept_user",headers=header , params=data
-        )
-
-        return response.json()
-    except:
-        raise HTTPException(status_code=400, detail="User not added")
     
 def removeUserFromGroup(token, group, user):
     header={"Authorization": f"Bearer {token}"}
@@ -161,20 +148,6 @@ def leaveGroup(token, group):
         return response.json()
     except:
         raise HTTPException(status_code=400, detail="Group not left")
-'''   
-def enterGroup(token, group):
-    header={"Authorization": f"Bearer {token}"}
-
-    data = { "groupLink" : group}
-
-    try:
-        response = requests.get(
-            f"http://{DATA_SVC_ADDRESS}/group/enter_group",headers=header , params=data
-        )
-
-        return response.json()
-    except:
-        raise HTTPException(status_code=400, detail="Group not entered")'''
 
 def insertRequest(token, group, requestCommand):
     header={"Authorization": f"Bearer {token}"}

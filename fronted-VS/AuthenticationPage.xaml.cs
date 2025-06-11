@@ -49,5 +49,15 @@ namespace password_manager
             NavigationService nav = NavigationService.GetNavigationService(this);
             nav.Navigate(new UserDashboardPage(token, user));
         }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Grid_MouseLeftButtonDown(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace password_manager
             GroupRoleText.Text = $"Your Role: {(_isManager ? "Manager" : "Member")}";
         }
 
-        private async void LoadGroupMembersAsync()
+        private void LoadGroupMembersAsync()
         {
             try
             {
@@ -80,7 +80,7 @@ namespace password_manager
 
                     TextBlock nameBlock = new TextBlock();
                     // Mark the current user
-                    nameBlock.Text = member.Email == member.Email ?
+                    nameBlock.Text = _currUser == member.Username ?
                         $"You ({member.Username})" : member.Username;
                     nameBlock.FontWeight = FontWeights.Bold;
                     infoPanel.Children.Add(nameBlock);
@@ -95,7 +95,7 @@ namespace password_manager
                     grid.Children.Add(infoPanel);
 
                     // Action buttons (only visible for managers and not for self)
-                    if (_isManager && member.Email != member.Email)
+                    if (_isManager)
                     {
                         StackPanel buttonPanel = new StackPanel();
                         buttonPanel.Orientation = Orientation.Horizontal;
@@ -110,18 +110,19 @@ namespace password_manager
                             makeManagerButton.Tag = member.Id;
                             makeManagerButton.Click += MakeManager_Click;
                             buttonPanel.Children.Add(makeManagerButton);
+                            
+                            // Remove button
+                            Button removeButton = new Button();
+                            removeButton.Content = "Remove";
+                            removeButton.Style = (Style)FindResource("DangerButton");
+                            removeButton.Tag = member.Id;
+                            removeButton.Click += RemoveUser_Click;
+                            buttonPanel.Children.Add(removeButton);
+                            Grid.SetColumn(buttonPanel, 2);
+                            grid.Children.Add(buttonPanel);
                         }
 
-                        // Remove button
-                        Button removeButton = new Button();
-                        removeButton.Content = "Remove";
-                        removeButton.Style = (Style)FindResource("DangerButton");
-                        removeButton.Tag = member.Id;
-                        removeButton.Click += RemoveUser_Click;
-                        buttonPanel.Children.Add(removeButton);
 
-                        Grid.SetColumn(buttonPanel, 2);
-                        grid.Children.Add(buttonPanel);
                     }
 
                     // Add the grid to a list box item
@@ -157,6 +158,7 @@ namespace password_manager
                 {
                     // Make the user a manager
                     //bool success = await _apiClient.MakeUserGroupManagerAsync(_authToken, _groupId, memberId);
+
                     bool success = true;
                     if (success)
                     {

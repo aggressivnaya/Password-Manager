@@ -181,6 +181,7 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db.execute(insert_stmt)
     db.commit()
     
+    #checking if the group already exists
     isGroup = (db.query(Group).filter(Group.name == name).all())
     if isGroup:
         return {"error": "Group already exists"}
@@ -204,27 +205,6 @@ def createGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
         print('exception in createGroup:', e)
         raise e
 
-@server.get("/group/enter_group")
-def enterGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupLink: str = None):
-    '''sending request to admin user then waiting when admin accept'''
-    db = _SessionFactory()
-    currUser = getCurrentUser(token)
-
-    group = (db.query(Group).filter(Group.name == groupLink).all())[0]
-    #finding the admin of the group
-    userGroup = (db.query(UserGroup).filter((UserGroup.groupId == group.id) & (UserGroup.isAdmin == True)).all())[0]
-    #sending request to the admin of the group(inserting to the Request table)
-    insert_stmt = insert(Requestt).values(sender_id=currUser.id, group_id=group.id,request_command="Join group")
-    
-    db.execute(insert_stmt)
-
-    try:
-        db.commit()
-        db.close()
-        return {"success": 200}
-    except Exception as e:
-        print('exception in enterGroup:', e)
-        raise e
 
 @server.delete("/group/leave_group")
 def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
@@ -232,6 +212,8 @@ def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
     currUser = getCurrentUser(token)
 
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not group:
+        return {"success": 400,"message": "Group not found"}
 
     delete_stmt = delete(UserGroup).where(UserGroup.userId == currUser.id and UserGroup.groupId == group.id)
     db.execute(delete_stmt)
@@ -248,6 +230,8 @@ def leaveGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], g
 def removeGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
     db = _SessionFactory()
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not group:
+        return {"success": 400,"message": "Group not found"}
 
     # Delete references to the group in the UserGroup table
     delete_stmt = delete(UserGroup).where(UserGroup.groupId == group.id)
@@ -270,6 +254,9 @@ def removeGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
 def groupInfo(groupName: str = None):
     db = _SessionFactory()
     group = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not group:
+        return {"success": 400,"message": "Group not found"}
+
     #getting the users that in the group
     usersInGroup = getUsersOfGroup(group)
     #getting the passwords that in the group
@@ -285,8 +272,10 @@ def groupInfo(groupName: str = None):
 @server.get("/group/admin_user")
 def getAdminUserOfGroup(request: Request, token: Annotated[str, Depends(oauth2Schema)], groupName: str = None):
     db = _SessionFactory()
-    #currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not currGroup:
+        return {"success": 400,"message": "Group not found"}
+    
     userGroup = (db.query(UserGroup).filter(UserGroup.isAdmin == True and UserGroup.groupId == currGroup.id).all())[0]
     
     #getting the admin user of the group
@@ -302,6 +291,9 @@ def getRequests(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not currGroup:
+        return {"success": 400,"message": "Group not found"}
+    
     userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
     if userGroup.isAdmin == False:
         return {"error": "You are not the admin of this group"}
@@ -336,12 +328,17 @@ def approveRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not currGroup:
+        return {"success": 400,"message": "Group not found"}
+    
     userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
     if userGroup.isAdmin == False:
         return {"error": "You are not the admin of this group"}
     
     #finding the request by id
     request = (db.query(Requestt).filter(Requestt.id == requestId).all())[0]
+    if not request:
+        return {"success": 400,"message": "Request not found"}
 
     if request.request_command[0:3] == "ent":
         addUserToGroup(request.sender_id, request.group_id)
@@ -369,9 +366,16 @@ def denyRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)], 
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not currGroup:
+        return {"success": 400,"message": "Group not found"}
+    
     userGroup = (db.query(UserGroup).filter(UserGroup.userId == currUser.id and UserGroup.groupId == currGroup.id).all())[0]
     if userGroup.isAdmin == False:
         return {"error": "You are not the admin of this group"}
+    
+    request = (db.query(Requestt).filter(Requestt.id == requestId).all())[0]
+    if not request:
+        return {"success": 400,"message": "Request not found"}
     
     #deleting the request(from the Request table)
     delete_stmt = delete(Requestt).where(Requestt.id == int(requestId))
@@ -390,7 +394,12 @@ def insertRequest(request: Request, token: Annotated[str, Depends(oauth2Schema)]
     db = _SessionFactory()
     currUser = getCurrentUser(token)
     currGroup = (db.query(Group).filter(Group.name == groupName).all())[0]
+    if not currGroup:
+        return {"success": 400,"message": "Group not found"}
     
+    request = (db.query(Requestt).filter(Requestt.sender_id == currUser.id and Requestt.group_id == currGroup.id and Requestt.request_command == requestCommand).all())[0]
+    if not request:
+        return {"success": 400,"message": "Request already exists"}
     #creating the request and inserting it to the db(Request table)
     insert_stmt = insert(Requestt).values(sender_id=currUser.id, group_id=currGroup.id, request_command=requestCommand)
     db.execute(insert_stmt)
@@ -507,6 +516,14 @@ def addPassword(token, password, name, shared, userId=-1):
     #inserting the password to the db(Password table)
     if type(shared) == str:
         shared = True if shared.capitalize() == "True" else False
+
+    #check if the password already exists
+    existing_password = db.query(Password).filter(Password.name == name, Password.password == cipher.encrypt(password.encode()), Password.shared == shared).first()
+    if existing_password:
+        print("Password already exists")
+        return {"success": "400"}
+    
+    #if not, insert the new password
     insert_stmt = insert(Password).values(name=name, password=cipher.encrypt(password.encode()), shared=shared)
     db.execute(insert_stmt)
     db.commit()
